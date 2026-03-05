@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pencil, Trash2, AlertCircle, Target } from 'lucide-react';
+import { Pencil, Trash2, Target } from 'lucide-react';
 import { Button } from '@app/components/ui/Button';
 import { ConfirmDialog } from '@app/components/ui';
 import type { Budget, Category } from '@app/types';
@@ -21,7 +21,6 @@ interface BudgetCardProps {
 export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardProps) {
   const limit = parseFloat(String(budget.limitAmount));
   const spent = parseFloat(String(budget.spent));
-  const remaining = parseFloat(String(budget.remaining));
   const percentage = budget.percentageUsed;
   
   const [showConfirm, setShowConfirm] = useState(false);

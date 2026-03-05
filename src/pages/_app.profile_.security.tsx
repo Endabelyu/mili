@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { type MetaFunction } from 'react-router';
-import { useNavigate } from 'react-router';
-import { authClient } from '@app/lib/auth-client';
-import { Input } from '@app/components/ui/Input';
-import { Button } from '@app/components/ui/Button';
+import { type MetaFunction, useNavigate } from 'react-router-dom';
+import { authApi } from '../api/client';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 import { Shield, ArrowLeft, Check, Eye, EyeOff } from 'lucide-react';
 
 export const meta: MetaFunction = () => [
@@ -49,18 +48,14 @@ export default function SecurityPage() {
     setIsLoading(true);
     setError('');
     try {
-      const result = await authClient.changePassword({
+      await authApi.changePassword({
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
         revokeOtherSessions: false,
       });
-      if (result.error) {
-        setError(result.error.message ?? 'Gagal mengubah kata sandi.');
-      } else {
-        setSuccess(true);
-        setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        setTimeout(() => navigate('/profile'), 1500);
-      }
+      setSuccess(true);
+      setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setTimeout(() => navigate('/profile'), 1500);
     } catch {
       setError('Terjadi kesalahan. Coba lagi.');
     } finally {

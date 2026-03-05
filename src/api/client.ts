@@ -43,13 +43,18 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 export class ApiError extends Error {
+  status: number;
+  body?: unknown;
+  
   constructor(
-    public status: number,
+    status: number,
     message: string,
-    public body?: unknown
+    body?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
+    this.status = status;
+    this.body = body;
   }
 }
 
@@ -75,19 +80,13 @@ export const authApi = {
     }),
   logout: () =>
     request<void>('/api/auth/sign-out', { method: 'POST' }),
+  updateUser: (data: { name: string }) =>
+    request<{ user: User }>('/api/auth/profile', { method: 'PUT', body: JSON.stringify(data) }),
+  changePassword: (data: any) =>
+    request<void>('/api/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
 };
 
-// ─── Transactions ─────────────────────────────────────────────────────────────
-export interface Transaction {
-  id: string;
-  type: 'income' | 'expense';
-  amount: number;
-  category: string;
-  description: string | null;
-  date: string;
-  userId: string;
-  createdAt: string;
-}
+import { type Transaction, type Budget, type Category } from '../types';
 
 export const transactionsApi = {
   list: (params?: { limit?: number; offset?: number; type?: string; category?: string }) =>
@@ -101,17 +100,8 @@ export const transactionsApi = {
 };
 
 // ─── Budgets ──────────────────────────────────────────────────────────────────
-export interface Budget {
-  id: string;
-  category: string;
-  amount: number;
-  period: 'monthly' | 'yearly';
-  userId: string;
-  createdAt: string;
-}
-
 export const budgetsApi = {
-  list: () => request<Budget[]>('/api/budgets'),
+  list: (params?: { month?: string }) => request<Budget[]>('/api/budgets', { params }),
   create: (data: Omit<Budget, 'id' | 'userId' | 'createdAt'>) =>
     request<Budget>('/api/budgets', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Budget>) =>
@@ -128,4 +118,9 @@ export const reportsApi = {
     request<Record<string, number>>('/api/reports/by-category', { params }),
   monthly: (params?: { year?: number }) =>
     request<Record<string, number>>('/api/reports/monthly', { params }),
+};
+
+// ─── Categories ───────────────────────────────────────────────────────────────
+export const categoriesApi = {
+  list: () => request<Category[]>('/api/categories'),
 };

@@ -52,7 +52,6 @@ export function MobileDatePicker({
     const month = viewDate.getMonth();
 
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -118,11 +117,6 @@ export function MobileDatePicker({
       setIsOpen(false);
     }
   }, [tempDate, onChange]);
-
-  // Handle clear
-  const handleClear = useCallback(() => {
-    setTempDate(null);
-  }, []);
 
   // Month/Year display
   const monthYearDisplay = useMemo(() => {

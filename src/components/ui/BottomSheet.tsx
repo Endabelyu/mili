@@ -137,7 +137,6 @@ export function BottomSheet({
 
   if (!isOpen) return null;
 
-  const sheetHeight = `${snapPoints[currentSnap]}%`;
   const transform = isDragging
     ? `translateY(${translateY}px)`
     : `translateY(${getSnapPosition(currentSnap)}px)`;

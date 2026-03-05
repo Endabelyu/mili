@@ -1,10 +1,7 @@
-import '../styles/animations.css';
-import { useState, useMemo } from 'react';
-import { type LoaderFunctionArgs, type MetaFunction } from 'react-router';
-import { useLoaderData, useSearchParams } from 'react-router';
-import { requireSession } from '@app/lib/auth.server';
-import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
-import { getFinancialSummary, getExpensesByCategory, getMonthlyTrend } from '@server/lib/services/reports.server';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { ChartSkeleton, StatCardSkeleton } from '../components/ui';
 import {
   LineChart,
   Line,
@@ -25,7 +22,6 @@ import {
   TrendingUp,
   PieChart as PieChartIcon,
   Calendar,
-  Loader2,
   DollarSign,
   Percent,
   Wallet,
@@ -34,20 +30,16 @@ import {
   LayoutGrid,
   List,
 } from 'lucide-react';
-import { ChartSkeleton, StatCardSkeleton } from '@app/components/ui';
 
-// ============================================================================
-// META
-// ============================================================================
+import { reportsApi } from '../api/client';
 
-export const meta: MetaFunction = () => {
+export const meta = () => {
   return [
     { title: 'Reports & Analytics | Finance Tracker' },
     { name: 'description', content: 'Track your financial health and spending patterns' },
   ];
 };
 
-// Types matching the API response
 interface ReportSummary {
   income: number;
   expenses: number;
@@ -70,13 +62,6 @@ interface MonthlyData {
   expenses: number;
   balance: number;
 }
-
-interface LoaderData {
-  summary: ReportSummary;
-  categories: CategoryBreakdown[];
-  monthly: MonthlyData[];
-}
-
 
 // Helper functions
 function formatDateForInput(date: Date): string {
@@ -106,41 +91,9 @@ function formatPercentage(value: number): string {
   return `${value.toFixed(1)}%`;
 }
 
-export async function loader({ request }: LoaderFunctionArgs): Promise<Response> {
-  const session = await requireSession(request);
 
-  const url = new URL(request.url);
-  const month = url.searchParams.get('month') || undefined;
 
-  try {
-    const [summary, categories, monthly] = await Promise.all([
-      getFinancialSummary(session.userId, month),
-      getExpensesByCategory(session.userId, month),
-      getMonthlyTrend(session.userId, 6),
-    ]);
 
-    return Response.json({ summary, categories, monthly });
-  } catch (error) {
-    console.error('Reports loader error:', error);
-    return Response.json(
-      {
-        summary: { income: 0, expenses: 0, balance: 0, savingsRate: 0, transactionCount: 0 },
-        categories: [],
-        monthly: [],
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// Loading skeleton component
-function ChartLoadingSkeleton() {
-  return (
-    <div className="flex items-center justify-center h-64">
-      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-    </div>
-  );
-}
 
 // Reports Skeleton
 function ReportsSkeleton() {
@@ -261,13 +214,74 @@ const CustomTooltip = ({
   return null;
 };
 
+
+
 export default function ReportsPage() {
-  const { summary, categories, monthly } = useLoaderData<LoaderData>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'charts' | 'list'>('charts');
 
+  const [summary, setSummary] = useState<ReportSummary>({ income: 0, expenses: 0, balance: 0, savingsRate: 0, transactionCount: 0 });
+  const [categories, setCategories] = useState<CategoryBreakdown[]>([]);
+  const [monthly, setMonthly] = useState<MonthlyData[]>([]);
+
   const currentMonth = searchParams.get('month') || getCurrentMonth();
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    const loadData = async () => {
+      try {
+        const [sumData, catData, monData] = await Promise.all([
+          reportsApi.summary(currentMonth ? { month: currentMonth } as any : undefined),
+          reportsApi.byCategory(currentMonth ? { month: currentMonth } as any : undefined),
+          reportsApi.monthly(), // we could pass limit: 6 but API defaults to it
+        ]);
+
+        if (!isMounted) return;
+
+        setSummary({
+          income: (sumData as any).income ?? 0,
+          expenses: (sumData as any).expenses ?? 0,
+          balance: ((sumData as any).income ?? 0) - ((sumData as any).expenses ?? 0),
+          savingsRate: (sumData as any).income > 0 ? (((sumData as any).income - (sumData as any).expenses) / (sumData as any).income) * 100 : 0,
+          transactionCount: 0,
+        });
+
+        const categoryArr = Object.entries(catData as Record<string, number>).map(([label, amount]) => ({
+          categoryId: label,
+          label,
+          amount,
+          color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+          percentage: 0
+        }));
+
+        const totalCat = categoryArr.reduce((acc, curr) => acc + curr.amount, 0);
+        categoryArr.forEach(c => {
+          c.percentage = totalCat > 0 ? Number(((c.amount / totalCat) * 100).toFixed(1)) : 0;
+        });
+
+        setCategories(categoryArr.sort((a,b) => b.amount - a.amount));
+
+        const monthlyArr = Object.entries(monData as Record<string, any>).map(([m, data]) => ({
+          month: m,
+          income: data.income ?? 0,
+          expenses: data.expenses ?? 0,
+          balance: (data.income ?? 0) - (data.expenses ?? 0)
+        })).slice(-6);
+        setMonthly(monthlyArr);
+
+      } catch (err) {
+        console.error('Failed to load reports', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadData();
+    return () => { isMounted = false; };
+  }, [currentMonth]);
 
   // Process monthly data for charts
   const monthlyChartData = useMemo(() => {

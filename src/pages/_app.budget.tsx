@@ -1,20 +1,15 @@
 import '../styles/animations.css';
 import { useState, useEffect } from 'react';
-import { type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from 'react-router';
-import { useLoaderData, useSearchParams, useNavigation, useFetcher } from 'react-router';
-import { requireSession } from '@app/lib/auth.server';
-import { BudgetCard } from '@app/components/finance/BudgetCard';
-import { BudgetForm } from '@app/components/finance/BudgetForm';
-import { Modal } from '@app/components/ui/Modal';
-import { Button } from '@app/components/ui/Button';
-import { Input } from '@app/components/ui/Input';
-import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
-import { Plus, Target, Calendar, TrendingUp, Wallet, AlertCircle } from 'lucide-react';
-import type { Budget, Category } from '@db/schema';
-import { listCategories } from '@server/lib/services/categories.server';
-import { listBudgetsWithSpending, deleteBudget, upsertBudget } from '@server/lib/services/budgets.server';
+import { useSearchParams } from 'react-router-dom';
+import { budgetsApi, categoriesApi } from '../api/client';
+import { type Budget, type Category } from '../types';
+import { Button, Input, Modal } from '../components/ui';
+import { BudgetCard } from '../components/finance/BudgetCard';
+import { BudgetForm } from '../components/finance/BudgetForm';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { Plus, Calendar, Target, TrendingUp, Wallet, AlertCircle } from 'lucide-react';
 
-export const meta: MetaFunction = () => {
+export const meta = () => {
   return [
     { title: 'Budget | Finance Tracker' },
     { name: 'description', content: 'Set and track your spending limits by category' },
@@ -28,63 +23,7 @@ interface BudgetWithSpending extends Budget {
   percentageUsed: number;
 }
 
-interface LoaderData {
-  budgets: BudgetWithSpending[];
-  categories: Category[];
-  month: string;
-}
 
-export async function loader({ request }: LoaderFunctionArgs): Promise<Response> {
-  const session = await requireSession(request);
-  const url = new URL(request.url);
-  const month = url.searchParams.get('month') || getCurrentMonth();
-
-  try {
-    const [budgets, categoriesData] = await Promise.all([
-      listBudgetsWithSpending(session.userId, month),
-      listCategories(),
-    ]);
-
-    return Response.json({ budgets, categories: categoriesData, month });
-  } catch (error) {
-    console.error('Budget loader error:', error);
-    return Response.json({ budgets: [], categories: [], month }, { status: 500 });
-  }
-}
-
-export async function action({ request }: ActionFunctionArgs): Promise<Response> {
-  const session = await requireSession(request);
-  const formData = await request.formData();
-  const intent = formData.get('intent') as string;
-
-  if (intent === 'create' || intent === 'update') {
-    try {
-      const budget = await upsertBudget({
-        userId: session.userId,
-        categoryId: formData.get('categoryId') as string,
-        limitAmount: formData.get('limitAmount') as string,
-        month: formData.get('month') as string,
-      });
-      return Response.json({ success: true, budget });
-    } catch (error) {
-      const err = error as { status?: number; message?: string };
-      return Response.json({ error: err.message || 'Failed to save budget' }, { status: err.status || 500 });
-    }
-  }
-
-  if (intent === 'delete') {
-    const id = formData.get('id') as string;
-    try {
-      await deleteBudget(id, session.userId);
-      return Response.json({ success: true });
-    } catch (error) {
-      const err = error as { status?: number; message?: string };
-      return Response.json({ error: err.message || 'Failed to delete budget' }, { status: err.status || 500 });
-    }
-  }
-
-  return Response.json({ error: 'Unknown intent' }, { status: 400 });
-}
 
 function getCurrentMonth(): string {
   return new Date().toISOString().slice(0, 7);
@@ -93,8 +32,8 @@ function getCurrentMonth(): string {
 function calculateSummary(budgets: BudgetWithSpending[]) {
   return budgets.reduce(
     (acc, budget) => {
-      const limit = parseFloat(budget.limitAmount);
-      const spent = parseFloat(budget.spent);
+      const limit = Number(budget.limitAmount);
+      const spent = Number(budget.spent);
       acc.totalBudgeted += limit;
       acc.totalSpent += spent;
       acc.totalRemaining += parseFloat(budget.remaining);
@@ -107,11 +46,46 @@ function calculateSummary(budgets: BudgetWithSpending[]) {
 }
 
 export default function BudgetPage() {
-  const { budgets, categories, month } = useLoaderData<LoaderData>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigation = useNavigation();
-  const isLoading = navigation.state === 'loading';
-  const fetcher = useFetcher();
+  const [isLoading, setIsLoading] = useState(true);
+  const [budgets, setBudgets] = useState<BudgetWithSpending[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const currentMonth = searchParams.get('month') || getCurrentMonth();
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    const loadData = async () => {
+      try {
+        const [budgetsData, categoriesData] = await Promise.all([
+          budgetsApi.list({ month: currentMonth }),
+          categoriesApi.list(),
+        ]);
+
+        if (isMounted) {
+          setBudgets(budgetsData as any);
+          setCategories(categoriesData as any);
+        }
+      } catch (err) {
+        console.error('Failed to load budget data', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadData();
+    return () => { isMounted = false; };
+  }, [currentMonth]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await budgetsApi.delete(id);
+      setBudgets(prev => prev.filter(b => b.id !== id));
+    } catch (err) {
+      console.error('Failed to delete budget', err);
+    }
+  };
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<BudgetWithSpending | null>(null);
@@ -127,7 +101,7 @@ export default function BudgetPage() {
     }
   }, [searchParams, setSearchParams]);
 
-  const currentMonth = searchParams.get('month') || getCurrentMonth();
+
   const summary = calculateSummary(budgets);
   const overallPercentage = summary.totalBudgeted > 0
     ? Math.round((summary.totalSpent / summary.totalBudgeted) * 100)
@@ -294,7 +268,7 @@ export default function BudgetPage() {
                       key={budget.id}
                       budget={budget}
                       onEdit={() => setEditingBudget(budget)}
-                      onDelete={() => fetcher.submit({ intent: 'delete', id: budget.id }, { method: 'POST' })}
+                      onDelete={() => handleDelete(budget.id)}
                     />
                   ))}
                 </div>

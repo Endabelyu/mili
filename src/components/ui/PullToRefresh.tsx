@@ -117,7 +117,7 @@ export function PullToRefresh({
   }, [state]);
 
   // Progress percentage (0-1)
-  const progress = Math.min(pullDistance / threshold, 1);
+  // const progress = Math.min(pullDistance / threshold, 1);
 
   return (
     <div

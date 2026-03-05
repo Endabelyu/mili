@@ -1,4 +1,4 @@
-import type { ReactNode, ComponentType } from 'react';
+import type { ComponentType } from 'react';
 import type { LucideProps } from 'lucide-react';
 import { Inbox } from 'lucide-react';
 import { Button } from './Button';

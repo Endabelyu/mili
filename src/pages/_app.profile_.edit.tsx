@@ -1,24 +1,23 @@
 import { useState } from 'react';
-import { type MetaFunction, type ActionFunctionArgs } from 'react-router';
-import { useLoaderData, useNavigate, useFetcher } from 'react-router';
-import { requireSession } from '@app/lib/auth.server';
-import { authClient } from '@app/lib/auth-client';
-import { Input } from '@app/components/ui/Input';
-import { Button } from '@app/components/ui/Button';
+import { type MetaFunction, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { authApi } from '../api/client';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 import { User, ArrowLeft, Check } from 'lucide-react';
 
 export const meta: MetaFunction = () => [
   { title: 'Edit Profil | Finance Tracker' },
 ];
 
-export async function loader({ request }: { request: Request }) {
-  const session = await requireSession(request);
-  return Response.json({ user: session.user });
-}
+
 
 export default function EditProfilePage() {
-  const { user } = useLoaderData<{ user: { name?: string | null; email: string } }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  
+  if (!user) return null;
+  
   const [name, setName] = useState(user.name ?? '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,13 +33,9 @@ export default function EditProfilePage() {
     setError('');
     setIsLoading(true);
     try {
-      const result = await authClient.updateUser({ name: trimmed });
-      if (result.error) {
-        setError(result.error.message ?? 'Gagal memperbarui profil.');
-      } else {
-        setSuccess(true);
-        setTimeout(() => navigate('/profile'), 1200);
-      }
+      await authApi.updateUser({ name: trimmed });
+      setSuccess(true);
+      setTimeout(() => navigate('/profile'), 1200);
     } catch {
       setError('Terjadi kesalahan. Coba lagi.');
     } finally {

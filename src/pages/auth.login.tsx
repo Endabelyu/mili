@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useSearchParams, Form, useActionData, useNavigation, redirect, type ClientActionFunctionArgs } from 'react-router';
-import { authClient } from '@app/lib/auth-client';
-import { Button } from '@app/components/ui/Button';
-import { Input } from '@app/components/ui/Input';
+import { authApi } from '../api/client';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 
 export async function clientAction({ request }: ClientActionFunctionArgs) {
@@ -15,18 +15,10 @@ export async function clientAction({ request }: ClientActionFunctionArgs) {
   }
 
   try {
-    const result = await authClient.signIn.email({
-      email,
-      password,
-    });
-    
-    if (result.error) {
-      return { error: result.error.message || 'Invalid email or password' };
-    }
-    
+    await authApi.login(email, password);
     return redirect('/');
-  } catch (err) {
-    return { error: 'An unexpected error occurred' };
+  } catch (err: any) {
+    return { error: err.message || 'An unexpected error occurred' };
   }
 }
 

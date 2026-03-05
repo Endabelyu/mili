@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { type LoaderFunctionArgs, type MetaFunction } from 'react-router';
-import { useLoaderData, useNavigate, Link } from 'react-router';
-import { requireSession } from '@app/lib/auth.server';
-import { signOut } from '@app/lib/auth-client';
+import { type MetaFunction, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import {
   User,
   LogOut,
@@ -17,10 +15,7 @@ export const meta: MetaFunction = () => [
   { title: 'Profil | Finance Tracker' },
 ];
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await requireSession(request);
-  return Response.json({ user: session.user });
-}
+
 
 interface SettingRowProps {
   icon: React.ElementType;
@@ -52,23 +47,27 @@ function SettingRow({ icon: Icon, label, description, onClick, href, danger }: S
 }
 
 export default function ProfilePage() {
-  const { user } = useLoaderData<{ user: { name: string; email: string; image?: string } }>();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isExporting, setIsExporting] = useState(false);
+
+  if (!user) return null;
 
   const initials = user.name
     ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
     : user.email[0].toUpperCase();
 
   const handleLogout = async () => {
-    await signOut();
+    await logout();
     navigate('/auth/login');
   };
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const response = await fetch('/api/export/transactions');
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/export/transactions', {
+        headers: { 'Authorization': `Bearer ${user.id}` } // just as an example, depends on BE auth
+      });
       if (!response.ok) throw new Error('Export failed');
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -93,7 +92,7 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-white/15 flex items-center justify-center flex-shrink-0">
             {user.image ? (
-              <img src={user.image} alt={user.name} className="w-full h-full rounded-2xl object-cover" />
+              <img src={user.image || undefined} alt={user.name || undefined} className="w-full h-full rounded-2xl object-cover" />
             ) : (
               <span className="text-2xl font-bold text-white">{initials}</span>
             )}

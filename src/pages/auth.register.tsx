@@ -1,55 +1,47 @@
 import { useState } from 'react';
-import { Link, Form, useActionData, useNavigation, redirect, type ClientActionFunctionArgs } from 'react-router';
-import { authClient } from '@app/lib/auth-client';
-import { Button } from '@app/components/ui/Button';
-import { Input } from '@app/components/ui/Input';
+import { Link, useNavigate } from 'react-router-dom';
+import { authApi } from '../api/client';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
 
-export async function clientAction({ request }: ClientActionFunctionArgs) {
-  const formData = await request.formData();
-  const name = String(formData.get('name') || '');
-  const email = String(formData.get('email') || '');
-  const password = String(formData.get('password') || '');
-  const confirmPassword = String(formData.get('confirm-password') || '');
-
-  if (!name || !email || !password || !confirmPassword) {
-    return { error: 'All fields are required' };
-  }
-
-  if (password !== confirmPassword) {
-    return { error: 'Passwords do not match' };
-  }
-  
-  if (password.length < 8) {
-    return { error: 'Password must be at least 8 characters' };
-  }
-
-  try {
-    const result = await authClient.signUp.email({
-      email,
-      password,
-      name,
-    });
-    
-    if (result.error) {
-      return { error: result.error.message || 'Failed to create account' };
-    }
-    
-    return redirect('/auth/login?registered=true');
-  } catch (err) {
-    return { error: 'An unexpected error occurred' };
-  }
-}
-
 export default function RegisterPage() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  
-  const actionData = useActionData<typeof clientAction>();
-  const navigation = useNavigation();
-  const isLoading = navigation.state !== 'idle';
-  
-  const error = actionData?.error;
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!name || !email || !password || !confirmPassword) {
+      setError('All fields are required');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await authApi.register(email, password, name);
+      navigate('/auth/login?registered=true');
+    } catch (err: any) {
+      setError(err?.body?.message || 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -62,7 +54,7 @@ export default function RegisterPage() {
             </Link>
           </p>
         </div>
-        
+
         {error && (
           <div className="rounded-md bg-red-50 p-4">
             <div className="flex">
@@ -73,108 +65,45 @@ export default function RegisterPage() {
             </div>
           </div>
         )}
-        
-        <Form method="post" className="mt-8 space-y-6">
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full name
-              </label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full name</label>
               <div className="mt-1 relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  className="pl-10"
-                  placeholder="John Doe"
-                />
+                <input id="name" type="text" required className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} />
               </div>
             </div>
-            
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
               <div className="mt-1 relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="pl-10"
-                  placeholder="you@example.com"
-                />
+                <input id="email" type="email" required className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
             </div>
-            
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
               <div className="mt-1 relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
-                  className="pl-10 pr-10"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
+                <input id="password" type={showPassword ? 'text' : 'password'} required className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
-            
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
-                Confirm password
-              </label>
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">Confirm password</label>
               <div className="mt-1 relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
-                  className="pl-10"
-                  placeholder="••••••••"
-                />
+                <input id="confirm-password" type={showPassword ? 'text' : 'password'} required className="block w-full pl-10 py-2 border border-gray-300 rounded-md" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
               </div>
             </div>
           </div>
-          
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
+          <button type="submit" disabled={isLoading} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
             {isLoading ? 'Creating account...' : 'Create account'}
-          </Button>
-          
-          <p className="text-xs text-gray-500 text-center">
-            By signing up, you agree to our{' '}
-            <Link to="/terms" className="text-gray-600 hover:text-gray-900 underline">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="text-gray-600 hover:text-gray-900 underline">
-              Privacy Policy
-            </Link>
-          </p>
-        </Form>
+          </button>
+        </form>
       </div>
     </div>
   );

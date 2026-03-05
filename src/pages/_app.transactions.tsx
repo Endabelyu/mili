@@ -1,122 +1,24 @@
 import '../styles/animations.css';
 import { useState, useEffect } from 'react';
-import { type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from 'react-router';
-import { useLoaderData, useSearchParams, useNavigation, useFetcher } from 'react-router';
-import { requireSession } from '@app/lib/auth.server';
-import { TransactionItem } from '@app/components/finance/TransactionItem';
-import { TransactionForm } from '@app/components/finance/TransactionForm';
-import { Modal } from '@app/components/ui/Modal';
-import { Button } from '@app/components/ui/Button';
-import { Input } from '@app/components/ui/Input';
-import { useKeyboardShortcuts } from '@app/hooks/useKeyboardShortcuts';
-import { Plus, Search, Filter, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
-import type { Transaction, Category } from '@app/types';
-import { listCategories } from '@server/lib/services/categories.server';
-import { listTransactions, deleteTransaction, createTransaction, updateTransaction } from '@server/lib/services/transactions.server';
+import { useSearchParams } from 'react-router-dom';
+import { transactionsApi, categoriesApi } from '../api/client';
+import { type Transaction, type Category } from '../types';
+import { TransactionItem } from '../components/finance/TransactionItem';
+import { TransactionForm } from '../components/finance/TransactionForm';
+import { Modal } from '../components/ui/Modal';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { Plus, Search, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 
-export const meta: MetaFunction = () => {
+export const meta = () => {
   return [
     { title: 'Transactions | Finance Tracker' },
     { name: 'description', content: 'View and manage your transactions' },
   ];
 };
 
-interface LoaderData {
-  transactions: Transaction[];
-  categories: Category[];
-  pagination: {
-    page: number;
-    totalPages: number;
-    total: number;
-  };
-}
 
-export async function loader({ request }: LoaderFunctionArgs): Promise<Response> {
-  const session = await requireSession(request);
-  const url = new URL(request.url);
-  const searchParams = url.searchParams;
-
-  const page = Number(searchParams.get('page') || '1');
-  const type = searchParams.get('type') as 'income' | 'expense' | undefined || undefined;
-  const category = searchParams.get('category') || undefined;
-  const month = searchParams.get('month') || undefined;
-  const search = searchParams.get('search') || undefined;
-
-  try {
-    const [transactionsData, categoriesData] = await Promise.all([
-      listTransactions({ userId: session.userId, page, type, category, month, search }),
-      listCategories(),
-    ]);
-
-    return Response.json({
-      transactions: transactionsData.items,
-      categories: categoriesData,
-      pagination: transactionsData.pagination,
-    });
-  } catch (error) {
-    console.error('Transactions loader error:', error);
-    return Response.json({
-      transactions: [],
-      categories: [],
-      pagination: { page: 1, totalPages: 1, total: 0, limit: 20 },
-    }, { status: 500 });
-  }
-}
-
-export async function action({ request }: ActionFunctionArgs): Promise<Response> {
-  const session = await requireSession(request);
-  const formData = await request.formData();
-  const intent = formData.get('intent') as string;
-
-  if (intent === 'create') {
-    try {
-      const transaction = await createTransaction({
-        userId: session.userId,
-        type: formData.get('type') as 'income' | 'expense',
-        amount: formData.get('amount') as string,
-        categoryId: formData.get('categoryId') as string,
-        description: formData.get('description') as string | undefined,
-        date: formData.get('date') as string,
-      });
-      return Response.json({ success: true, transaction });
-    } catch (error) {
-      const err = error as { status?: number; message?: string };
-      return Response.json({ error: err.message || 'Failed to create transaction' }, { status: err.status || 500 });
-    }
-  }
-
-  if (intent === 'update') {
-    const id = formData.get('id') as string;
-    if (!id) return Response.json({ error: 'Transaction ID required' }, { status: 400 });
-    
-    try {
-      const transaction = await updateTransaction(id, session.userId, {
-        type: formData.get('type') as 'income' | 'expense' | undefined,
-        amount: formData.get('amount') as string | undefined,
-        categoryId: formData.get('categoryId') as string | undefined,
-        description: formData.get('description') as string | undefined,
-        date: formData.get('date') as string | undefined,
-      });
-      return Response.json({ success: true, transaction });
-    } catch (error) {
-      const err = error as { status?: number; message?: string };
-      return Response.json({ error: err.message || 'Failed to update transaction' }, { status: err.status || 500 });
-    }
-  }
-
-  if (intent === 'delete') {
-    const id = formData.get('id') as string;
-    try {
-      await deleteTransaction(id, session.userId);
-      return Response.json({ success: true });
-    } catch (error) {
-      const err = error as { status?: number; message?: string };
-      return Response.json({ error: err.message || 'Failed to delete transaction' }, { status: err.status || 500 });
-    }
-  }
-
-  return Response.json({ error: 'Unknown intent' }, { status: 400 });
-}
 
 function calculateTotals(transactions: Transaction[]) {
   return transactions.reduce(
@@ -135,21 +37,56 @@ function getCurrentMonth(): string {
 }
 
 export default function TransactionsPage() {
-  const { transactions, categories, pagination } = useLoaderData<LoaderData>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigation = useNavigation();
-  const isLoading = navigation.state === 'loading';
-  const fetcher = useFetcher();
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
   
   const currentType = searchParams.get('type') || '';
   const currentCategory = searchParams.get('category') || '';
   const currentMonth = searchParams.get('month') || getCurrentMonth();
   const currentSearch = searchParams.get('search') || '';
-  
+  const page = Number(searchParams.get('page') || '1');
+
+  // Fetch data on parameters change
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    const loadData = async () => {
+      try {
+        const [transData, catData] = await Promise.all([
+          transactionsApi.list({
+            page,
+            type: currentType || undefined,
+            category: currentCategory || undefined,
+            month: searchParams.get('month') ?? undefined, // not default to currentMonth string? wait, we use current month if missing or not? The loader uses `|| undefined`. Let's just use `currentMonth`.
+            // Wait, we can pass exactly what's needed.
+            search: currentSearch || undefined,
+          } as any),
+          categoriesApi.list(),
+        ]);
+
+        if (isMounted) {
+          setTransactions((transData as any).items || transData);
+          setCategories(catData);
+          if ((transData as any).pagination) setPagination((transData as any).pagination);
+        }
+      } catch (err) {
+        console.error('Failed to load transactions', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadData();
+    return () => { isMounted = false; };
+  }, [page, currentType, currentCategory, searchParams.get('month'), currentSearch]);
   const totals = calculateTotals(transactions);
   const netAmount = totals.income - totals.expense;
   
@@ -197,17 +134,14 @@ export default function TransactionsPage() {
     setIsModalOpen(true);
   };
   
-  const handleDelete = (transaction: Transaction) => {
-    setDeletingTransaction(transaction);
-  };
-  
-  const confirmDelete = () => {
-    if (deletingTransaction) {
-      fetcher.submit(
-        { intent: 'delete', id: deletingTransaction.id },
-        { method: 'POST' }
-      );
-      setDeletingTransaction(null);
+  const handleDelete = async (transaction: Transaction) => {
+    if (window.confirm('Are you sure you want to delete this transaction?')) {
+      try {
+        await transactionsApi.delete(transaction.id);
+        setTransactions(prev => prev.filter(t => t.id !== transaction.id));
+      } catch (err) {
+        console.error('Failed to delete transaction', err);
+      }
     }
   };
   
@@ -329,14 +263,18 @@ export default function TransactionsPage() {
           </div>
         ) : (
           <>
-            {transactions.map((transaction) => (
-              <TransactionItem
-                key={transaction.id}
-                transaction={transaction}
-                onEdit={() => handleEdit(transaction)}
-                onDelete={() => handleDelete(transaction)}
-              />
-            ))}
+            {transactions.map((transaction) => {
+              const category = categories.find(c => c.id === transaction.categoryId);
+              return (
+                <TransactionItem
+                  key={transaction.id}
+                  transaction={transaction}
+                  category={category}
+                  onEdit={() => handleEdit(transaction)}
+                  onDelete={() => handleDelete(transaction)}
+                />
+              );
+            })}
             
             {/* Pagination */}
             {pagination.totalPages > 1 && (

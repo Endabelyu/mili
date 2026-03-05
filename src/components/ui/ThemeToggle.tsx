@@ -3,7 +3,7 @@ import { useTheme } from '@app/hooks/useTheme';
 import { useState, useRef, useEffect } from 'react';
 
 export function ThemeToggle() {
-  const { theme, effectiveTheme, setTheme, mounted } = useTheme();
+  const { theme, setTheme, mounted } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

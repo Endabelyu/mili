@@ -380,7 +380,7 @@ export function WalkthroughTrigger({
   variant = 'ghost',
   label = 'Start Tour',
 }: WalkthroughTriggerProps) {
-  const { startWalkthrough, steps } = useWalkthroughContext();
+  const { startWalkthrough } = useWalkthroughContext();
 
   const handleClick = () => {
     startWalkthrough();

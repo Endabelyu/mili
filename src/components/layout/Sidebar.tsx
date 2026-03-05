@@ -10,18 +10,10 @@ import {
   User,
   ChevronRight,
   LogOut,
-  Moon,
-  Sun,
-  Monitor,
-  HelpCircle,
-  Sparkles
 } from 'lucide-react';
-import { useSession, signOut } from '@app/lib/auth-client';
-import { useTheme } from '@app/hooks/useTheme';
-import { useWalkthrough } from '@app/hooks/useWalkthrough';
-import { defaultWalkthroughSteps } from '@app/lib/walkthrough-steps';
+import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -36,20 +28,14 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { data: session, isPending } = useSession();
-  const { theme, effectiveTheme, setTheme, mounted } = useTheme();
-  const { startWalkthrough } = useWalkthrough();
+  const { user, isLoading: isPending, logout } = useAuth();
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
 
-  const user = session?.user;
   const userInitials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
     : user?.email?.[0].toUpperCase() || '?';
-
-  const isDark = ['midnight-blue', 'warm-charcoal', 'deep-purple'].includes(effectiveTheme);
-  const ThemeIcon = mounted && isDark ? Sun : Moon;
 
   // Handle swipe to close
   useEffect(() => {
@@ -97,7 +83,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   }, [isOpen]);
 
   const handleSignOut = async () => {
-    await signOut();
+    await logout();
     onClose();
     navigate('/login');
   };
@@ -178,15 +164,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           ))}
 
           <div className="my-2 h-px bg-[#2C2D35]/8 dark:bg-white/5" />
-
-          {/* Help */}
-          <button
-            onClick={() => { onClose(); startWalkthrough(defaultWalkthroughSteps); }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-[#2C2D35]/60 dark:text-white/50 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35] dark:hover:bg-white/5 dark:hover:text-white transition-colors min-h-[48px]"
-          >
-            <HelpCircle className="w-5 h-5 flex-shrink-0" />
-            <span>Help & Tour</span>
-          </button>
 
           {/* Settings — navigate to /settings page */}
           <NavLink

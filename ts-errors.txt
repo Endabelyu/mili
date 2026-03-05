@@ -1,0 +1,37 @@
+src/components/finance/BudgetCard.tsx(2,26): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/components/finance/BudgetCard.tsx(24,9): error TS6133: 'remaining' is declared but its value is never read.
+src/components/finance/BudgetForm.tsx(45,9): error TS6133: 'selectedCategory' is declared but its value is never read.
+src/components/finance/StatCard.test.tsx(1,38): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+src/components/finance/StatCard.test.tsx(2,32): error TS2307: Cannot find module '@/lib/test-utils' or its corresponding type declarations.
+src/components/finance/StatCard.test.tsx(3,22): error TS6133: 'TrendingUp' is declared but its value is never read.
+src/components/finance/StatCard.test.tsx(3,34): error TS6133: 'TrendingDown' is declared but its value is never read.
+src/components/finance/StatCard.test.tsx(3,48): error TS6133: 'Minus' is declared but its value is never read.
+src/components/layout/Sidebar.tsx(15,3): error TS6133: 'Monitor' is declared but its value is never read.
+src/components/layout/Sidebar.tsx(17,3): error TS6133: 'Sparkles' is declared but its value is never read.
+src/components/layout/Sidebar.tsx(19,37): error TS2307: Cannot find module '@app/lib/auth-client' or its corresponding type declarations.
+src/components/layout/Sidebar.tsx(22,41): error TS2307: Cannot find module '@app/lib/walkthrough-steps' or its corresponding type declarations.
+src/components/layout/Sidebar.tsx(24,10): error TS6133: 'useState' is declared but its value is never read.
+src/components/layout/Sidebar.tsx(40,11): error TS6133: 'theme' is declared but its value is never read.
+src/components/layout/Sidebar.tsx(40,34): error TS6133: 'setTheme' is declared but its value is never read.
+src/components/layout/Sidebar.tsx(48,32): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/layout/Sidebar.tsx(52,9): error TS6133: 'ThemeIcon' is declared but its value is never read.
+src/components/ui/BottomSheet.tsx(140,9): error TS6133: 'sheetHeight' is declared but its value is never read.
+src/components/ui/Button.test.tsx(1,42): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+src/components/ui/Button.test.tsx(2,32): error TS2307: Cannot find module '@/lib/test-utils' or its corresponding type declarations.
+src/components/ui/EmptyState.tsx(1,15): error TS6196: 'ReactNode' is declared but never used.
+src/components/ui/MobileDatePicker.tsx(55,11): error TS6133: 'lastDay' is declared but its value is never read.
+src/components/ui/MobileDatePicker.tsx(123,9): error TS6133: 'handleClear' is declared but its value is never read.
+src/components/ui/PullToRefresh.tsx(120,9): error TS6133: 'progress' is declared but its value is never read.
+src/components/ui/Select.tsx(1,54): error TS6133: 'ReactNode' is declared but its value is never read.
+src/components/ui/ThemeToggle.tsx(6,18): error TS6133: 'effectiveTheme' is declared but its value is never read.
+src/components/ui/Toast.tsx(1,26): error TS6133: 'ReactNode' is declared but its value is never read.
+src/components/ui/Walkthrough.tsx(383,29): error TS6133: 'steps' is declared but its value is never read.
+src/pages/_app.dashboard.tsx(201,87): error TS2551: Property 'category' does not exist on type 'Transaction'. Did you mean 'categoryId'?
+src/pages/_app.dashboard.tsx(202,70): error TS2345: Argument of type 'string | Date' is not assignable to parameter of type 'string'.
+  Type 'Date' is not assignable to type 'string'.
+src/pages/_app.dashboard.tsx(202,86): error TS2551: Property 'category' does not exist on type 'Transaction'. Did you mean 'categoryId'?
+src/pages/_app.dashboard.tsx(206,69): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'number'.
+  Type 'string' is not assignable to type 'number'.
+src/pages/_app.reports.tsx(25,3): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/auth.login.tsx(18,11): error TS6133: 'result' is declared but its value is never read.
+src/pages/auth.register.tsx(3,1): error TS6133: 'useAuth' is declared but its value is never read.

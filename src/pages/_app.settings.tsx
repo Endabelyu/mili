@@ -1,7 +1,5 @@
-import { type LoaderFunctionArgs, type MetaFunction } from 'react-router';
-import { Link } from 'react-router';
-import { requireSession } from '@app/lib/auth.server';
-import { useTheme } from '@app/hooks/useTheme';
+import { type MetaFunction, Link } from 'react-router-dom';
+import { useTheme } from '../hooks/useTheme';
 import {
   Sun,
   Moon,
@@ -11,17 +9,12 @@ import {
   Download,
   ChevronRight,
   Globe,
-  Palette,
 } from 'lucide-react';
 
 export const meta: MetaFunction = () => [
   { title: 'Pengaturan | Finance Tracker' },
 ];
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  await requireSession(request);
-  return Response.json({});
-}
 
 function SectionHeader({ title }: { title: string }) {
   return (

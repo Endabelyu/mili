@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { transactionsApi, reportsApi, type Transaction } from '../api/client';
+import { transactionsApi, reportsApi } from '../api/client';
+import { type Transaction } from '../types';
 import {
-  Wallet, TrendingUp, TrendingDown, ArrowRight, Receipt, Plus,
+  TrendingUp, TrendingDown, ArrowRight, Receipt, Plus,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -19,12 +20,14 @@ interface SummaryStats {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+function formatCurrency(amount: number | string) {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
+function formatDate(dateStr: string | Date) {
+  const d = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+  return d.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
 }
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
@@ -197,8 +200,8 @@ export default function DashboardPage() {
                     {tx.type === 'income' ? '📈' : '📉'}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{tx.description || tx.category}</p>
-                    <p className="text-xs text-gray-500">{formatDate(tx.date)} • {tx.category}</p>
+                    <p className="text-sm font-medium truncate">{tx.description || tx.categoryId}</p>
+                    <p className="text-xs text-gray-500">{formatDate(tx.date)} • {tx.categoryId}</p>
                   </div>
                 </div>
                 <span className={`text-sm font-semibold whitespace-nowrap ml-4 ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>

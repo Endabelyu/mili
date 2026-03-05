@@ -42,8 +42,6 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
     return true; // Allow any category selection
   });
 
-  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
-
   const validateForm = (formData: FormData): boolean => {
     const newErrors: Record<string, string> = {};
 
