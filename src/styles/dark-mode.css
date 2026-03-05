@@ -1,0 +1,194 @@
+/* =========================================================
+   DARK MODE OVERRIDES  
+   Uses only standard CSS selectors — no Tailwind utility hacks.
+   Tailwind dark: variants handle component-level dark styles.
+   ========================================================= */
+
+/* Smooth theme transitions */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* ── DARK BODY ────────────────────────────────────────────── */
+html.dark body {
+  background-color: #13151C;
+  color: #CDD1E0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── DARK SIDEBAR ─────────────────────────────────────────── */
+html.dark aside {
+  background-color: #1A1C26 !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark header {
+  background-color: rgba(26, 28, 38, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ── DARK BOTTOM NAV ──────────────────────────────────────── */
+html.dark nav.fixed-bottom {
+  background-color: #1A1C26 !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ── DARK CARDS ───────────────────────────────────────────── */
+html.dark .card {
+  background-color: #1E2030 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #CDD1E0 !important;
+}
+
+html.dark .bg-white {
+  background-color: #1E2030 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #CDD1E0 !important;
+}
+
+/* ── DARK INPUTS ──────────────────────────────────────────── */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #252839 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #CDD1E0 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #5A607A !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: rgba(99, 114, 255, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(99, 114, 255, 0.12) !important;
+  outline: none;
+}
+
+/* ── DARK BUTTONS ─────────────────────────────────────────── */
+html.dark .btn-primary {
+  background-color: #6372FF !important;
+  color: white !important;
+  border: none !important;
+}
+
+html.dark .btn-secondary {
+  background-color: #252839 !important;
+  color: #CDD1E0 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .btn-ghost {
+  color: #8890A8 !important;
+}
+
+html.dark .btn-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #CDD1E0 !important;
+}
+
+/* ── DARK TEXT ────────────────────────────────────────────── */
+html.dark .text-gray-900,
+html.dark .text-slate-900 { color: #E8EAF6 !important; }
+html.dark .text-gray-800,
+html.dark .text-slate-800 { color: #CDD1E0 !important; }
+html.dark .text-gray-700,
+html.dark .text-slate-700 { color: #A0A8C0 !important; }
+html.dark .text-gray-600,
+html.dark .text-slate-600 { color: #8890A8 !important; }
+html.dark .text-gray-500,
+html.dark .text-slate-500 { color: #6870A0 !important; }
+html.dark .text-gray-400  { color: #5A607A !important; }
+
+/* ── DARK SENTIMENT COLORS ────────────────────────────────── */
+html.dark .text-green-600,
+html.dark .text-green-700 { color: #4ADE80 !important; }
+html.dark .text-red-600,
+html.dark .text-red-700   { color: #F87171 !important; }
+html.dark .text-blue-600,
+html.dark .text-blue-700  { color: #818CF8 !important; }
+html.dark .text-emerald-700 { color: #4ADE80 !important; }
+html.dark .text-rose-700    { color: #F87171 !important; }
+
+html.dark .bg-green-100,
+html.dark .bg-emerald-100,
+html.dark .bg-emerald-200 { background-color: rgba(74, 222, 128, 0.12)  !important; }
+html.dark .bg-rose-100,
+html.dark .bg-rose-200    { background-color: rgba(248, 113, 113, 0.12) !important; }
+html.dark .bg-blue-100,
+html.dark .bg-blue-200    { background-color: rgba(129, 140, 248, 0.12) !important; }
+html.dark .bg-amber-100   { background-color: rgba(251, 191, 36, 0.12)  !important; }
+html.dark .bg-gray-100    { background-color: rgba(255, 255, 255, 0.06) !important; }
+html.dark .bg-gray-50     { background-color: rgba(255, 255, 255, 0.04) !important; }
+html.dark .bg-black\/5    { background-color: rgba(255, 255, 255, 0.06) !important; }
+html.dark .bg-amber-50    { background-color: rgba(251, 191, 36, 0.08)  !important; }
+html.dark .bg-rose-50     { background-color: rgba(248, 113, 113, 0.08) !important; }
+html.dark .bg-orange-50   { background-color: rgba(251, 146, 60, 0.08)  !important; }
+html.dark .bg-emerald-50  { background-color: rgba(74, 222, 128, 0.08)  !important; }
+html.dark .bg-blue-50     { background-color: rgba(129, 140, 248, 0.08) !important; }
+
+/* ── DARK BORDERS ─────────────────────────────────────────── */
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-slate-200 { border-color: rgba(255, 255, 255, 0.06) !important; }
+
+html.dark .divide-y > * + * {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ── DARK MODALS ──────────────────────────────────────────── */
+html.dark [role="dialog"] {
+  background-color: #1E2030 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  color: #CDD1E0;
+}
+
+/* ── DARK SCROLLBARS ──────────────────────────────────────── */
+html.dark ::-webkit-scrollbar { width: 6px; height: 6px; }
+html.dark ::-webkit-scrollbar-track { background: transparent; }
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* ── DARK RECHARTS ────────────────────────────────────────── */
+html.dark .recharts-cartesian-grid-horizontal line,
+html.dark .recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark .recharts-text {
+  fill: #8890A8 !important;
+}
+
+/* ── THEME TOGGLE ─────────────────────────────────────────── */
+.theme-toggle {
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  color: #64748b;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+html.dark .theme-toggle {
+  color: #8890A8;
+}
+
+html.dark .theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #CDD1E0;
+}
