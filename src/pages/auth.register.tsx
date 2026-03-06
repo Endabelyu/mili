@@ -96,7 +96,7 @@ export default function RegisterPage() {
             <div>
               <label htmlFor="password" className="block text-sm font-medium opacity-90">Password</label>
               <div className="mt-1 relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-70" />
                 <Input id="password" name="password" type={showPassword ? 'text' : 'password'} required className="pl-10 pr-10" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity">
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -106,8 +106,11 @@ export default function RegisterPage() {
             <div>
               <label htmlFor="confirm-password" className="block text-sm font-medium opacity-90">Confirm password</label>
               <div className="mt-1 relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
-                <Input id="confirm-password" name="confirm-password" type={showPassword ? 'text' : 'password'} required className="pl-10" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-70" />
+                <Input id="confirm-password" name="confirm-password" type={showPassword ? 'text' : 'password'} required className="pl-10 pr-10" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity">
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
           </div>
