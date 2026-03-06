@@ -59,10 +59,10 @@ jobs:
       - name: Copy build to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || '22' }}
+          host: ${{ secrets.VPS_HOST_CONTABO }}
+          username: ${{ secrets.VPS_USERNAME_CONTABO }}
+          key: ${{ secrets.VPS_SSHKEY_CONTABO }}
+          port: ${{ secrets.VPS_PORT_CONTABO || '22' }}
           source: "dist/,docker-compose.yml,Dockerfile,nginx.conf"
           target: ${{ secrets.VPS_TARGET_DIR }}/web/
           overwrite: true
@@ -70,10 +70,10 @@ jobs:
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || '22' }}
+          host: ${{ secrets.VPS_HOST_CONTABO }}
+          username: ${{ secrets.VPS_USERNAME_CONTABO }}
+          key: ${{ secrets.VPS_SSHKEY_CONTABO }}
+          port: ${{ secrets.VPS_PORT_CONTABO || '22' }}
           script: |
             cd ${{ secrets.VPS_TARGET_DIR }}/web
             docker compose up -d --build --force-recreate
