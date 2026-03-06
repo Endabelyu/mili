@@ -76,5 +76,6 @@ jobs:
           port: ${{ secrets.VPS_PORT_CONTABO || '22' }}
           script: |
             cd ${{ secrets.VPS_TARGET_DIR }}/web
+            cp ../.env . 2>/dev/null || true
             docker compose up -d --build --force-recreate
             docker image prune -f
