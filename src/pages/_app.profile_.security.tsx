@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { type MetaFunction, useNavigate } from 'react-router-dom';
-import { authApi } from '../api/client';
+import { useAuth } from '../hooks/useAuth';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Shield, ArrowLeft, Check, Eye, EyeOff } from 'lucide-react';
@@ -10,6 +10,7 @@ export const meta: MetaFunction = () => [
 ];
 
 export default function SecurityPage() {
+  const { changePassword } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     currentPassword: '',
@@ -48,7 +49,7 @@ export default function SecurityPage() {
     setIsLoading(true);
     setError('');
     try {
-      await authApi.changePassword({
+      await changePassword({
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
         revokeOtherSessions: false,
@@ -56,8 +57,8 @@ export default function SecurityPage() {
       setSuccess(true);
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setTimeout(() => navigate('/profile'), 1500);
-    } catch {
-      setError('Terjadi kesalahan. Coba lagi.');
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan. Coba lagi.');
     } finally {
       setIsLoading(false);
     }

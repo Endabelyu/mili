@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { authApi } from '../api/client';
+import { authClient } from '../lib/auth-client';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
@@ -35,10 +35,19 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      await authApi.register(email, password, name);
+      const { error: signUpError } = await authClient.signUp.email({
+        email,
+        password,
+        name,
+      });
+      
+      if (signUpError) {
+        throw new Error(signUpError.message || 'An error occurred during sign up');
+      }
+      
       navigate('/auth/login?registered=true');
     } catch (err: any) {
-      setError(err?.body?.message || 'An unexpected error occurred');
+      setError(err.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }

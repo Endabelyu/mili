@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { authApi, type User } from '../api/client';
+import React, { createContext, useContext } from 'react';
+import { authClient } from '../lib/auth-client';
+
+interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+}
 
 interface AuthState {
   user: User | null;
@@ -8,41 +15,63 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  updateUser: (data: { name?: string; image?: string }) => Promise<void>;
+  changePassword: (data: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, isPending, refetch } = authClient.useSession();
 
-  const refresh = async () => {
-    try {
-      const data = await authApi.getMe();
-      setUser(data.user);
-    } catch {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    refresh();
-  }, []);
+  const user: User | null = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name ?? null,
+        image: session.user.image ?? null,
+      }
+    : null;
 
   const login = async (email: string, password: string) => {
-    await authApi.login(email, password);
-    await refresh();
+    const { error } = await authClient.signIn.email({ email, password });
+    if (error) throw new Error(error.message || 'Invalid email or password');
+    await refetch();
   };
 
   const logout = async () => {
-    await authApi.logout();
-    setUser(null);
+    await authClient.signOut();
+    await refetch();
+  };
+
+  const refresh = async () => {
+    await refetch();
+  };
+
+  const updateUser = async (data: { name?: string; image?: string }) => {
+    const { error } = await authClient.updateUser(data);
+    if (error) throw new Error(error.message || 'Failed to update user');
+    await refetch();
+  };
+
+  const changePassword = async (data: any) => {
+    const { error } = await authClient.changePassword(data);
+    if (error) throw new Error(error.message || 'Failed to change password');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, logout, refresh }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading: isPending,
+        isAuthenticated: !!user,
+        login,
+        logout,
+        refresh,
+        updateUser,
+        changePassword,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

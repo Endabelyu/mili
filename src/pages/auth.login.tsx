@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { authApi } from '../api/client';
+import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +26,7 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
     try {
-      await authApi.login(email, password);
+      await login(email, password);
       navigate('/');
     } catch (err: any) {
       setError(err?.body?.message || err?.message || 'Invalid email or password');

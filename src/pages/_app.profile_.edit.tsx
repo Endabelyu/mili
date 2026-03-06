@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { type MetaFunction, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { authApi } from '../api/client';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { User, ArrowLeft, Check } from 'lucide-react';
@@ -13,7 +12,7 @@ export const meta: MetaFunction = () => [
 
 
 export default function EditProfilePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   
   const [name, setName] = useState(user?.name ?? '');
@@ -33,11 +32,11 @@ export default function EditProfilePage() {
     setError('');
     setIsLoading(true);
     try {
-      await authApi.updateUser({ name: trimmed });
+      await updateUser({ name: trimmed });
       setSuccess(true);
       setTimeout(() => navigate('/profile'), 1200);
-    } catch {
-      setError('Terjadi kesalahan. Coba lagi.');
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan. Coba lagi.');
     } finally {
       setIsLoading(false);
     }

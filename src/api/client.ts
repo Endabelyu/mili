@@ -3,7 +3,11 @@
  * All requests include credentials (cookies) by default for session auth.
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3005';
+const _rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3005';
+// Guard: ensure BASE_URL always has a protocol so it's never treated as a relative path
+const BASE_URL = _rawApiUrl.startsWith('http://') || _rawApiUrl.startsWith('https://')
+  ? _rawApiUrl
+  : `https://${_rawApiUrl}`;
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;
@@ -58,35 +62,9 @@ export class ApiError extends Error {
   }
 }
 
-// ─── Auth ────────────────────────────────────────────────────────────────────
-export interface User {
-  id: string;
-  email: string;
-  name: string | null;
-  image: string | null;
-}
-
-export const authApi = {
-  getMe: () => request<{ user: User | null }>('/api/auth/me'),
-  login: (email: string, password: string) =>
-    request<{ user: User }>('/api/auth/sign-in/email', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
-  register: (email: string, password: string, name: string) =>
-    request<{ user: User }>('/api/auth/sign-up/email', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, name }),
-    }),
-  logout: () =>
-    request<void>('/api/auth/sign-out', { method: 'POST' }),
-  updateUser: (data: { name?: string; image?: string }) =>
-    request<{ user: User }>('/api/auth/update-user', { method: 'POST', body: JSON.stringify(data) }),
-  changePassword: (data: any) =>
-    request<void>('/api/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
-};
 
 import { type Transaction, type Budget, type Category } from '../types';
+
 
 export const transactionsApi = {
   list: (params?: { limit?: number; page?: number; type?: string; category?: string; search?: string }) =>
