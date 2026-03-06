@@ -82,14 +82,14 @@ export default function RegisterPage() {
             <div>
               <label htmlFor="name" className="block text-sm font-medium opacity-90">Full name</label>
               <div className="mt-1 relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-70" />
                 <Input id="name" name="name" type="text" required className="pl-10" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} />
               </div>
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium opacity-90">Email address</label>
               <div className="mt-1 relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-70" />
                 <Input id="email" name="email" type="email" required className="pl-10" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function RegisterPage() {
               <div className="mt-1 relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
                 <Input id="password" name="password" type={showPassword ? 'text' : 'password'} required className="pl-10 pr-10" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 transition-opacity">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity">
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>

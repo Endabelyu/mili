@@ -70,7 +70,7 @@ export default function LoginPage() {
                 Email address
               </label>
               <div className="mt-1 relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-70" />
                 <Input
                   id="email"
                   name="email"
@@ -90,7 +90,7 @@ export default function LoginPage() {
                 Password
               </label>
               <div className="mt-1 relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-70" />
                 <Input
                   id="password"
                   name="password"
@@ -105,7 +105,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 transition-opacity"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
