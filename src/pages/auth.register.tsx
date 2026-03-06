@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/client';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -43,13 +45,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 glass-card p-8 sm:p-10">
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create account</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-3xl font-bold tracking-tight">Create account</h1>
+          <p className="mt-2 text-sm opacity-80">
             Already have an account?{' '}
-            <Link to="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/auth/login" className="font-medium text-[var(--gradient-hero-start)] hover:text-[var(--gradient-hero-end)] transition-colors">
               Sign in
             </Link>
           </p>
@@ -69,40 +71,40 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full name</label>
+              <label htmlFor="name" className="block text-sm font-medium opacity-90">Full name</label>
               <div className="mt-1 relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input id="name" name="name" type="text" required className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <Input id="name" name="name" type="text" required className="pl-10" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} />
               </div>
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+              <label htmlFor="email" className="block text-sm font-medium opacity-90">Email address</label>
               <div className="mt-1 relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input id="email" name="email" type="email" required className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <Input id="email" name="email" type="email" required className="pl-10" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium opacity-90">Password</label>
               <div className="mt-1 relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input id="password" name="password" type={showPassword ? 'text' : 'password'} required className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <Input id="password" name="password" type={showPassword ? 'text' : 'password'} required className="pl-10 pr-10" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 transition-opacity">
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">Confirm password</label>
+              <label htmlFor="confirm-password" className="block text-sm font-medium opacity-90">Confirm password</label>
               <div className="mt-1 relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input id="confirm-password" name="confirm-password" type={showPassword ? 'text' : 'password'} required className="block w-full pl-10 py-2 border border-gray-300 rounded-md" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
+                <Input id="confirm-password" name="confirm-password" type={showPassword ? 'text' : 'password'} required className="pl-10" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
               </div>
             </div>
           </div>
-          <button type="submit" disabled={isLoading} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+          <Button type="submit" disabled={isLoading} className="w-full flex justify-center py-2.5 px-4">
             {isLoading ? 'Creating account...' : 'Create account'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

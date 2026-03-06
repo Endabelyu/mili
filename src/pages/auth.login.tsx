@@ -34,13 +34,13 @@ export default function LoginPage() {
   const error = actionData?.error;
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 glass-card p-8 sm:p-10">
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Sign in</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-3xl font-bold tracking-tight">Sign in</h1>
+          <p className="mt-2 text-sm opacity-80">
             Don&apos;t have an account?{' '}
-            <Link to="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/auth/register" className="font-medium text-[var(--gradient-hero-start)] hover:text-[var(--gradient-hero-end)] transition-colors">
               Sign up
             </Link>
           </p>
@@ -72,11 +72,11 @@ export default function LoginPage() {
         <Form method="post" className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium opacity-90">
                 Email address
               </label>
               <div className="mt-1 relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
                 <Input
                   id="email"
                   name="email"
@@ -90,11 +90,11 @@ export default function LoginPage() {
             </div>
             
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium opacity-90">
                 Password
               </label>
               <div className="mt-1 relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-50" />
                 <Input
                   id="password"
                   name="password"
@@ -107,7 +107,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 transition-opacity"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -121,15 +121,15 @@ export default function LoginPage() {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--card-bg)] text-[var(--gradient-hero-start)] focus:ring-[var(--gradient-hero-start)]"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+              <label htmlFor="remember-me" className="ml-2 block text-sm opacity-90">
                 Remember me
               </label>
             </div>
             
             <div className="text-sm">
-              <Link to="/auth/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link to="/auth/forgot-password" className="font-medium text-[var(--gradient-hero-start)] hover:text-[var(--gradient-hero-end)] transition-colors">
                 Forgot your password?
               </Link>
             </div>
