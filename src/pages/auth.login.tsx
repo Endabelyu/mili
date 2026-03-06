@@ -1,38 +1,39 @@
 import { useState } from 'react';
-import { Link, useSearchParams, Form, useActionData, useNavigation, redirect, type ClientActionFunctionArgs } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authApi } from '../api/client';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 
-export async function clientAction({ request }: ClientActionFunctionArgs) {
-  const formData = await request.formData();
-  const email = String(formData.get('email') || '');
-  const password = String(formData.get('password') || '');
-
-  if (!email || !password) {
-    return { error: 'Email and password are required' };
-  }
-
-  try {
-    await authApi.login(email, password);
-    return redirect('/');
-  } catch (err: any) {
-    return { error: err.message || 'An unexpected error occurred' };
-  }
-}
-
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
-  
-  const actionData = useActionData<typeof clientAction>();
-  const navigation = useNavigation();
-  const isLoading = navigation.state !== 'idle';
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   const registered = searchParams.get('registered') === 'true';
-  const error = actionData?.error;
-  
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Email and password are required');
+      return;
+    }
+    setError('');
+    setIsLoading(true);
+    try {
+      await authApi.login(email, password);
+      navigate('/');
+    } catch (err: any) {
+      setError(err?.body?.message || err?.message || 'Invalid email or password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 glass-card p-8 sm:p-10">
@@ -45,31 +46,23 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-        
+
         {registered && (
           <div className="rounded-md bg-green-50 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-sm font-medium text-green-800">
-                  Account created successfully! Please sign in.
-                </p>
-              </div>
-            </div>
+            <p className="text-sm font-medium text-green-800">
+              Account created successfully! Please sign in.
+            </p>
           </div>
         )}
-        
+
         {error && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="flex">
-              <AlertCircle className="h-5 w-5 text-red-400" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-red-800">{error}</p>
-              </div>
-            </div>
+          <div className="rounded-md bg-red-50 p-4 flex gap-2 items-start">
+            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+            <p className="text-sm font-medium text-red-800">{error}</p>
           </div>
         )}
-        
-        <Form method="post" className="mt-8 space-y-6">
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium opacity-90">
@@ -85,10 +78,12 @@ export default function LoginPage() {
                   required
                   className="pl-10"
                   placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium opacity-90">
                 Password
@@ -103,6 +98,8 @@ export default function LoginPage() {
                   required
                   className="pl-10 pr-10"
                   placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -114,7 +111,7 @@ export default function LoginPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -127,22 +124,18 @@ export default function LoginPage() {
                 Remember me
               </label>
             </div>
-            
-            <div className="text-sm">
-              <Link to="/auth/forgot-password" className="font-medium text-[var(--gradient-hero-start)] hover:text-[var(--gradient-hero-end)] transition-colors">
-                Forgot your password?
-              </Link>
-            </div>
+            <Link
+              to="/auth/forgot-password"
+              className="text-sm font-medium text-[var(--gradient-hero-start)] hover:text-[var(--gradient-hero-end)] transition-colors"
+            >
+              Forgot your password?
+            </Link>
           </div>
-          
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign in'}
           </Button>
-        </Form>
+        </form>
       </div>
     </div>
   );
