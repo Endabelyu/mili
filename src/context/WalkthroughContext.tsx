@@ -83,7 +83,77 @@ export function WalkthroughProvider({
   const [steps, setSteps] = useState<WalkthroughStep[]>(initialSteps);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
 
-  // Load persisted state from localStorage
+  const startWalkthrough = useCallback((newSteps?: WalkthroughStep[]) => {
+    if (newSteps && newSteps.length > 0) {
+      setSteps(newSteps);
+    }
+    setState({
+      isActive: true,
+      currentStepIndex: 0,
+      isCompleted: false,
+      isSkipped: false,
+    });
+  }, []);
+
+  const nextStep = useCallback(() => {
+    setState(prev => {
+      if (prev.currentStepIndex >= steps.length - 1) {
+        return {
+          ...prev,
+          isActive: false,
+          isCompleted: true,
+          isSkipped: false,
+        };
+      }
+      return {
+        ...prev,
+        currentStepIndex: prev.currentStepIndex + 1,
+      };
+    });
+  }, [steps.length]);
+
+  const prevStep = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      currentStepIndex: Math.max(0, prev.currentStepIndex - 1),
+    }));
+  }, []);
+
+  const skipWalkthrough = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      isActive: false,
+      isSkipped: true,
+    }));
+  }, []);
+
+  const completeWalkthrough = useCallback(() => {
+    setState({
+      isActive: false,
+      currentStepIndex: 0,
+      isCompleted: true,
+      isSkipped: false,
+    });
+  }, []);
+
+  const goToStep = useCallback((index: number) => {
+    setState(prev => ({
+      ...prev,
+      currentStepIndex: Math.max(0, Math.min(index, steps.length - 1)),
+    }));
+  }, [steps.length]);
+
+  const resetWalkthrough = useCallback(() => {
+    setState(DEFAULT_STATE);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  
+// Load persisted state from localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -159,75 +229,6 @@ export function WalkthroughProvider({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [state.isActive, state.currentStepIndex, steps.length]);
-
-  const startWalkthrough = useCallback((newSteps?: WalkthroughStep[]) => {
-    if (newSteps && newSteps.length > 0) {
-      setSteps(newSteps);
-    }
-    setState({
-      isActive: true,
-      currentStepIndex: 0,
-      isCompleted: false,
-      isSkipped: false,
-    });
-  }, []);
-
-  const nextStep = useCallback(() => {
-    setState(prev => {
-      if (prev.currentStepIndex >= steps.length - 1) {
-        return {
-          ...prev,
-          isActive: false,
-          isCompleted: true,
-          isSkipped: false,
-        };
-      }
-      return {
-        ...prev,
-        currentStepIndex: prev.currentStepIndex + 1,
-      };
-    });
-  }, [steps.length]);
-
-  const prevStep = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      currentStepIndex: Math.max(0, prev.currentStepIndex - 1),
-    }));
-  }, []);
-
-  const skipWalkthrough = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      isActive: false,
-      isSkipped: true,
-    }));
-  }, []);
-
-  const completeWalkthrough = useCallback(() => {
-    setState({
-      isActive: false,
-      currentStepIndex: 0,
-      isCompleted: true,
-      isSkipped: false,
-    });
-  }, []);
-
-  const goToStep = useCallback((index: number) => {
-    setState(prev => ({
-      ...prev,
-      currentStepIndex: Math.max(0, Math.min(index, steps.length - 1)),
-    }));
-  }, [steps.length]);
-
-  const resetWalkthrough = useCallback(() => {
-    setState(DEFAULT_STATE);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, []);
 
   const currentStep = steps[state.currentStepIndex] || null;
   const progress = steps.length > 0 ? ((state.currentStepIndex + 1) / steps.length) * 100 : 0;

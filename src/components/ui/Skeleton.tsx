@@ -38,7 +38,7 @@ export function ChartSkeleton({ height = 'h-64' }: { height?: string }) {
           <div
             key={i}
             className="flex-1 bg-gray-200 rounded-t"
-            style={{ height: `${Math.random() * 60 + 20}%` }}
+            style={{ height: `${(i * 17) % 50 + 30}%` }}
           />
         ))}
       </div>
@@ -97,7 +97,7 @@ export function TableRowSkeleton({ columns = 4 }: { columns?: number }) {
         <div
           key={i}
           className="h-4 bg-gray-200 rounded"
-          style={{ width: `${Math.random() * 20 + 15}%` }}
+          style={{ width: `${(i * 13) % 20 + 20}%` }}
         />
       ))}
     </div>

@@ -16,12 +16,12 @@ export default function EditProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  if (!user) return null;
-  
-  const [name, setName] = useState(user.name ?? '');
+  const [name, setName] = useState(user?.name ?? '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  if (!user) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
