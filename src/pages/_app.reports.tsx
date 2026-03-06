@@ -242,30 +242,25 @@ export default function ReportsPage() {
         if (!isMounted) return;
 
         setSummary({
-          income: (sumData as any).income ?? 0,
-          expenses: (sumData as any).expenses ?? 0,
-          balance: ((sumData as any).income ?? 0) - ((sumData as any).expenses ?? 0),
-          savingsRate: (sumData as any).income > 0 ? (((sumData as any).income - (sumData as any).expenses) / (sumData as any).income) * 100 : 0,
-          transactionCount: 0,
+          income: sumData.income ?? 0,
+          expenses: sumData.expenses ?? 0,
+          balance: (sumData.income ?? 0) - (sumData.expenses ?? 0),
+          savingsRate: sumData.income > 0 ? (((sumData.income - sumData.expenses) / sumData.income) * 100) : 0,
+          transactionCount: sumData.transactionCount ?? 0,
         });
 
-        const categoryArr = Object.entries(catData as Record<string, number>).map(([label, amount]) => ({
-          categoryId: label,
-          label,
-          amount,
-          color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
-          percentage: 0
-        }));
+        const categoryArr = [...catData];
 
         const totalCat = categoryArr.reduce((acc, curr) => acc + curr.amount, 0);
         categoryArr.forEach(c => {
           c.percentage = totalCat > 0 ? Number(((c.amount / totalCat) * 100).toFixed(1)) : 0;
+          if (!c.color) c.color = `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`;
         });
 
         setCategories(categoryArr.sort((a,b) => b.amount - a.amount));
 
-        const monthlyArr = Object.entries(monData as Record<string, any>).map(([m, data]) => ({
-          month: m,
+        const monthlyArr = monData.map(data => ({
+          month: data.month,
           income: data.income ?? 0,
           expenses: data.expenses ?? 0,
           balance: (data.income ?? 0) - (data.expenses ?? 0)
