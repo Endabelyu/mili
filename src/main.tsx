@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import App from './App';
 import './index.css';
+import { initSentry } from './lib/sentry';
+
+// Initialise Sentry before the React tree renders
+initSentry();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
