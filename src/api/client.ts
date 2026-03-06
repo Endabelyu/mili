@@ -3,8 +3,7 @@
  * All requests include credentials (cookies) by default for session auth.
  */
 
-const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3005';
-const BASE_URL = rawApiUrl.startsWith('http') ? rawApiUrl : `https://${rawApiUrl}`;
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3005';
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;
