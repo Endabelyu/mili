@@ -64,8 +64,8 @@ export default function BudgetPage() {
         ]);
 
         if (isMounted) {
-          setBudgets(budgetsData as any);
-          setCategories(categoriesData as any);
+          setBudgets(budgetsData as BudgetWithSpending[]);
+          setCategories(categoriesData);
         }
       } catch (err) {
         console.error('Failed to load budget data', err);

@@ -66,7 +66,7 @@ export default function ProfilePage() {
     setIsExporting(true);
     try {
       const response = await fetch(import.meta.env.VITE_API_URL + '/api/export/transactions', {
-        headers: { 'Authorization': `Bearer ${user.id}` } // just as an example, depends on BE auth
+        credentials: 'include'
       });
       if (!response.ok) throw new Error('Export failed');
       const blob = await response.blob();

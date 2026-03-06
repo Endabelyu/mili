@@ -80,8 +80,8 @@ export const authApi = {
     }),
   logout: () =>
     request<void>('/api/auth/sign-out', { method: 'POST' }),
-  updateUser: (data: { name: string }) =>
-    request<{ user: User }>('/api/auth/profile', { method: 'PUT', body: JSON.stringify(data) }),
+  updateUser: (data: { name?: string; image?: string }) =>
+    request<{ user: User }>('/api/auth/update-user', { method: 'POST', body: JSON.stringify(data) }),
   changePassword: (data: any) =>
     request<void>('/api/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
 };
@@ -89,9 +89,9 @@ export const authApi = {
 import { type Transaction, type Budget, type Category } from '../types';
 
 export const transactionsApi = {
-  list: (params?: { limit?: number; offset?: number; type?: string; category?: string }) =>
-    request<Transaction[]>('/api/transactions', { params }),
-  create: (data: Omit<Transaction, 'id' | 'userId' | 'createdAt'>) =>
+  list: (params?: { limit?: number; page?: number; type?: string; category?: string; search?: string }) =>
+    request<{ items: Transaction[], pagination: { page: number; limit: number; total: number; totalPages: number } }>('/api/transactions', { params }),
+  create: (data: Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) =>
     request<Transaction>('/api/transactions', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Transaction>) =>
     request<Transaction>(`/api/transactions/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -101,7 +101,8 @@ export const transactionsApi = {
 
 // ─── Budgets ──────────────────────────────────────────────────────────────────
 export const budgetsApi = {
-  list: (params?: { month?: string }) => request<Budget[]>('/api/budgets', { params }),
+  list: (params?: { month?: string }) => 
+    request<{ items: Budget[] }>('/api/budgets', { params }).then(res => res.items),
   create: (data: Omit<Budget, 'id' | 'userId' | 'createdAt'>) =>
     request<Budget>('/api/budgets', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Budget>) =>
@@ -112,15 +113,15 @@ export const budgetsApi = {
 
 // ─── Reports ──────────────────────────────────────────────────────────────────
 export const reportsApi = {
-  summary: (params?: { from?: string; to?: string }) =>
-    request<Record<string, number>>('/api/reports/summary', { params }),
-  byCategory: (params?: { from?: string; to?: string }) =>
-    request<Record<string, number>>('/api/reports/by-category', { params }),
-  monthly: (params?: { year?: number }) =>
-    request<Record<string, number>>('/api/reports/monthly', { params }),
+  summary: (params?: { month?: string }) =>
+    request<{ income: number, expenses: number, balance: number, savingsRate: number, transactionCount: number }>('/api/reports/summary', { params }),
+  byCategory: (params?: { month?: string }) =>
+    request<Array<{ categoryId: string, label: string, color: string, amount: number, percentage: number }>>('/api/reports/by-category', { params }),
+  monthly: (params?: { months?: number }) =>
+    request<Array<{ month: string, income: number, expenses: number, balance: number }>>('/api/reports/monthly', { params }),
 };
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 export const categoriesApi = {
-  list: () => request<Category[]>('/api/categories'),
+  list: () => request<{ items: Category[] }>('/api/categories').then(res => res.items),
 };

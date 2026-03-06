@@ -57,32 +57,29 @@ export default function DashboardPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const now = new Date();
-        const fromISO = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-        const toISO = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
-
         const [txns, summaryData, monthly] = await Promise.all([
           transactionsApi.list({ limit: 5 }),
-          reportsApi.summary({ from: fromISO, to: toISO }),
+          reportsApi.summary(),
           reportsApi.monthly(),
         ]);
 
-        setRecentTransactions(txns);
+        setRecentTransactions(txns?.items || []);
 
-        const income = (summaryData as any).income ?? 0;
-        const expenses = (summaryData as any).expenses ?? 0;
+        const income = summaryData?.income ?? 0;
+        const expenses = summaryData?.expenses ?? 0;
         setSummary({
           income,
           expenses,
           balance: income - expenses,
           savingsRate: income > 0 ? Math.round(((income - expenses) / income) * 100) : 0,
-          transactionCount: txns.length,
+          transactionCount: txns?.pagination?.total ?? 0,
         });
 
-        // Transform monthly map into array for recharts
+        // Transform monthly array for recharts
+        const currentMonthly = Array.isArray(monthly) ? monthly : [];
         setMonthlyData(
-          Object.entries(monthly as Record<string, any>).map(([month, v]: [string, any]) => ({
-            month,
+          currentMonthly.map((v: any) => ({
+            month: v.month,
             income: v.income ?? 0,
             expenses: v.expenses ?? 0,
           }))

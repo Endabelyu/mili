@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useFetcher } from 'react-router';
 import { Button, Input } from '@app/components/ui';
 import { Loader2, DollarSign, Tag, Calendar, Target } from 'lucide-react';
+import { budgetsApi } from '@app/api/client';
 import type { Budget, Category } from '@app/types';
 
 interface BudgetWithSpending extends Budget {
@@ -20,8 +20,7 @@ interface BudgetFormProps {
 }
 
 export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCancel }: BudgetFormProps) {
-  const fetcher = useFetcher();
-  const isSubmitting = fetcher.state !== 'idle';
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!budget?.id;
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -64,26 +63,31 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
     if (!validateForm(formData)) return;
 
-    const data = {
-      intent: isEditing ? 'update' : 'create',
-      id: budget?.id || '',
-      categoryId: formData.get('categoryId') as string,
-      limitAmount: formData.get('limitAmount') as string,
-      month: formData.get('month') as string,
-    };
+    setIsSubmitting(true);
+    try {
+      const categoryId = formData.get('categoryId') as string;
+      const limitAmount = formData.get('limitAmount') as string;
+      const month = formData.get('month') as string;
 
-    fetcher.submit(data, {
-      method: 'POST',
-      encType: 'application/json',
-    });
+      if (isEditing && budget?.id) {
+        await budgetsApi.update(budget.id, { limitAmount });
+      } else {
+        await budgetsApi.create({ categoryId, limitAmount, month });
+      }
 
-    onSuccess();
+      onSuccess();
+    } catch (err) {
+      console.error('Failed to save budget', err);
+      setErrors({ form: 'Failed to save budget. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

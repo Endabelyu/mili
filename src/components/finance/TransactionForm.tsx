@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useFetcher } from 'react-router';
 import { Button, Input } from '@app/components/ui';
 import { Loader2, DollarSign, Calendar, Tag, FileText, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { transactionsApi } from '@app/api/client';
 import type { Transaction, Category } from '@app/types';
 
 interface TransactionFormProps {
@@ -12,8 +12,7 @@ interface TransactionFormProps {
 }
 
 export function TransactionForm({ transaction, categories, onSuccess, onCancel }: TransactionFormProps) {
-  const fetcher = useFetcher();
-  const isSubmitting = fetcher.state !== 'idle';
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!transaction;
 
   const [type, setType] = useState<'income' | 'expense'>((transaction?.type as 'income' | 'expense') || 'expense');
@@ -46,30 +45,33 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
     if (!validateForm(formData)) return;
 
-    const data: Record<string, string> = {
-      intent: isEditing ? 'update' : 'create',
-      type: formData.get('type') as string,
-      amount: formData.get('amount') as string,
-      categoryId: formData.get('categoryId') as string,
-      description: (formData.get('description') as string) || '',
-      date: formData.get('date') as string,
-    };
+    setIsSubmitting(true);
+    try {
+      const type = formData.get('type') as 'income' | 'expense';
+      const amount = formData.get('amount') as string;
+      const categoryId = formData.get('categoryId') as string;
+      const description = (formData.get('description') as string) || '';
+      const date = formData.get('date') as string;
 
-    if (isEditing && transaction?.id) {
-      data.id = transaction.id;
+      if (isEditing && transaction?.id) {
+        await transactionsApi.update(transaction.id, { type, amount, categoryId, description, date });
+      } else {
+        await transactionsApi.create({ type, amount, categoryId, description, date });
+      }
+
+      onSuccess();
+    } catch (err) {
+      console.error('Failed to save transaction', err);
+      setErrors({ form: 'Failed to save transaction. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    fetcher.submit(data, {
-      method: 'POST',
-    });
-
-    onSuccess();
   };
 
   const today = new Date().toISOString().split('T')[0];

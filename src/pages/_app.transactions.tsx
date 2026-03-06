@@ -43,6 +43,7 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [refreshKey, setRefreshKey] = useState(0);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -73,9 +74,9 @@ export default function TransactionsPage() {
         ]);
 
         if (isMounted) {
-          setTransactions((transData as any).items || transData);
+          setTransactions(transData.items);
           setCategories(catData);
-          if ((transData as any).pagination) setPagination((transData as any).pagination);
+          if (transData.pagination) setPagination(transData.pagination);
         }
       } catch (err) {
         console.error('Failed to load transactions', err);
@@ -86,7 +87,7 @@ export default function TransactionsPage() {
 
     loadData();
     return () => { isMounted = false; };
-  }, [page, currentType, currentCategory, searchParams.get('month'), currentSearch]);
+  }, [page, currentType, currentCategory, searchParams.get('month'), currentSearch, refreshKey]);
   const totals = calculateTotals(transactions);
   const netAmount = totals.income - totals.expense;
   
@@ -135,13 +136,11 @@ export default function TransactionsPage() {
   };
   
   const handleDelete = async (transaction: Transaction) => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
-      try {
-        await transactionsApi.delete(transaction.id);
-        setTransactions(prev => prev.filter(t => t.id !== transaction.id));
-      } catch (err) {
-        console.error('Failed to delete transaction', err);
-      }
+    try {
+      await transactionsApi.delete(transaction.id);
+      setTransactions(prev => prev.filter(t => t.id !== transaction.id));
+    } catch (err) {
+      console.error('Failed to delete transaction', err);
     }
   };
   
@@ -319,6 +318,7 @@ export default function TransactionsPage() {
           onSuccess={() => {
             setIsModalOpen(false);
             setEditingTransaction(null);
+            setRefreshKey(k => k + 1);
           }}
           onCancel={() => {
             setIsModalOpen(false);

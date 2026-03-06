@@ -1,4 +1,4 @@
-import { useFetcher } from 'react-router';
+import { useState } from 'react';
 import { ArrowUpRight, ArrowDownRight, Edit2, Trash2, Loader2 } from 'lucide-react';
 import type { Transaction, Category } from '@app/types';
 
@@ -58,19 +58,22 @@ const getCategoryBadgeStyle = (categoryLabel?: string) => {
 };
 
 export function TransactionItem({ transaction, category, onEdit, onDelete, style }: TransactionItemProps) {
-  const fetcher = useFetcher();
-  const isDeleting = fetcher.state !== 'idle';
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const isIncome = transaction.type === 'income';
   const Icon = isIncome ? ArrowUpRight : ArrowDownRight;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this transaction?')) return;
 
-    fetcher.submit(
-      { intent: 'delete', id: transaction.id },
-      { method: 'POST' }
-    );
+    if (onDelete) {
+      setIsDeleting(true);
+      try {
+        await onDelete();
+      } finally {
+        setIsDeleting(false);
+      }
+    }
   };
 
   return (
@@ -162,11 +165,7 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (onDelete) {
-                onDelete();
-              } else {
-                handleDelete();
-              }
+              handleDelete();
             }}
             disabled={isDeleting}
             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
