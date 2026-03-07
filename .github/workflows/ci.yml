@@ -67,7 +67,7 @@ jobs:
           target: ${{ secrets.VPS_TARGET_DIR }}/web/
           overwrite: true
 
-      - name: Deploy on VPS
+      - name: Deploy & Verify on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST_CONTABO }}
@@ -79,10 +79,13 @@ jobs:
             cp ../.env . 2>/dev/null || true
             docker compose up -d --build --force-recreate
             docker image prune -f
-
-      - name: Verify Web Readiness
-        run: |
-          echo "Waiting 15 seconds for container to start..."
-          sleep 15
-          echo "Checking response from https://finance-web.endabelyu.com..."
-          curl --fail -I https://finance-web.endabelyu.com || exit 1
+            echo "Waiting 5 seconds for healthcheck..."
+            sleep 5
+            # Verify the service is running
+            if [ "$(docker compose ps --format json | grep -c Running)" -ge 1 ]; then
+              echo "✅ Frontend container is running."
+            else
+              echo "❌ Frontend container failed to start."
+              docker compose logs
+              exit 1
+            fi

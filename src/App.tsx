@@ -47,7 +47,7 @@ export default function App() {
             </p>
             <div className="bg-slate-800 p-4 rounded-lg border border-slate-700 w-full max-w-lg mb-6 overflow-auto">
               <code className="text-sm font-mono text-rose-400">
-                {(error instanceof Error ? error.message : String(error)) || 'Unknown render error'}
+                {error instanceof Error ? error.message : String(error)}
               </code>
             </div>
             <button
