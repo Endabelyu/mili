@@ -115,8 +115,8 @@ export function Header({ onMenuClick, title }: HeaderProps) {
       </header>
 
       {/* Desktop Header */}
-      <header className="hidden lg:flex items-center justify-between h-16 px-8 bg-white dark:bg-[#1A1C26] border-b-2 border-black/5 dark:border-white/5">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{pageTitle}</h1>
+      <header className="hidden lg:flex items-center justify-between h-20 px-8 bg-transparent border-b border-[var(--card-border)] backdrop-blur-md sticky top-0 z-20">
+        <h1 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">{pageTitle}</h1>
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
@@ -130,10 +130,10 @@ export function Header({ onMenuClick, title }: HeaderProps) {
 
           <Link
             to="/transactions/new"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors shadow-sm shadow-blue-600/20"
+            className="btn-primary flex items-center gap-2 px-5 py-2.5 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all text-sm font-bold"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Transaction</span>
+            <Plus className="w-5 h-5" />
+            <span>Tambah Transaksi</span>
           </Link>
         </div>
       </header>

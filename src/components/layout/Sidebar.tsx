@@ -106,19 +106,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         ref={sidebarRef}
         className={`
           fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw]
-          bg-white dark:bg-[#1A1C26]
-          border-r-2 border-[#2C2D35]/10 dark:border-white/5
-          shadow-2xl shadow-black/10
+          bg-[var(--app-bg-start)] text-[var(--text-primary)]
+          border-r-2 border-[var(--card-border)]
+          shadow-2xl shadow-black/20
           transform transition-transform duration-300 ease-out
           flex flex-col
           lg:hidden
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        {/* User Profile Section */}
-        <div className="p-5 bg-[#2C2D35] dark:bg-[#13151C]">
-          <div className="flex items-start justify-between mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-white font-bold text-lg">
+        <div className="p-6 bg-[var(--text-primary)]/5 border-b border-[var(--card-border)]">
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xl shadow-lg">
               {user?.image ? (
                 <img src={user.image} alt={user.name || user.email} className="w-full h-full rounded-2xl object-cover" />
               ) : (
@@ -127,16 +126,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
+              className="p-2 rounded-xl bg-white/5 text-white/50 hover:bg-white/10 hover:text-white transition-colors"
               aria-label="Close menu"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-sm font-semibold text-white truncate">
+          <p className="text-base font-bold text-[var(--text-primary)] truncate">
             {isPending ? '...' : (user?.name || user?.email || 'Guest')}
           </p>
-          <p className="text-xs text-white/50 truncate">
+          <p className="text-xs text-[var(--text-secondary)] truncate">
             {user?.email && user.name ? user.email : ''}
           </p>
         </div>
@@ -163,7 +162,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </NavLink>
           ))}
 
-          <div className="my-2 h-px bg-[#2C2D35]/8 dark:bg-white/5" />
+          <div className="my-3 h-px bg-[var(--card-border)]" />
 
           {/* Settings — navigate to /settings page */}
           <NavLink
@@ -206,9 +205,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 h-screen bg-white border-r-2 border-[#2C2D35]/10 fixed left-0 top-0">
+      <aside className="hidden lg:flex flex-col w-64 h-screen bg-[var(--app-bg-start)] text-[var(--text-primary)] border-r-2 border-[var(--card-border)] fixed left-0 top-0">
         {/* Logo */}
-        <div className="p-6 border-b-2 border-[#2C2D35]/10">
+        <div className="p-8 border-b-2 border-[var(--card-border)]">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#2C2D35] flex items-center justify-center">
               <Wallet className="w-5 h-5 text-white" />
@@ -230,8 +229,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               className={({ isActive }) => `
                 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 min-h-[48px]
                 ${isActive
-                  ? 'bg-[#2C2D35] text-white'
-                  : 'text-[#2C2D35]/60 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35]'
+                  ? 'btn-primary shadow-lg'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--text-primary)]/5 hover:text-[var(--text-primary)]'
                 }
               `}
             >
@@ -247,7 +246,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             to="/profile"
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] ${
-                isActive ? 'bg-[#2C2D35] text-white' : 'text-[#2C2D35]/60 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35]'
+                isActive ? 'btn-primary shadow-lg' : 'text-[var(--text-secondary)] hover:bg-[var(--text-primary)]/5 hover:text-[var(--text-primary)]'
               }`
             }
           >
