@@ -51,10 +51,10 @@ export function Header({ onMenuClick, title }: HeaderProps) {
 
   return (
     <>
-      {/* Mobile Header */}
+      {/* Mobile Header - Hidden as requested to use bottom nav only */}
       <header
         className={`
-          fixed top-0 left-0 right-0 z-30 lg:hidden
+          fixed top-0 left-0 right-0 z-30 hidden
           transition-all duration-300 ease-out
           ${isVisible ? 'translate-y-0' : '-translate-y-full'}
           ${isScrolled

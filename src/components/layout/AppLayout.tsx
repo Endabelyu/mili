@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { Sidebar } from './Sidebar';
+import { Header } from './Header';
 import { BottomNav } from './BottomNav';
 import { InstallPrompt, OfflineIndicator, UpdatePrompt } from '@app/components/pwa';
 import type { ReactNode } from 'react';
@@ -28,17 +29,20 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-transparent text-[#2C2D35] dark:text-gray-100 selection:bg-[#2C2D35]/20 flex flex-col relative w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[#2C2D35] dark:text-gray-100 selection:bg-[#2C2D35]/20 flex flex-col relative w-full overflow-x-hidden">
       {/* Main Sidebar Component (Handles both Mobile and Desktop internally) */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* App Shell */}
       <div className="lg:ml-64 flex flex-col min-h-screen w-full relative">
+        {/* Top Header */}
+        <Header onMenuClick={() => setIsSidebarOpen(true)} />
+
         {/* Main Content */}
         <main
           className="
             flex-1 w-full
-            pt-2
+            pt-0
             pb-32 lg:pb-8
           "
         >
