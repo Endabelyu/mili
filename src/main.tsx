@@ -9,6 +9,10 @@ import { initSentry } from './lib/sentry';
 // Initialise Sentry before the React tree renders
 initSentry();
 
+// Initialize PostHog for Analytics and Web Vitals
+import { initAnalytics } from './lib/analytics';
+initAnalytics();
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
