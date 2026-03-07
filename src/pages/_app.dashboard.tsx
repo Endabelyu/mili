@@ -9,6 +9,7 @@ import {
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { formatCurrency, formatDate } from '../lib/utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface SummaryStats {
@@ -17,17 +18,6 @@ interface SummaryStats {
   balance: number;
   savingsRate: number;
   transactionCount: number;
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function formatCurrency(amount: number | string) {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
-}
-
-function formatDate(dateStr: string | Date) {
-  const d = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
-  return d.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
 }
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
@@ -102,20 +92,24 @@ export default function DashboardPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-[var(--text-secondary)] flex items-center gap-1">
-            Selamat pagi <span className="text-lg">👋</span>
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-wide uppercase opacity-80">
+            Selamat pagi <span className="text-base grayscale-[0.5]">👋</span>
           </p>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] mt-0.5">{firstName}</h1>
+          <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">
+            {firstName}
+          </h1>
         </div>
         <Link to="/profile" className="w-12 h-12 rounded-full glass-card flex items-center justify-center text-2xl shadow-inner cursor-pointer hover:border-[var(--text-primary)]/30 transition-colors">
           😎
         </Link>
       </div>
 
-      {/* Hero Card */}
       {summary && (
-        <div className="relative overflow-hidden rounded-[2rem] p-6 text-white shadow-2xl shadow-blue-500/20 bg-gradient-to-br from-[var(--gradient-hero-start)] to-[var(--gradient-hero-end)]">
+        <div className="relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-xl shadow-black/20 bg-gradient-to-br from-[var(--gradient-hero-start)] to-[var(--gradient-hero-end)] group transition-all duration-300">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <TrendingUp className="w-32 h-32 rotate-12" />
+          </div>
           <div className="relative z-10">
             <p className="text-[10px] font-bold tracking-widest uppercase text-white/80 mb-1">Total Saldo</p>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{formatCurrency(summary.balance)}</h2>
@@ -177,14 +171,17 @@ export default function DashboardPage() {
           </Link>
         </div>
         {recentTransactions.length === 0 ? (
-          <div className="glass-card p-6 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-gray-100 flex items-center justify-center">
-              <Receipt className="w-6 h-6 text-gray-400" />
+          <div className="glass-card p-10 text-center border-dashed border-2 border-[var(--text-primary)]/10">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-[var(--text-primary)]/5 flex items-center justify-center">
+              <Receipt className="w-8 h-8 text-[var(--text-secondary)]" />
             </div>
-            <h4 className="text-sm font-medium mb-1">No transactions yet</h4>
+            <h4 className="text-base font-bold mb-1 opacity-90">Belum ada transaksi</h4>
+            <p className="text-sm text-[var(--text-secondary)] mb-6 max-w-[200px] mx-auto">
+              Mulai catat pengeluaran dan pemasukan Anda di sini.
+            </p>
             <Link to="/transactions">
-              <button className="mt-2 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1.5 mx-auto">
-                <Plus className="w-4 h-4" /> Add Transaction
+              <button className="btn-primary px-8 py-3 rounded-2xl text-sm w-full sm:w-auto">
+                <Plus className="w-5 h-5" /> Tambah Transaksi
               </button>
             </Link>
           </div>

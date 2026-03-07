@@ -7,7 +7,7 @@ import { TransactionItem } from '../components/finance/TransactionItem';
 import { TransactionForm } from '../components/finance/TransactionForm';
 import { Modal } from '../components/ui/Modal';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
+import { formatCurrency } from '../lib/utils';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { Plus, Search, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 
@@ -172,78 +172,54 @@ export default function TransactionsPage() {
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="glass-card p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-emerald-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[var(--text-secondary)]">Income</p>
-              <p className="text-xl font-bold text-[var(--text-primary)]">${totals.income.toFixed(2)}</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card p-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
-              <TrendingDown className="w-5 h-5 text-rose-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[var(--text-secondary)]">Expenses</p>
-              <p className="text-xl font-bold text-[var(--text-primary)]">${totals.expense.toFixed(2)}</p>
+        {[
+          { label: 'Pemasukan', amount: totals.income, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+          { label: 'Pengeluaran', amount: totals.expense, icon: TrendingDown, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+          { label: 'Selisih', amount: Math.abs(netAmount), icon: Wallet, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+        ].map((stat) => (
+          <div key={stat.label} className="glass-card group hover:bg-white/[0.04] transition-all p-5">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] opacity-80">{stat.label}</p>
+                <p className="text-xl font-extrabold text-[var(--text-primary)] mt-0.5">{formatCurrency(stat.amount)}</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="glass-card p-5">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-[var(--text-primary)]/10`}>
-              <Wallet className={`w-5 h-5 text-[var(--text-primary)]`} />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[var(--text-secondary)]">Net</p>
-              <p className="text-xl font-bold text-[var(--text-primary)]">${Math.abs(netAmount).toFixed(2)}</p>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
       
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
-          <Input
+      {/* Filters Overlay on Tablet/Desktop, Stacked on Mobile */}
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="relative flex-[2]">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+          <input
             type="text"
-            placeholder="Search transactions..."
+            placeholder="Cari transaksi..."
             value={currentSearch}
             onChange={(e) => updateFilters({ search: e.target.value })}
-            className="pl-10"
+            className="input pl-12 h-12"
           />
         </div>
-        <select
-          value={currentType}
-          onChange={(e) => updateFilters({ type: e.target.value })}
-          className="px-4 py-3 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)] min-h-[44px] appearance-none"
-        >
-          <option value="" className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">All Types</option>
-          <option value="income" className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">Income</option>
-          <option value="expense" className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">Expense</option>
-        </select>
-        <select
-          value={currentCategory}
-          onChange={(e) => updateFilters({ category: e.target.value })}
-          className="px-4 py-3 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)] min-h-[44px] appearance-none"
-        >
-          <option value="" className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">All Categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id} className="bg-[var(--app-bg-start)] text-[var(--text-primary)]">{c.label}</option>
-          ))}
-        </select>
-        <input
-          type="month"
-          value={currentMonth}
-          onChange={(e) => updateFilters({ month: e.target.value })}
-          className="px-4 py-3 border border-[var(--card-border)] rounded-2xl text-sm bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] outline-none focus:border-[var(--gradient-hero-start)] min-h-[44px] appearance-none"
-        />
+        <div className="flex gap-2 flex-1">
+          <select
+            value={currentType}
+            onChange={(e) => updateFilters({ type: e.target.value })}
+            className="input flex-1 h-12 py-0 px-4 text-sm appearance-none cursor-pointer"
+          >
+            <option value="">Semua</option>
+            <option value="income">Masuk</option>
+            <option value="expense">Keluar</option>
+          </select>
+          <input
+            type="month"
+            value={currentMonth}
+            onChange={(e) => updateFilters({ month: e.target.value })}
+            className="input flex-1 h-12 py-0 px-4 text-sm appearance-none cursor-pointer"
+          />
+        </div>
       </div>
       
       {/* Transactions List */}

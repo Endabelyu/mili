@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowUpRight, ArrowDownRight, Edit2, Trash2, Loader2 } from 'lucide-react';
-import type { Transaction, Category } from '@app/types';
+import type { Transaction, Category } from '../../types';
+import { formatCurrency, formatDate } from '../../lib/utils';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -9,25 +10,6 @@ interface TransactionItemProps {
   onDelete?: () => void;
   style?: React.CSSProperties;
 }
-
-function formatCurrency(amount: string | number): string {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(num);
-}
-
-function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(d);
-}
-
-// Category badge color mapping
 const getCategoryBadgeStyle = (categoryLabel?: string) => {
   const label = categoryLabel?.toLowerCase() || '';
   if (label.includes('food') || label.includes('grocery') || label.includes('dining')) {
@@ -80,8 +62,7 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
     <div
       className={`
         group flex items-center justify-between p-4 mb-3
-        glass-card hover:-translate-y-1 hover:shadow-lg hover:shadow-white/5
-        transition-all duration-200 ease-out
+        glass-card hover:bg-white/[0.05] transition-all duration-300
         cursor-pointer
         ${isDeleting ? 'opacity-50 pointer-events-none' : ''}
       `}
@@ -107,11 +88,10 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
           )}
         </div>
 
-        {/* Details */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-semibold text-gray-900 truncate">
-              {transaction.description || category?.label || 'Uncategorized'}
+            <p className="font-bold text-[var(--text-primary)] truncate">
+              {transaction.description || category?.label || 'Tanpa keterangan'}
             </p>
             <span className={`
               inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold
@@ -120,12 +100,12 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
               {category?.label || 'Uncategorized'}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mt-0.5">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] mt-1 opacity-70">
             <span>{formatDate(transaction.date)}</span>
             {transaction.createdAt && (
               <>
-                <span className="text-gray-300">•</span>
-                <span className="text-gray-400">{new Date(transaction.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="opacity-40">•</span>
+                <span>{new Date(transaction.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </>
             )}
           </div>
