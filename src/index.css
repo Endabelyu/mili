@@ -7,11 +7,11 @@
     --app-bg-start: #0f172a; /* Slate 900 */
     --app-bg-end: #1e1b4b;   /* Indigo 950 */
     
-    --card-bg: rgba(255, 255, 255, 0.05);
-    --card-border: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.12);
     
     --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.6);
+    --text-secondary: rgba(255, 255, 255, 0.7);
     
     /* Vibrant Accent Gradients */
     --gradient-hero-start: #60a5fa; /* Blue 400 */
@@ -130,12 +130,12 @@
 
   /* Glass Card Primitive */
   .glass-card {
-    background-color: var(--card-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
     overflow: hidden;
   }
 
@@ -161,7 +161,7 @@
   .btn-primary { 
     background: linear-gradient(135deg, var(--gradient-hero-start), var(--gradient-hero-end));
     color: white; 
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 10px 20px -10px rgba(96, 165, 250, 0.5);
   }
   .btn-primary:active { transform: scale(0.95); }
 
