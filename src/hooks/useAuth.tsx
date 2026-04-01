@@ -18,6 +18,7 @@ interface AuthState {
   updateUser: (data: { name?: string; image?: string }) => Promise<void>;
   changePassword: (data: any) => Promise<void>;
   register: (data: any) => Promise<void>;
+  forgetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -66,6 +67,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw new Error(error.message || 'Failed to change password');
   };
 
+  const forgetPassword = async (email: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (authClient as any).forgetPassword({
+      email,
+      redirectTo: '/auth/reset-password',
+    });
+    if (error) throw new Error(error.message || 'Failed to send reset email');
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -78,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updateUser,
         changePassword,
         register,
+        forgetPassword,
       }}
     >
       {children}
