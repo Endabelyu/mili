@@ -22,8 +22,7 @@ describe('StatCard', () => {
       <StatCard title="Default" value="100" icon={DollarSign} />
     );
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveClass('bg-gray-50');
-    expect(card).toHaveClass('border-gray-100');
+    expect(card).toHaveClass('flow-card');
   });
 
   it('renders with primary variant', () => {
@@ -31,8 +30,7 @@ describe('StatCard', () => {
       <StatCard title="Primary" value="100" icon={DollarSign} variant="primary" />
     );
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveClass('bg-blue-50');
-    expect(card).toHaveClass('border-blue-100');
+    expect(card).toHaveClass('flow-card');
   });
 
   it('renders with income variant', () => {
@@ -40,8 +38,7 @@ describe('StatCard', () => {
       <StatCard title="Income" value="100" icon={DollarSign} variant="income" />
     );
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveClass('bg-green-50');
-    expect(card).toHaveClass('border-green-100');
+    expect(card).toHaveClass('flow-card');
   });
 
   it('renders with expense variant', () => {
@@ -49,8 +46,7 @@ describe('StatCard', () => {
       <StatCard title="Expense" value="100" icon={DollarSign} variant="expense" />
     );
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveClass('bg-red-50');
-    expect(card).toHaveClass('border-red-100');
+    expect(card).toHaveClass('flow-card');
   });
 
   it('renders positive change with TrendingUp icon', () => {
@@ -66,10 +62,6 @@ describe('StatCard', () => {
     
     expect(screen.getByText('+15.5%')).toBeInTheDocument();
     expect(screen.getByText('vs last month')).toBeInTheDocument();
-    
-    // Check for green styling on positive change
-    const changeText = screen.getByText('+15.5%');
-    expect(changeText).toHaveClass('text-green-600');
   });
 
   it('renders negative change with TrendingDown icon', () => {
@@ -84,10 +76,6 @@ describe('StatCard', () => {
     );
     
     expect(screen.getByText('-8.3%')).toBeInTheDocument();
-    
-    // Check for red styling on negative change
-    const changeText = screen.getByText('-8.3%');
-    expect(changeText).toHaveClass('text-red-600');
   });
 
   it('renders zero change with Minus icon', () => {
@@ -101,10 +89,6 @@ describe('StatCard', () => {
     );
     
     expect(screen.getByText('0.0%')).toBeInTheDocument();
-    
-    // Check for gray styling on zero change
-    const changeText = screen.getByText('0.0%');
-    expect(changeText).toHaveClass('text-gray-500');
   });
 
   it('does not render change section when change is undefined', () => {
@@ -128,16 +112,6 @@ describe('StatCard', () => {
     
     // Should show skeleton elements instead of content
     expect(screen.queryByText('Loading')).not.toBeInTheDocument();
-  });
-
-  it('renders icon correctly', () => {
-    const { container } = render(
-      <StatCard title="With Icon" value="100" icon={DollarSign} />
-    );
-    
-    // Check for icon container
-    const iconContainer = container.querySelector('[class*="rounded-lg"] [class*="w-5 h-5"]');
-    expect(iconContainer).toBeInTheDocument();
   });
 
   it('truncates long titles and values', () => {

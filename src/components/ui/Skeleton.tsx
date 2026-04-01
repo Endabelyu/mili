@@ -19,10 +19,10 @@ export function StatCardSkeleton() {
     <div className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="h-4 w-24 bg-gray-200 rounded mb-3" />
-          <div className="h-8 w-32 bg-gray-200 rounded" />
+          <div className="h-4 w-24 bg-zinc-100 rounded mb-3" />
+          <div className="h-8 w-32 bg-zinc-100 rounded" />
         </div>
-        <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+        <div className="w-12 h-12 bg-zinc-100 rounded-xl" />
       </div>
     </div>
   );
@@ -32,12 +32,12 @@ export function StatCardSkeleton() {
 export function ChartSkeleton({ height = 'h-64' }: { height?: string }) {
   return (
     <div className={`bg-white rounded-xl border border-gray-200 p-5 ${height} animate-pulse`}>
-      <div className="h-6 w-48 bg-gray-200 rounded mb-4" />
+      <div className="h-6 w-48 bg-zinc-100 rounded mb-4" />
       <div className="h-full pb-8 flex items-end justify-between gap-2">
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="flex-1 bg-gray-200 rounded-t"
+            className="flex-1 bg-zinc-100 rounded-t"
             style={{ height: `${(i * 17) % 50 + 30}%` }}
           />
         ))}
@@ -51,13 +51,13 @@ export function TransactionItemSkeleton() {
   return (
     <div className="flex items-center justify-between p-4 animate-pulse">
       <div className="flex items-center gap-4">
-        <div className="w-11 h-11 bg-gray-200 rounded-xl" />
+        <div className="w-11 h-11 bg-zinc-100 rounded-xl" />
         <div>
-          <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
-          <div className="h-3 w-24 bg-gray-200 rounded" />
+          <div className="h-4 w-32 bg-zinc-100 rounded mb-2" />
+          <div className="h-3 w-24 bg-zinc-100 rounded" />
         </div>
       </div>
-      <div className="h-5 w-20 bg-gray-200 rounded" />
+      <div className="h-5 w-20 bg-zinc-100 rounded" />
     </div>
   );
 }
@@ -68,23 +68,23 @@ export function BudgetCardSkeleton() {
     <div className="bg-white border border-gray-200 rounded-xl p-5 animate-pulse">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-200 rounded-lg" />
+          <div className="w-10 h-10 bg-zinc-100 rounded-lg" />
           <div>
-            <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
-            <div className="h-3 w-16 bg-gray-200 rounded" />
+            <div className="h-4 w-24 bg-zinc-100 rounded mb-1" />
+            <div className="h-3 w-16 bg-zinc-100 rounded" />
           </div>
         </div>
         <div className="flex gap-1">
-          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
-          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+          <div className="w-8 h-8 bg-zinc-100 rounded-lg" />
+          <div className="w-8 h-8 bg-zinc-100 rounded-lg" />
         </div>
       </div>
       <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="h-8 bg-gray-200 rounded" />
-        <div className="h-8 bg-gray-200 rounded" />
-        <div className="h-8 bg-gray-200 rounded" />
+        <div className="h-8 bg-zinc-100 rounded" />
+        <div className="h-8 bg-zinc-100 rounded" />
+        <div className="h-8 bg-zinc-100 rounded" />
       </div>
-      <div className="h-2.5 bg-gray-200 rounded-full" />
+      <div className="h-2.5 bg-zinc-100 rounded-full" />
     </div>
   );
 }
@@ -96,7 +96,7 @@ export function TableRowSkeleton({ columns = 4 }: { columns?: number }) {
       {[...Array(columns)].map((_, i) => (
         <div
           key={i}
-          className="h-4 bg-gray-200 rounded"
+          className="h-4 bg-zinc-100 rounded"
           style={{ width: `${(i * 13) % 20 + 20}%` }}
         />
       ))}
@@ -108,8 +108,8 @@ export function TableRowSkeleton({ columns = 4 }: { columns?: number }) {
 export function PageHeaderSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="h-8 w-48 bg-gray-200 rounded mb-2" />
-      <div className="h-4 w-64 bg-gray-200 rounded" />
+      <div className="h-8 w-48 bg-zinc-100 rounded mb-2" />
+      <div className="h-4 w-64 bg-zinc-100 rounded" />
     </div>
   );
 }
@@ -118,10 +118,10 @@ export function PageHeaderSkeleton() {
 export function FilterBarSkeleton({ count = 4 }: { count?: number }) {
   return (
     <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 animate-pulse">
-      <div className="h-4 w-16 bg-gray-200 rounded mb-4" />
+      <div className="h-4 w-16 bg-zinc-100 rounded mb-4" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(count)].map((_, i) => (
-          <div key={i} className="h-10 bg-gray-200 rounded-lg" />
+          <div key={i} className="h-10 bg-zinc-100 rounded-lg" />
         ))}
       </div>
     </div>

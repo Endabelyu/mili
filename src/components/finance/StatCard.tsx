@@ -12,7 +12,7 @@ interface StatCardProps {
 
 const variantStyles = {
   default: {
-    bg: 'glass-card',
+    bg: 'flow-card border-none',
     border: '',
     iconBg: 'bg-[var(--text-primary)]/10',
     iconColor: 'text-[var(--text-primary)]',
@@ -21,7 +21,7 @@ const variantStyles = {
     hoverShadow: 'hover:-translate-y-1 transition-transform',
   },
   primary: {
-    bg: 'glass-card',
+    bg: 'flow-card border-none',
     border: 'border-[var(--gradient-hero-start)]/30',
     iconBg: 'bg-[var(--gradient-hero-start)]/20',
     iconColor: 'text-[var(--gradient-hero-start)]',
@@ -30,7 +30,7 @@ const variantStyles = {
     hoverShadow: 'hover:-translate-y-1 transition-transform',
   },
   income: {
-    bg: 'glass-card',
+    bg: 'flow-card border-none',
     border: 'border-emerald-500/30',
     iconBg: 'bg-emerald-500/20',
     iconColor: 'text-emerald-400',
@@ -39,7 +39,7 @@ const variantStyles = {
     hoverShadow: 'hover:-translate-y-1 transition-transform',
   },
   expense: {
-    bg: 'glass-card',
+    bg: 'flow-card border-none',
     border: 'border-rose-500/30',
     iconBg: 'bg-rose-500/20',
     iconColor: 'text-rose-400',

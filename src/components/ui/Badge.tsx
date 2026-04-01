@@ -11,12 +11,12 @@ interface BadgeProps {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-gray-100 text-gray-700 border-gray-200',
-  primary: 'bg-blue-100 text-blue-700 border-blue-200',
-  success: 'bg-green-100 text-green-700 border-green-200',
-  warning: 'bg-amber-100 text-amber-700 border-amber-200',
-  danger: 'bg-red-100 text-red-700 border-red-200',
-  info: 'bg-purple-100 text-purple-700 border-purple-200',
+  default: 'bg-zinc-100 text-[#52525b] border-zinc-200',
+  primary: 'bg-[#ecfccb] text-[#4d7c0f] border-[#bef264]',
+  success: 'bg-[#dcfce7] text-[#15803d] border-[#86efac]',
+  warning: 'bg-[#ffedd5] text-[#c2410c] border-[#fdba74]',
+  danger: 'bg-[#fee2e2] text-[#b91c1c] border-[#fca5a5]',
+  info: 'bg-[#e0e7ff] text-[#4338ca] border-[#a5b4fc]',
 };
 
 const sizeStyles: Record<BadgeSize, string> = {

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Pencil, Trash2, Target } from 'lucide-react';
-import { Button } from '@app/components/ui/Button';
+import { Trash2, Loader2 } from 'lucide-react';
 import { ConfirmDialog } from '@app/components/ui';
 import type { Budget, Category } from '@app/types';
+import { formatCurrency } from '@app/lib/utils';
+import { CategoryIcon } from '@app/components/ui/CategoryIcon';
 
 interface BudgetWithSpending extends Budget {
   category: Category;
@@ -21,113 +22,109 @@ interface BudgetCardProps {
 export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardProps) {
   const limit = parseFloat(String(budget.limitAmount));
   const spent = parseFloat(String(budget.spent));
-  const percentage = budget.percentageUsed;
+  const percentage = Math.min(budget.percentageUsed, 100);
   
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const getStatusColor = () => {
-    if (percentage >= 100) return {
-      bar: 'bg-gradient-to-r from-rose-500 to-rose-400',
-      bg: 'glass-card border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.1)]',
-      iconBg: 'bg-rose-500/20 text-rose-400',
-    };
-    if (percentage >= 75) return {
-      bar: 'bg-gradient-to-r from-amber-500 to-amber-400',
-      bg: 'glass-card border-amber-500/30',
-      iconBg: 'bg-amber-500/20 text-amber-400',
-    };
-    return {
-      bar: 'bg-gradient-to-r from-[var(--gradient-hero-start)] to-[var(--gradient-hero-end)]',
-      bg: 'glass-card border-[var(--gradient-hero-start)]/30',
-      iconBg: 'bg-[var(--gradient-hero-start)]/20 text-[var(--gradient-hero-start)]',
-    };
+  // Dynamic colors for the progress bar based on category ID
+  const getProgressBarColor = () => {
+    // If over budget, make it red
+    if (percentage >= 100) return 'bg-[#ef4444]';
+    // Otherwise use category based coloring as defined in our styles
+    const catName = budget.category?.label?.toLowerCase() || budget.categoryId.toLowerCase();
+    
+    if (catName.includes('food') || catName.includes('makan')) return 'bg-[#f59e0b]'; // amber
+    if (catName.includes('shop') || catName.includes('belanja')) return 'bg-[#3b82f6]'; // blue
+    if (catName.includes('fun') || catName.includes('hiburan')) return 'bg-[#a855f7]'; // purple
+    if (catName.includes('transport')) return 'bg-[#06b6d4]'; // cyan
+    if (catName.includes('health')) return 'bg-[#22c55e]'; // green
+    if (catName.includes('bill')) return 'bg-[#f43f5e]'; // rose
+    
+    // Default green for typical goals
+    return 'bg-[#a3e635]';
   };
 
-  const status = getStatusColor();
-
-  const handleDeleteClick = () => {
-    setShowConfirm(true);
+  const getLightBarColor = () => {
+    const color = getProgressBarColor();
+    // Simply replacing bg with text for lighter tint approach 
+    // Usually tailwind handles this with opacity, we'll use a standard light fill
+    return `${color.replace('bg-', 'bg-')}/15`;
   };
+
+  const progressBarColor = getProgressBarColor();
+  const lightBarColor = getLightBarColor();
 
   const handleConfirmDelete = () => {
     setShowConfirm(false);
     onDelete();
   };
 
+  const remaining = limit - spent;
+  const isOverBudget = remaining < 0;
+
   return (
     <>
-      <div className={`relative ${status.bg} p-5 transition-transform hover:-translate-y-1 hover:shadow-lg`}>
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${status.iconBg}`}>
-              {budget.category.icon ? (
-                <span className="text-2xl">{budget.category.icon}</span>
-              ) : (
-                <Target className="w-6 h-6" />
-              )}
-            </div>
-            <div>
-              <h3 className="font-bold text-lg text-[var(--text-primary)] tracking-tight">{budget.category.label}</h3>
-              <p className="text-sm font-medium text-[var(--text-secondary)]">Terpakai Anggaran {percentage}%.</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onEdit}
-              className="h-10 w-10 p-0 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800"
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDeleteClick}
-              disabled={isDeleting}
-              className="h-10 w-10 p-0 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-            >
-              {isDeleting ? (
-                <span className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Trash2 className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="h-3 w-full bg-[var(--text-primary)]/10 rounded-full overflow-visible relative mb-2 shadow-inner">
-          <div
-            className={`h-full ${status.bar} rounded-full transition-all duration-500 ease-out`}
-            style={{ width: `${Math.min(percentage, 100)}%` }}
-          />
-          {percentage >= 100 && (
-             <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-6 h-6 bg-rose-500 border-2 border-[var(--card-bg)] rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md z-10">
-               !
+      <div 
+        className="flow-card p-5 group cursor-pointer transition-transform hover:-translate-y-0.5 active:bg-zinc-50"
+        onClick={onEdit}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3 pr-2 flex-1 min-w-0">
+             <CategoryIcon category={budget.categoryId} size="md" />
+             <div className="min-w-0 flex-1">
+               <h3 className="font-bold text-[#1a1a2e] text-[16px] truncate leading-tight mb-0.5">
+                 {budget.category?.label || budget.categoryId}
+               </h3>
+               <p className="text-[13px] font-medium text-[#71717a] truncate">
+                 Target: {formatCurrency(limit)}
+               </p>
              </div>
-          )}
+          </div>
+          <div className="text-right flex-shrink-0">
+             <p className={`font-bold text-[17px] leading-tight mb-0.5 ${isOverBudget ? 'text-[#ef4444]' : 'text-[#3b82f6]'}`}>
+               {formatCurrency(spent)}
+             </p>
+             <p className="text-[10px] uppercase font-bold tracking-wider text-[#a1a1aa]">
+               TERPAKAI
+             </p>
+          </div>
         </div>
 
-        {/* Amounts */}
-        <div className="flex justify-between mt-2 px-1">
-          <p className="text-sm font-bold text-[var(--text-primary)]">
-            {spent.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
-          </p>
-          <p className="text-sm font-bold text-[var(--text-secondary)]">
-            {limit.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}
-          </p>
+        {/* Progress Bar Container */}
+        <div className={`h-3 w-full rounded-full overflow-hidden ${lightBarColor} my-3 relative`}>
+          <div
+            className={`h-full ${progressBarColor} rounded-full transition-all duration-1000 ease-out`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+
+        <div className="flex justify-between items-center text-[11px] font-bold uppercase tracking-wider">
+          <span className="text-[#65a30d]">
+            {percentage.toFixed(0)}% TERPAKAI
+          </span>
+          <span className={isOverBudget ? 'text-[#ef4444]' : 'text-[#f59e0b]'}>
+            {isOverBudget ? `LEBIH ${formatCurrency(Math.abs(remaining))}` : `SISA ${formatCurrency(remaining)}`}
+          </span>
+        </div>
+        
+        {/* Actions (appear on hover desktop) */}
+        <div className="hidden lg:flex absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity gap-1">
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowConfirm(true); }}
+            disabled={isDeleting}
+            className="w-8 h-8 rounded-full bg-white shadow-sm border border-zinc-100 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50"
+          >
+            {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+          </button>
         </div>
       </div>
 
-      {/* Confirm Delete Dialog */}
       <ConfirmDialog
         isOpen={showConfirm}
-        title="Delete Budget?"
-        message={`Are you sure you want to delete the budget for "${budget.category.label}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
+        title="Hapus Budget?"
+        message={`Anda yakin ingin menghapus budget untuk kategori "${budget.category?.label}"?`}
+        confirmLabel="Hapus"
+        cancelLabel="Batal"
         variant="danger"
         onConfirm={handleConfirmDelete}
         onCancel={() => setShowConfirm(false)}

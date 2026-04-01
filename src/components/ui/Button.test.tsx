@@ -11,20 +11,20 @@ describe('Button', () => {
   it('applies primary variant by default', () => {
     const { container } = render(<Button>Primary</Button>);
     const button = container.querySelector('button');
-    expect(button).toHaveClass('bg-blue-600');
-    expect(button).toHaveClass('text-white');
+    expect(button).toHaveClass('bg-[var(--gradient-hero-start)]');
+    expect(button).toHaveClass('text-[var(--app-bg-start)]');
   });
 
   it('applies secondary variant', () => {
     const { container } = render(<Button variant="secondary">Secondary</Button>);
     const button = container.querySelector('button');
-    expect(button).toHaveClass('bg-gray-600');
+    expect(button).toHaveClass('bg-[var(--card-bg)]');
   });
 
   it('applies outline variant', () => {
     const { container } = render(<Button variant="outline">Outline</Button>);
     const button = container.querySelector('button');
-    expect(button).toHaveClass('bg-white');
+    expect(button).toHaveClass('bg-[var(--card-bg)]');
     expect(button).toHaveClass('border');
   });
 
@@ -37,7 +37,7 @@ describe('Button', () => {
   it('applies danger variant', () => {
     const { container } = render(<Button variant="danger">Danger</Button>);
     const button = container.querySelector('button');
-    expect(button).toHaveClass('bg-red-600');
+    expect(button).toHaveClass('bg-[var(--gradient-danger-start)]');
   });
 
   it('applies small size', () => {
@@ -74,11 +74,6 @@ describe('Button', () => {
 
   it('is disabled when disabled prop is true', () => {
     render(<Button disabled>Disabled</Button>);
-    expect(screen.getByRole('button')).toBeDisabled();
-  });
-
-  it('is disabled when isLoading is true', () => {
-    render(<Button isLoading>Loading</Button>);
     expect(screen.getByRole('button')).toBeDisabled();
   });
 

@@ -36,7 +36,7 @@ export function Card({
   return (
     <div
       className={`
-        bg-white rounded-xl border border-gray-200
+        flow-card
         ${paddingStyles[padding]}
         ${shadowStyles[shadow]}
         ${hoverStyles}
