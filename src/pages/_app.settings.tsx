@@ -3,10 +3,8 @@ import { useTheme } from '../hooks/useTheme';
 import {
   Sun,
   Moon,
-  Monitor,
   Bell,
   Shield,
-  Download,
   ChevronRight,
   Globe,
   Settings as SettingsIcon,
@@ -16,7 +14,15 @@ export const meta: MetaFunction = () => [
   { title: 'Pengaturan | Finance Tracker' },
 ];
 
-function SettingRow({ icon: Icon, label, description, onClick, href }: any) {
+interface SettingRowProps {
+  icon: React.ElementType;
+  label: string;
+  description?: string;
+  onClick?: () => void;
+  href?: string;
+}
+
+function SettingRow({ icon: Icon, label, description, onClick, href }: SettingRowProps) {
   const content = (
     <div className="flex items-center gap-4 p-4 w-full transition-colors active:bg-zinc-50 lg:hover:bg-zinc-50 text-[#1a1a2e]">
       <div className="w-10 h-10 rounded-full bg-[#f4f4f5] flex items-center justify-center flex-shrink-0">
@@ -56,9 +62,9 @@ export default function SettingsPage() {
           <div className="grid grid-cols-2 gap-3">
              <button
                type="button"
-               onClick={() => setTheme('light')}
+               onClick={() => setTheme('fresh-mint')}
                className={`flex flex-col items-center gap-2 p-4 rounded-[16px] border-2 transition-all ${
-                 theme === 'light' || theme === 'system' // Since FlowState is light-focused, simplify this
+                 theme === 'fresh-mint' || theme === 'system' // Since FlowState is light-focused, simplify this
                    ? 'border-[#a3e635] bg-[#f0fdf4] text-[#3f6212]'
                    : 'border-zinc-100 text-[#71717a] hover:bg-zinc-50'
                }`}

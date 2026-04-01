@@ -51,6 +51,7 @@ export default function RegisterPage() {
         password: formData.password
       });
       navigate('/auth/login?registered=true');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err?.body?.message || err?.message || 'Gagal mendaftar. Email mungkin sudah digunakan.');
     } finally {

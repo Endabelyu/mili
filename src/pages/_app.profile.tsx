@@ -16,7 +16,16 @@ export const meta: MetaFunction = () => [
   { title: 'Profil | Finance Tracker' },
 ];
 
-function SettingRow({ icon: Icon, label, description, onClick, href, danger }: any) {
+interface SettingRowProps {
+  icon: React.ElementType;
+  label: string;
+  description?: string;
+  onClick?: () => void;
+  href?: string;
+  danger?: boolean;
+}
+
+function SettingRow({ icon: Icon, label, description, onClick, href, danger }: SettingRowProps) {
   const content = (
     <div className={`flex items-center gap-4 p-4 w-full transition-colors active:bg-zinc-50 lg:hover:bg-zinc-50 ${danger ? 'text-[#ef4444]' : 'text-[#1a1a2e]'}`}>
       <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${danger ? 'bg-[#fef2f2] text-[#ef4444]' : 'bg-[#f4f4f5] text-[#1a1a2e]'}`}>

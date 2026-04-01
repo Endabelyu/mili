@@ -17,6 +17,7 @@ interface AuthState {
   refresh: () => Promise<void>;
   updateUser: (data: { name?: string; image?: string }) => Promise<void>;
   changePassword: (data: any) => Promise<void>;
+  register: (data: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -36,6 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     const { error } = await authClient.signIn.email({ email, password });
     if (error) throw new Error(error.message || 'Invalid email or password');
+    await refetch();
+  };
+
+  const register = async (data: any) => {
+    const { error } = await authClient.signUp.email(data);
+    if (error) throw new Error(error.message || 'Failed to register');
     await refetch();
   };
 
@@ -70,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refresh,
         updateUser,
         changePassword,
+        register,
       }}
     >
       {children}

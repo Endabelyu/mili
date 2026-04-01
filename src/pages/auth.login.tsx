@@ -28,6 +28,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       navigate('/');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err?.body?.message || err?.message || 'Email atau kata sandi tidak valid');
     } finally {
