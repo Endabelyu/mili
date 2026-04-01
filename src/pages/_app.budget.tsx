@@ -3,18 +3,17 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { budgetsApi, categoriesApi } from '../api/client';
 import { type Budget, type Category } from '../types';
-import { Button, Input, Modal } from '../components/ui';
+import { Modal } from '../components/ui';
 import { BudgetCard } from '../components/finance/BudgetCard';
 import { BudgetForm } from '../components/finance/BudgetForm';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { Plus, Calendar, Target, TrendingUp, Wallet, AlertCircle } from 'lucide-react';
+import { Rocket, Wallet } from 'lucide-react';
+import { formatCurrency } from '../lib/utils';
+import { CategoryIcon } from '../components/ui';
 
-export const meta = () => {
-  return [
-    { title: 'Budget | Finance Tracker' },
-    { name: 'description', content: 'Set and track your spending limits by category' },
-  ];
-};
+export const meta = () => [
+  { title: 'Budget | Finance Tracker' },
+];
 
 interface BudgetWithSpending extends Budget {
   category: Category;
@@ -22,8 +21,6 @@ interface BudgetWithSpending extends Budget {
   remaining: string;
   percentageUsed: number;
 }
-
-
 
 function getCurrentMonth(): string {
   return new Date().toISOString().slice(0, 7);
@@ -36,12 +33,9 @@ function calculateSummary(budgets: BudgetWithSpending[]) {
       const spent = Number(budget.spent);
       acc.totalBudgeted += limit;
       acc.totalSpent += spent;
-      acc.totalRemaining += parseFloat(budget.remaining);
-      if (budget.percentageUsed >= 100) acc.overBudgetCount++;
-      else if (budget.percentageUsed >= 90) acc.nearLimitCount++;
       return acc;
     },
-    { totalBudgeted: 0, totalSpent: 0, totalRemaining: 0, overBudgetCount: 0, nearLimitCount: 0 }
+    { totalBudgeted: 0, totalSpent: 0 }
   );
 }
 
@@ -90,17 +84,14 @@ export default function BudgetPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<BudgetWithSpending | null>(null);
 
-  // Handle ?new=true to open modal automatically
   useEffect(() => {
     if (searchParams.get('new') === 'true') {
       setIsModalOpen(true);
-      // Clean up the URL
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('new');
       setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
-
 
   const summary = calculateSummary(budgets);
   const overallPercentage = summary.totalBudgeted > 0
@@ -112,223 +103,164 @@ export default function BudgetPage() {
   const categoriesWithoutBudget = expenseCategories.filter(c => !budgetedCategoryIds.has(c.id));
   
   useKeyboardShortcuts([
-    {
-      key: 'n',
-      ctrl: true,
-      meta: true,
-      handler: () => setIsModalOpen(true),
-    },
-    {
-      key: 'Escape',
-      handler: () => {
-        if (isModalOpen) {
-          setIsModalOpen(false);
-          setEditingBudget(null);
-        }
-      },
-    },
+    { key: 'n', ctrl: true, meta: true, handler: () => setIsModalOpen(true) },
+    { key: 'Escape', handler: () => { if (isModalOpen) { setIsModalOpen(false); setEditingBudget(null); } } },
   ]);
   
-  const updateMonth = (newMonth: string) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (newMonth) newParams.set('month', newMonth);
-    else newParams.delete('month');
-    setSearchParams(newParams);
-  };
-  
   if (isLoading) {
-    return <div className="space-y-6 animate-fade-in"><p>Loading...</p></div>;
+      return <div className="p-8 animate-pulse text-center text-zinc-400 font-medium">Memuat budget...</div>;
   }
   
+  const dateObj = new Date(currentMonth + '-01');
+  const monthName = dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col gap-4 md:gap-6">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] tracking-tight">Budget</h1>
-            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-0.5">
-              Track spending limits
-              <span className="hidden sm:inline text-[var(--text-secondary)] opacity-60 ml-2">(Cmd/Ctrl+N to add new)</span>
-            </p>
-          </div>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="hidden md:flex h-11 px-6 shadow-sm hover:shadow transition-all duration-200"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Set Budget
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6 pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-4 lg:pt-8 w-full animate-fade-in">
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="glass-card p-4">
-          <label className="flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] mb-2">
-            <Calendar className="w-4 h-4" />
-            Select Month
-          </label>
-          <Input
-            type="month"
-            value={currentMonth}
-            onChange={(e) => updateMonth(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        
-        <div className="glass-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Target className="w-5 h-5 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[var(--text-secondary)]">Total Budgeted</p>
-              <p className="text-xl font-bold text-[var(--text-primary)]">${summary.totalBudgeted.toLocaleString()}</p>
-            </div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-[#ecfccb] border-2 border-white flex items-center justify-center shadow-sm shrink-0">
+             <Wallet className="w-6 h-6 text-[#65a30d]" />
+          </div>
+          <div>
+            <h1 className="text-[22px] font-extrabold text-[#1a1a2e] tracking-tight">Anggaran</h1>
+            <p className="text-sm font-medium text-[#71717a]">Kelola keuangan bulan {monthName}</p>
           </div>
         </div>
         
-        <div className="glass-card p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-rose-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-[var(--text-secondary)]">Total Spent</p>
-              <p className="text-xl font-bold text-[var(--text-primary)]">${summary.totalSpent.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="glass-card p-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${summary.totalRemaining >= 0 ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
-              <Wallet className={`w-5 h-5 ${summary.totalRemaining >= 0 ? 'text-emerald-500' : 'text-rose-500'}`} />
-            </div>
-            <div>
-              <p className={`text-sm font-medium ${summary.totalRemaining >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                {summary.totalRemaining >= 0 ? 'Remaining' : 'Over Budget'}
-              </p>
-              <p className={`text-xl font-bold text-[var(--text-primary)]`}>
-                ${Math.abs(summary.totalRemaining).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
+        <input 
+          type="month" 
+          value={currentMonth}
+          onChange={(e) => {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set('month', e.target.value);
+            setSearchParams(newParams);
+          }}
+          className="bg-zinc-100 text-[#1a1a2e] font-bold px-3 py-2 rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-[#a3e635]"
+        />
       </div>
-      
+
+      {/* Encouragement Buddy Card */}
+      <div className="flow-card p-5 relative overflow-hidden bg-[#fbfbf9] border-[#f0f0ea]">
+         <div className="flex gap-4 relative z-10">
+           <div className="w-[72px] h-[72px] flex-shrink-0 bg-[#a3e635] rounded-full flex items-center justify-center text-[40px] shadow-sm border-[4px] border-white shadow-[#a3e635]/20">
+             🐻
+           </div>
+           <div className="flex-1 mt-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#65a30d]">
+                  Bulan {monthName}
+                </span>
+                {overallPercentage <= 80 && (
+                   <span className="w-2 h-2 rounded-full bg-[#84cc16]"></span>
+                )}
+              </div>
+              <h3 className="font-extrabold text-[#1a1a2e] text-[20px] mb-1 leading-tight">
+                {overallPercentage > 100 
+                  ? "Oops, sedikit over!" 
+                  : overallPercentage > 80 
+                    ? "Hati-hati pengeluaran" 
+                    : "Anda luar biasa!"}
+              </h3>
+              <p className="text-[#71717a] text-[13px] font-medium leading-snug">
+                {overallPercentage > 100 
+                  ? "Total pengeluaran sudah melebih anggaran."
+                  : `Anda baru menggunakan ${overallPercentage}% dari total anggaran. Pertahankan!`} 🚀
+              </p>
+           </div>
+         </div>
+      </div>
+
+      {/* Summary Chips */}
+      {summary.totalBudgeted > 0 && (
+         <div className="flex gap-3">
+           <div className="flex-1 flow-card py-3 px-4 flex items-center gap-3 border-none shadow-sm shadow-[#ecfccb]/50 bg-[#ecfccb]/30">
+             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+               <Wallet className="w-4 h-4 text-[#3b82f6]" />
+             </div>
+             <div>
+               <p className="text-[10px] uppercase font-bold tracking-wider text-[#3f6212]">TERPAKAI</p>
+               <p className="font-extrabold text-[#1a1a2e] text-[15px]">{formatCurrency(summary.totalSpent)}</p>
+             </div>
+           </div>
+           
+           <div className="flex-1 flow-card py-3 px-4 flex items-center gap-3 border-none shadow-sm shadow-[#f3e8ff]/50 bg-[#f3e8ff]/40">
+             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+               <Rocket className="w-4 h-4 text-[#a855f7]" />
+             </div>
+             <div>
+               <p className="text-[10px] uppercase font-bold tracking-wider text-[#7e22ce]">ANGGARAN</p>
+               <p className="font-extrabold text-[#1a1a2e] text-[15px]">{formatCurrency(summary.totalBudgeted)}</p>
+             </div>
+           </div>
+         </div>
+      )}
+
+      {/* Active Budgets */}
       {budgets.length > 0 && (
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Overall Budget Usage</h3>
-            <span className={`text-sm font-bold ${
-              overallPercentage > 90 ? 'text-[var(--gradient-danger-start)]' :
-              overallPercentage > 75 ? 'text-amber-500' : 'text-[var(--gradient-success-start)]'
-            }`}>
-              {overallPercentage}%
-            </span>
+        <div className="pt-2 max-w-[100vw]">
+          <div className="flex items-center justify-between mb-3 px-1">
+             <h2 className="text-[17px] font-bold text-[#1a1a2e]">Anggaran Aktif</h2>
+             <span className="text-[13px] font-bold text-[#a1a1aa]">{budgets.length} Kategori</span>
           </div>
-          <div className="h-3 bg-[var(--text-primary)]/10 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                overallPercentage > 90 ? 'bg-[var(--gradient-danger-start)]' :
-                overallPercentage > 75 ? 'bg-amber-500' : 'bg-[var(--gradient-success-start)]'
-              }`}
-              style={{ width: `${Math.min(overallPercentage, 100)}%` }}
-            />
+          <div className="space-y-4">
+            {budgets.map((budget) => (
+              <BudgetCard
+                key={budget.id}
+                budget={budget}
+                onEdit={() => setEditingBudget(budget)}
+                onDelete={() => handleDelete(budget.id)}
+              />
+            ))}
           </div>
         </div>
       )}
-      
-      <div className="space-y-6">
-        {budgets.length === 0 && categoriesWithoutBudget.length === 0 ? (
-          <div className="text-center py-16 px-4 glass-card">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--text-primary)]/5 flex items-center justify-center">
-              <Target className="w-8 h-8 text-[var(--text-secondary)]" />
-            </div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No budgets set</h3>
-            <p className="text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
-              Start tracking your spending by setting budget limits for your expense categories.
-            </p>
-            <Button onClick={() => setIsModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Set your first budget
-            </Button>
-          </div>
-        ) : (
-          <>
-            {budgets.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-4 flex items-center gap-2">
-                  <Target className="w-4 h-4" />
-                  Active Budgets
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {budgets.map((budget) => (
-                    <BudgetCard
-                      key={budget.id}
-                      budget={budget}
-                      onEdit={() => setEditingBudget(budget)}
-                      onDelete={() => handleDelete(budget.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {categoriesWithoutBudget.length > 0 && (
-              <div>
-                <h2 className="text-sm font-semibold text-[var(--text-secondary)] mb-4 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  Categories Without Budgets
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {categoriesWithoutBudget.map((category) => (
-                    <div
-                      key={category.id}
-                      className="glass-card p-4 hover:border-[var(--text-primary)]/20 transition-colors cursor-pointer border-dashed"
-                      onClick={() => {
-                        setEditingBudget({
-                          id: '',
-                          categoryId: category.id,
-                          category,
-                          month: currentMonth,
-                          limitAmount: '0',
-                          spent: '0',
-                          remaining: '0',
-                          percentageUsed: 0,
-                          userId: '',
-                          createdAt: new Date(),
-                        } as BudgetWithSpending);
-                        setIsModalOpen(true);
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {category.icon && <span className="text-2xl">{category.icon}</span>}
-                          <div>
-                            <h3 className="font-semibold text-gray-700">{category.label}</h3>
-                            <p className="text-sm text-[var(--text-secondary)]">No limit set</p>
-                          </div>
-                        </div>
-                        <Plus className="w-5 h-5 text-gray-400" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-      
 
+      {/* Categories without Budget */}
+      {categoriesWithoutBudget.length > 0 && (
+         <div className="pt-4 pb-12">
+           <h2 className="text-[15px] font-bold text-[#1a1a2e] mb-3 px-1">Buat Anggaran Baru</h2>
+           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+             {categoriesWithoutBudget.map((category) => (
+               <div
+                 key={category.id}
+                 className="flow-card p-3 border-dashed border-2 bg-transparent hover:bg-zinc-50 cursor-pointer flex flex-col items-center justify-center text-center gap-2"
+                 onClick={() => {
+                   setEditingBudget({
+                     id: '',
+                     categoryId: category.id,
+                     category,
+                     month: currentMonth,
+                     limitAmount: '0',
+                     spent: '0',
+                     remaining: '0',
+                     percentageUsed: 0,
+                     userId: '',
+                     createdAt: new Date(),
+                   } as BudgetWithSpending);
+                   setIsModalOpen(true);
+                 }}
+               >
+                 <CategoryIcon category={category.id} size="md" />
+                 <div>
+                   <h3 className="font-bold text-[#1a1a2e] text-[13px]">{category.label}</h3>
+                   <p className="text-[11px] font-medium text-[#71717a]">Tambah +</p>
+                 </div>
+               </div>
+             ))}
+           </div>
+         </div>
+      )}
+      
+      {/* Modal Form */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setEditingBudget(null);
         }}
-        title={editingBudget?.id ? 'Edit Budget' : 'Set Budget'}
+        title={editingBudget?.id ? 'Edit Anggaran' : 'Set Anggaran Baru'}
       >
         <BudgetForm
           budget={editingBudget}
