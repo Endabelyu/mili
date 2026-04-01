@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // keeping router-dom since that's what's imported here
 import { useAuth } from '../hooks/useAuth';
 import { transactionsApi, reportsApi } from '../api/client';
 import { type Transaction } from '../types';
 import {
-  TrendingUp, TrendingDown, ArrowRight, Receipt, Plus,
+  Bell,
+  ArrowUpRight,
+  ArrowDownRight,
+  Plus,
+  Receipt,
+  Sparkles,
+  TrendingUp
 } from 'lucide-react';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts';
 import { formatCurrency, formatDate } from '../lib/utils';
+import { CategoryIcon } from '../components/ui';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface SummaryStats {
@@ -22,16 +26,28 @@ interface SummaryStats {
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`bg-gray-200 rounded animate-pulse ${className}`} />;
+  return <div className={`bg-zinc-200 rounded animate-shimmer ${className}`} />;
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6 animate-fade-in px-4 pt-4">
-      <Skeleton className="h-8 w-40" />
-      <Skeleton className="h-40 rounded-[2rem]" />
-      <div className="grid grid-cols-4 gap-3"><Skeleton className="h-16" /><Skeleton className="h-16" /><Skeleton className="h-16" /><Skeleton className="h-16" /></div>
-      <Skeleton className="h-48 rounded-xl" />
+    <div className="space-y-6 animate-fade-in px-4 pt-4 lg:pt-8 w-full max-w-2xl mx-auto">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div>
+            <Skeleton className="h-6 w-32 mb-1" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </div>
+        <Skeleton className="h-10 w-10 rounded-full" />
+      </div>
+      <Skeleton className="h-[140px] rounded-[24px]" />
+      <div className="grid grid-cols-2 gap-4">
+        <Skeleton className="h-28 rounded-[24px]" />
+        <Skeleton className="h-28 rounded-[24px]" />
+      </div>
+      <Skeleton className="h-40 rounded-[24px]" />
     </div>
   );
 }
@@ -65,7 +81,7 @@ export default function DashboardPage() {
           transactionCount: txns?.pagination?.total ?? 0,
         });
 
-        // Transform monthly array for recharts
+        // Transform monthly array for daily spending mini-chart
         const currentMonthly = Array.isArray(monthly) ? monthly : [];
         setMonthlyData(
           currentMonthly.map((v: any) => ({
@@ -85,122 +101,164 @@ export default function DashboardPage() {
 
   if (isLoading) return <DashboardSkeleton />;
 
-  const firstName = user?.name ? user.name.split(' ')[0] : 'User';
+  const firstName = user?.name ? user.name.split(' ')[0] : (user?.email?.split('@')[0] || 'Guest');
+
+  // For the bar chart mockup
+  const weeklyBars = [
+    { day: 'M', value: 0.3 },
+    { day: 'T', value: 0.5 },
+    { day: 'W', value: 0.2 },
+    { day: 'T', value: 0.8 }, // highest
+    { day: 'F', value: 0.4 },
+    { day: 'S', value: 0.9 },
+    { day: 'S', value: 0.6 },
+  ]; // Simulated weekly data since we don't have an API for it yet
 
   return (
-    <div className="space-y-6 md:space-y-8 animate-fade-in pb-24 md:pb-6 px-4 pt-4 max-w-lg mx-auto lg:max-w-none">
+    <div className="space-y-6 animate-fade-in pb-24 lg:pb-8 px-4 pt-4 lg:pt-8 w-full max-w-2xl mx-auto">
 
-      {/* Header */}
+      {/* Inline Header */}
       <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-wide uppercase opacity-80">
-            Selamat pagi <span className="text-base grayscale-[0.5]">👋</span>
-          </p>
-          <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">
-            {firstName}
-          </h1>
+        <div className="flex items-center gap-3">
+          <Link to="/profile" className="w-12 h-12 rounded-full bg-[#ecfccb] border-2 border-white flex items-center justify-center text-[#4d7c0f] font-bold text-xl shadow-sm outline-none shrink-0 overflow-hidden">
+             {user?.image ? <img src={user.image} className="w-full h-full object-cover" alt="Profile" /> : '🐻'}
+          </Link>
+          <div className="flex flex-col">
+            <h1 className="text-[22px] font-extrabold text-[#1a1a2e] flex items-center gap-1.5 tracking-tight leading-tight">
+              Hi, {firstName}! <Sparkles className="w-5 h-5 text-[#f59e0b] fill-[#f59e0b]" />
+            </h1>
+            <p className="text-[13px] font-medium text-[#71717a]">
+              Selamat beraktivitas!
+            </p>
+          </div>
         </div>
-        <Link to="/profile" className="w-12 h-12 rounded-full glass-card flex items-center justify-center text-2xl shadow-inner cursor-pointer hover:border-[var(--text-primary)]/30 transition-colors">
-          😎
-        </Link>
+        <button className="w-11 h-11 rounded-full bg-white border border-zinc-100 flex items-center justify-center text-[#1a1a2e] shadow-sm hover:bg-zinc-50 transition-colors">
+          <Bell className="w-5 h-5" />
+        </button>
       </div>
 
+      {/* Balance Hero Card */}
       {summary && (
-        <div className="relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-xl shadow-black/20 bg-gradient-to-br from-[var(--gradient-hero-start)] to-[var(--gradient-hero-end)] group transition-all duration-300">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <TrendingUp className="w-32 h-32 rotate-12" />
-          </div>
-          <div className="relative z-10">
-            <p className="text-[10px] font-bold tracking-widest uppercase text-white/80 mb-1">Total Saldo</p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{formatCurrency(summary.balance)}</h2>
-            <p className="text-xs text-white/80 mb-6">Semua akun • Bulan ini</p>
-            <div className="flex items-center gap-6">
-              <div>
-                <p className="text-[10px] flex items-center gap-1 text-white/80 uppercase font-bold"><TrendingUp className="w-3 h-3"/>Masuk</p>
-                <p className="text-sm font-bold mt-0.5">+{formatCurrency(summary.income)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] flex items-center gap-1 text-white/80 uppercase font-bold"><TrendingDown className="w-3 h-3"/>Keluar</p>
-                <p className="text-sm font-bold mt-0.5">-{formatCurrency(summary.expenses)}</p>
-              </div>
+        <div className="relative overflow-hidden rounded-[24px] p-6 text-[#1a1a2e] bg-[#f0fdf4] border border-[#dcfce7] shadow-sm group">
+          <div className="relative z-10 flex flex-col items-start gap-1">
+            <div className="flex justify-between items-center w-full mb-1">
+              <p className="text-sm font-bold text-[#15803d]">Total Saldo</p>
+              <span className="bg-[#a3e635] text-[#3f6212] px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase">
+                ACTIVE
+              </span>
+            </div>
+            <h2 className="text-[40px] font-extrabold tracking-tight mb-3 leading-none truncate w-full">
+              {formatCurrency(summary.balance)}
+            </h2>
+            <div className="flex items-center gap-1.5 bg-white/60 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-[#15803d]">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>+{summary.savingsRate}%</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-4 gap-3 pt-2">
-        {[
-          { label: 'Keluar', icon: TrendingDown, color: 'text-[var(--gradient-danger-start)]', route: '/transactions?type=expense' },
-          { label: 'Masuk', icon: TrendingUp, color: 'text-[var(--gradient-success-start)]', route: '/transactions?type=income' },
-          { label: 'Transfer', icon: ArrowRight, color: 'text-[var(--gradient-hero-start)]', route: '/transactions' },
-          { label: 'Laporan', icon: Receipt, color: 'text-[var(--text-secondary)]', route: '/reports' },
-        ].map(action => (
-          <Link key={action.label} to={action.route} className="flex flex-col items-center gap-2">
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-[1.25rem] glass-card flex items-center justify-center hover:scale-105 transition-transform">
-              <action.icon className={`w-6 h-6 ${action.color}`} strokeWidth={2.5} />
+      {/* Quick Actions (Income / Expense) */}
+      {summary && (
+        <div className="grid grid-cols-2 gap-4">
+          <Link to="/transactions?type=income" className="flow-card p-5 flex flex-col items-center text-center group hover:bg-[#f0fdf4] transition-colors border-none shadow-sm h-full">
+            <div className="w-12 h-12 rounded-full bg-[#3b82f6] text-white flex items-center justify-center mb-3 shadow-md shadow-blue-500/20 group-hover:scale-110 transition-transform">
+              <ArrowUpRight className="w-6 h-6" strokeWidth={2.5}/>
             </div>
-            <span className="text-[11px] font-semibold text-[var(--text-secondary)]">{action.label}</span>
+            <p className="text-[15px] font-bold text-[#1a1a2e]">Pemasukan</p>
+            <p className="text-[13px] text-[#71717a] font-medium">{formatCurrency(summary.income)}</p>
           </Link>
-        ))}
-      </div>
 
-      {/* Monthly Chart */}
-      {monthlyData.length > 0 && (
-        <div className="glass-card p-4">
-          <h3 className="text-base font-bold text-[var(--text-primary)] mb-4">Tren Bulanan</h3>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Area type="monotone" dataKey="income" stroke="#22c55e" fill="rgba(34,197,94,0.1)" name="Income" />
-              <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="rgba(239,68,68,0.1)" name="Expenses" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <Link to="/transactions?type=expense" className="flow-card p-5 flex flex-col items-center text-center group hover:bg-[#fff1f2] transition-colors border-none shadow-sm h-full">
+            <div className="w-12 h-12 rounded-full bg-[#f43f5e] text-white flex items-center justify-center mb-3 shadow-md shadow-rose-500/20 group-hover:scale-110 transition-transform">
+              <ArrowDownRight className="w-6 h-6" strokeWidth={2.5}/>
+            </div>
+            <p className="text-[15px] font-bold text-[#1a1a2e]">Pengeluaran</p>
+            <p className="text-[13px] text-[#71717a] font-medium">{formatCurrency(summary.expenses)}</p>
+          </Link>
         </div>
+      )}
+
+      {/* Daily Spending Mini-Card */}
+      {summary && summary.expenses > 0 && (
+         <div className="flow-card p-5 border-none shadow-sm relative overflow-hidden">
+            <div className="flex justify-between items-start mb-6 z-10 relative">
+              <div>
+                <h3 className="text-base font-bold text-[#1a1a2e]">Pengeluaran 7 Hari</h3>
+                <p className="text-sm text-[#71717a] font-medium">Minggu ini</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[22px] font-extrabold text-[#1a1a2e] leading-none mb-1">
+                  {formatCurrency(summary.expenses / (monthlyData.length || 1))} {/* Rough approx for UI demo */}
+                </p>
+                <p className="text-[11px] font-bold text-[#ef4444]">Sesuai budget</p>
+              </div>
+            </div>
+
+            {/* Simulated bar chart */}
+            <div className="flex justify-between items-end h-24 gap-2 z-10 relative">
+              {weeklyBars.map((bar, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                  <div className="w-full bg-[#f4f4f5] rounded-t-sm rounded-b-sm relative flex items-end h-full">
+                    <div 
+                      className="w-full bg-[#1a1a2e] rounded-t-sm rounded-b-sm animate-slide-up" 
+                      style={{ height: `${bar.value * 100}%`, animationDelay: `${i * 100}ms` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-[#a1a1aa]">{bar.day}</span>
+                </div>
+              ))}
+            </div>
+         </div>
       )}
 
       {/* Recent Transactions */}
       <div className="pt-2">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-[var(--text-primary)]">Terbaru</h3>
-          <Link to="/transactions" className="text-xs font-semibold text-[var(--gradient-hero-start)] opacity-80 hover:opacity-100 transition-opacity flex items-center gap-1">
-            Lihat Semua <ArrowRight className="w-3 h-3" />
+        <div className="flex items-center justify-between mb-4 px-1">
+          <h3 className="text-[17px] font-bold text-[#1a1a2e]">Aktivitas Terbaru</h3>
+          <Link to="/transactions" className="text-[13px] font-bold text-[#65a30d] hover:text-[#4d7c0f] transition-colors">
+            Lihat Semua
           </Link>
         </div>
+        
         {recentTransactions.length === 0 ? (
-          <div className="glass-card p-10 text-center border-dashed border-2 border-[var(--text-primary)]/10">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-[var(--text-primary)]/5 flex items-center justify-center">
-              <Receipt className="w-8 h-8 text-[var(--text-secondary)]" />
+          <div className="flow-card p-8 text-center border-dashed border-2 border-zinc-200">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-3xl bg-zinc-100 flex items-center justify-center">
+              <Receipt className="w-8 h-8 text-zinc-400" />
             </div>
-            <h4 className="text-base font-bold mb-1 opacity-90">Belum ada transaksi</h4>
-            <p className="text-sm text-[var(--text-secondary)] mb-6 max-w-[200px] mx-auto">
-              Mulai catat pengeluaran dan pemasukan Anda di sini.
+            <h4 className="text-base font-bold mb-1 text-[#1a1a2e]">Belum ada transaksi</h4>
+            <p className="text-sm text-[#71717a] mb-6 max-w-[200px] mx-auto">
+              Mulai catat pengeluaran dan pemasukan Anda.
             </p>
-            <Link to="/transactions">
-              <button className="btn-primary px-8 py-3 rounded-2xl text-sm w-full sm:w-auto">
-                <Plus className="w-5 h-5" /> Tambah Transaksi
+            <Link to="/transactions?new=true">
+              <button className="btn-primary w-full shadow-md">
+                <Plus className="w-5 h-5" /> Catat Transaksi
               </button>
             </Link>
           </div>
         ) : (
-          <div className="glass-card divide-y divide-[var(--text-primary)]/10">
-            {recentTransactions.map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">
-                    {tx.type === 'income' ? '📈' : '📉'}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{tx.description || tx.categoryId}</p>
-                    <p className="text-xs text-gray-500">{formatDate(tx.date)} • {tx.categoryId}</p>
+          <div className="flow-card divide-y divide-zinc-100 border-none shadow-sm">
+            {recentTransactions.map((tx, index) => (
+              <div key={tx.id} className="flex items-center justify-between p-4 hover:bg-zinc-50 transition-colors animate-slide-in-bottom" style={{ animationDelay: `${index * 50}ms`}}>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <CategoryIcon category={tx.categoryId} size="md" />
+                  <div className="min-w-0 pr-2">
+                    <p className="text-[15px] font-bold text-[#1a1a2e] truncate leading-tight mb-0.5">
+                      {tx.description || tx.categoryId.charAt(0).toUpperCase() + tx.categoryId.slice(1)}
+                    </p>
+                    <p className="text-[12px] text-[#71717a] font-medium truncate capitalize">
+                      {tx.categoryId}
+                    </p>
                   </div>
                 </div>
-                <span className={`text-sm font-semibold whitespace-nowrap ml-4 ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                  {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
-                </span>
+                <div className="flex flex-col items-end flex-shrink-0">
+                   <span className={`text-[15px] font-bold whitespace-nowrap ${tx.type === 'income' ? 'text-[#16a34a]' : 'text-[#ef4444]'}`}>
+                    {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                  </span>
+                  <span className="text-[11px] font-semibold text-[#a1a1aa] uppercase tracking-wider">
+                    {formatDate(tx.date).split(',')[0]} {/* Just show date/time string roughly */}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

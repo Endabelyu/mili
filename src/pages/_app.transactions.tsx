@@ -1,36 +1,18 @@
 import '../styles/animations.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { transactionsApi, categoriesApi } from '../api/client';
 import { type Transaction, type Category } from '../types';
 import { TransactionItem } from '../components/finance/TransactionItem';
 import { TransactionForm } from '../components/finance/TransactionForm';
-import { Modal } from '../components/ui/Modal';
-import { Button } from '../components/ui/Button';
-import { formatCurrency } from '../lib/utils';
+import { Modal, DateGroupHeader, TipCard, FilterPills, Button } from '../components/ui';
+import { Search, Plus } from 'lucide-react';
+import { formatDate } from '../lib/utils';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { Plus, Search, ArrowLeft, ArrowRight, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 
-export const meta = () => {
-  return [
-    { title: 'Transactions | Finance Tracker' },
-    { name: 'description', content: 'View and manage your transactions' },
-  ];
-};
-
-
-
-function calculateTotals(transactions: Transaction[]) {
-  return transactions.reduce(
-    (acc, t) => {
-      const amount = parseFloat(t.amount.toString());
-      if (t.type === 'income') acc.income += amount;
-      else acc.expense += amount;
-      return acc;
-    },
-    { income: 0, expense: 0 }
-  );
-}
+export const meta = () => [
+  { title: 'Transactions | Finance Tracker' },
+];
 
 function getCurrentMonth(): string {
   return new Date().toISOString().slice(0, 7);
@@ -42,19 +24,14 @@ export default function TransactionsPage() {
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [refreshKey, setRefreshKey] = useState(0);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   
-  const currentType = searchParams.get('type') || '';
-  const currentCategory = searchParams.get('category') || '';
+  const currentType = searchParams.get('type') || 'all';
   const currentMonth = searchParams.get('month') || getCurrentMonth();
-  const currentSearch = searchParams.get('search') || '';
-  const page = Number(searchParams.get('page') || '1');
-
-  // Fetch data on parameters change
+  
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
@@ -63,20 +40,16 @@ export default function TransactionsPage() {
       try {
         const [transData, catData] = await Promise.all([
           transactionsApi.list({
-            page,
-            type: currentType || undefined,
-            category: currentCategory || undefined,
-            month: searchParams.get('month') ?? undefined, // not default to currentMonth string? wait, we use current month if missing or not? The loader uses `|| undefined`. Let's just use `currentMonth`.
-            // Wait, we can pass exactly what's needed.
-            search: currentSearch || undefined,
+            limit: 100, // Load more for local grouping
+            type: currentType !== 'all' ? currentType : undefined,
+            month: currentMonth,
           } as any),
           categoriesApi.list(),
         ]);
 
         if (isMounted) {
-          setTransactions(transData.items);
+          setTransactions(transData.items || []);
           setCategories(catData);
-          if (transData.pagination) setPagination(transData.pagination);
         }
       } catch (err) {
         console.error('Failed to load transactions', err);
@@ -87,49 +60,30 @@ export default function TransactionsPage() {
 
     loadData();
     return () => { isMounted = false; };
-  }, [page, currentType, currentCategory, searchParams.get('month'), currentSearch, refreshKey]);
-  const totals = calculateTotals(transactions);
-  const netAmount = totals.income - totals.expense;
-  
+  }, [currentType, currentMonth, refreshKey]);
+
   useKeyboardShortcuts([
     {
-      key: 'n',
-      ctrl: true,
-      meta: true,
+      key: 'n', ctrl: true, meta: true,
       handler: () => setIsModalOpen(true),
     },
     {
       key: 'Escape',
-      handler: () => {
-        if (isModalOpen) setIsModalOpen(false);
-      },
+      handler: () => { if (isModalOpen) setIsModalOpen(false); },
     },
   ]);
   
   useEffect(() => {
     if (searchParams.get('new') === 'true') {
       setIsModalOpen(true);
-      // Remove it from URL without causing navigation jump
-      setSearchParams(
-        prev => {
-          const newParams = new URLSearchParams(prev);
-          newParams.delete('new');
-          return newParams;
-        },
-        { replace: true }
-      );
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('new');
+        return newParams;
+      }, { replace: true });
     }
   }, [searchParams, setSearchParams]);
-  
-  const updateFilters = (updates: Record<string, string>) => {
-    const newParams = new URLSearchParams(searchParams);
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value) newParams.set(key, value);
-      else newParams.delete(key);
-    });
-    setSearchParams(newParams);
-  };
-  
+
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setIsModalOpen(true);
@@ -143,139 +97,112 @@ export default function TransactionsPage() {
       console.error('Failed to delete transaction', err);
     }
   };
-  
+
+  // Group transactions by date
+  const groupedTransactions = useMemo(() => {
+    const groups: Record<string, Transaction[]> = {};
+    const todayStr = formatDate(new Date().toISOString());
+
+    transactions.forEach(t => {
+      const dateStr = formatDate(t.date);
+      if (!groups[dateStr]) groups[dateStr] = [];
+      groups[dateStr].push(t);
+    });
+
+    return Object.entries(groups).map(([date, items]) => ({
+      date,
+      isToday: date === todayStr,
+      items
+    }));
+  }, [transactions]);
+
   if (isLoading) {
-    return <div className="space-y-6 animate-fade-in"><p>Loading...</p></div>;
+    return <div className="p-8 animate-pulse text-center text-zinc-400 font-medium">Memuat transaksi...</div>;
   }
   
+  // Format month name for header
+  const dateObj = new Date(currentMonth + '-01');
+  const monthName = dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="hidden md:flex flex-col gap-4 md:gap-6">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] tracking-tight">Transactions</h1>
-            <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-0.5">
-              Manage your income and expenses
-              <span className="hidden sm:inline opacity-60 ml-2">(Cmd/Ctrl+N to add new)</span>
-            </p>
-          </div>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="hidden md:flex h-11 px-6 shadow-sm hover:shadow transition-all duration-200"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Transaction
-          </Button>
+    <div className="space-y-4 md:space-y-6 pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-4 lg:pt-8 w-full animate-fade-in">
+
+      {/* Inline Header (Desktop & Mobile) */}
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 className="text-[22px] font-extrabold text-[#1a1a2e] tracking-tight">{monthName}</h1>
+          <p className="text-sm font-medium text-[#71717a]">Riwayat Transaksi</p>
         </div>
+        <input 
+          type="month" 
+          value={currentMonth}
+          onChange={(e) => {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set('month', e.target.value);
+            setSearchParams(newParams);
+          }}
+          className="bg-zinc-100 text-[#1a1a2e] font-bold px-3 py-2 rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-[#a3e635]"
+        />
       </div>
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { label: 'Pemasukan', amount: totals.income, icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-          { label: 'Pengeluaran', amount: totals.expense, icon: TrendingDown, color: 'text-rose-400', bg: 'bg-rose-500/10' },
-          { label: 'Selisih', amount: Math.abs(netAmount), icon: Wallet, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-        ].map((stat) => (
-          <div key={stat.label} className="glass-card group hover:bg-white/[0.04] transition-all p-5">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                <stat.icon className={`w-6 h-6 ${stat.color}`} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] opacity-80">{stat.label}</p>
-                <p className="text-xl font-extrabold text-[var(--text-primary)] mt-0.5">{formatCurrency(stat.amount)}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {/* Filters Overlay on Tablet/Desktop, Stacked on Mobile */}
-      <div className="flex flex-col md:flex-row gap-3">
-        <div className="relative flex-[2]">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
-          <input
-            type="text"
-            placeholder="Cari transaksi..."
-            value={currentSearch}
-            onChange={(e) => updateFilters({ search: e.target.value })}
-            className="input pl-12 h-12"
-          />
-        </div>
-        <div className="flex gap-2 flex-1">
-          <select
-            value={currentType}
-            onChange={(e) => updateFilters({ type: e.target.value })}
-            className="input flex-1 h-12 py-0 px-4 text-sm appearance-none cursor-pointer"
-          >
-            <option value="">Semua</option>
-            <option value="income">Masuk</option>
-            <option value="expense">Keluar</option>
-          </select>
-          <input
-            type="month"
-            value={currentMonth}
-            onChange={(e) => updateFilters({ month: e.target.value })}
-            className="input flex-1 h-12 py-0 px-4 text-sm appearance-none cursor-pointer"
-          />
-        </div>
-      </div>
-      
+
+      {/* Filter Pills */}
+      <FilterPills
+        activeValue={currentType}
+        onChange={(val) => {
+          const newParams = new URLSearchParams(searchParams);
+          if (val === 'all') newParams.delete('type');
+          else newParams.set('type', val);
+          setSearchParams(newParams);
+        }}
+        options={[
+          { label: 'Semua ▾', value: 'all' },
+          { label: 'Pengeluaran', value: 'expense' },
+          { label: 'Pemasukan', value: 'income' },
+        ]}
+      />
+
+      {/* Buddy Tip */}
+      <TipCard
+        title="Insight Bulan Ini"
+        message={`Anda lebih banyak mengalokasikan dana ke kategori Makanan di bulan ${monthName.split(' ')[0]}.`}
+        actionText="LIHAT INSIGHT"
+        icon="🐻"
+      />
+
       {/* Transactions List */}
-      <div className="space-y-3">
-        {transactions.length === 0 ? (
-          <div className="text-center py-16 px-4 glass-card">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--text-primary)]/5 flex items-center justify-center">
-              <Search className="w-8 h-8 text-[var(--text-secondary)]" />
+      <div className="flow-card divide-y divide-zinc-100 border border-zinc-100 overflow-hidden shadow-sm mt-4">
+        {groupedTransactions.length === 0 ? (
+          <div className="text-center py-12 px-4">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-50 flex items-center justify-center">
+              <Search className="w-8 h-8 text-zinc-300" />
             </div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No transactions found</h3>
-            <p className="text-[var(--text-secondary)] mb-6">Get started by adding your first transaction.</p>
-            <Button onClick={() => setIsModalOpen(true)}>
+            <h3 className="text-[16px] font-bold text-[#1a1a2e] mb-1">Belum ada transaksi</h3>
+            <p className="text-sm font-medium text-[#71717a]">Catat pengeluaran pertamamu bulan ini!</p>
+            <Button onClick={() => setIsModalOpen(true)} className="mt-6 shadow-sm">
               <Plus className="w-4 h-4 mr-2" />
-              Add Transaction
+              Catat Transaksi
             </Button>
           </div>
         ) : (
-          <>
-            {transactions.map((transaction) => {
-              const category = categories.find(c => c.id === transaction.categoryId);
-              return (
-                <TransactionItem
-                  key={transaction.id}
-                  transaction={transaction}
-                  category={category}
-                  onEdit={() => handleEdit(transaction)}
-                  onDelete={() => handleDelete(transaction)}
-                />
-              );
-            })}
-            
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => updateFilters({ page: String(pagination.page - 1) })}
-                  disabled={pagination.page <= 1}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-                <span className="text-sm text-[var(--text-secondary)]">
-                  Page {pagination.page} of {pagination.totalPages}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => updateFilters({ page: String(pagination.page + 1) })}
-                  disabled={pagination.page >= pagination.totalPages}
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
+          groupedTransactions.map(group => (
+            <div key={group.date} className="bg-white">
+              <DateGroupHeader date={group.date} isToday={group.isToday} />
+              <div className="divide-y divide-zinc-50">
+                {group.items.map((transaction) => {
+                  const category = categories.find(c => c.id === transaction.categoryId);
+                  return (
+                    <TransactionItem
+                      key={transaction.id}
+                      transaction={transaction}
+                      category={category}
+                      onEdit={() => handleEdit(transaction)}
+                      onDelete={() => handleDelete(transaction)}
+                    />
+                  );
+                })}
               </div>
-            )}
-          </>
+            </div>
+          ))
         )}
       </div>
       
@@ -286,7 +213,7 @@ export default function TransactionsPage() {
           setIsModalOpen(false);
           setEditingTransaction(null);
         }}
-        title={editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
+        title={editingTransaction ? 'Edit Transaksi' : 'Catat Transaksi'}
       >
         <TransactionForm
           transaction={editingTransaction}
