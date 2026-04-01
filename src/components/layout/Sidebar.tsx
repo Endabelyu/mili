@@ -1,12 +1,11 @@
 import { NavLink, Link } from 'react-router';
 import { 
-  LayoutDashboard, 
-  Wallet, 
-  PiggyBank, 
-  BarChart3, 
-  Receipt, 
-  X, 
-  Settings, 
+  Home,
+  Receipt,
+  PieChart,
+  BarChart3,
+  X,
+  Settings,
   User,
   ChevronRight,
   LogOut,
@@ -16,9 +15,9 @@ import { useNavigate } from 'react-router';
 import { useEffect, useRef } from 'react';
 
 const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/', label: 'Home', icon: Home },
   { path: '/transactions', label: 'Transactions', icon: Receipt },
-  { path: '/budget', label: 'Budget', icon: PiggyBank },
+  { path: '/budget', label: 'Budget', icon: PieChart },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
 ];
 
@@ -93,7 +92,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Backdrop Overlay */}
       <div
         className={`
-          fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden
+          fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden
           transition-opacity duration-300
           ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
         `}
@@ -106,36 +105,36 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         ref={sidebarRef}
         className={`
           fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw]
-          bg-[var(--app-bg-start)] text-[var(--text-primary)]
-          border-r-2 border-[var(--card-border)]
-          shadow-2xl shadow-black/20
+          bg-white text-[#1a1a2e]
+          border-r border-zinc-100
+          shadow-2xl shadow-black/10
           transform transition-transform duration-300 ease-out
           flex flex-col
           lg:hidden
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className="p-6 bg-[var(--text-primary)]/5 border-b border-[var(--card-border)]">
+        <div className="p-6 bg-[#fbfbf9] border-b border-zinc-100">
           <div className="flex items-start justify-between mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            <div className="w-14 h-14 rounded-full bg-[#ecfccb] border-2 border-white flex items-center justify-center text-[#4d7c0f] font-bold text-xl shadow-sm">
               {user?.image ? (
-                <img src={user.image} alt={user.name || user.email} className="w-full h-full rounded-2xl object-cover" />
+                <img src={user.image} alt={user.name || user.email} className="w-full h-full rounded-full object-cover" />
               ) : (
                 userInitials
               )}
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/5 text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+              className="p-2 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-colors"
               aria-label="Close menu"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-base font-bold text-[var(--text-primary)] truncate">
+          <p className="text-base font-bold text-[#1a1a2e] truncate">
             {isPending ? '...' : (user?.name || user?.email || 'Guest')}
           </p>
-          <p className="text-xs text-[var(--text-secondary)] truncate">
+          <p className="text-xs text-zinc-500 truncate">
             {user?.email && user.name ? user.email : ''}
           </p>
         </div>
@@ -149,11 +148,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               end={path === '/'}
               onClick={onClose}
               className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-xl
+                flex items-center gap-3 px-4 py-3 rounded-2xl
                 text-sm font-semibold transition-all duration-200 min-h-[48px]
                 ${isActive
-                  ? 'bg-[#2C2D35] text-white dark:bg-white/10 dark:text-white'
-                  : 'text-[#2C2D35]/60 dark:text-white/50 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35] dark:hover:bg-white/5 dark:hover:text-white'
+                  ? 'bg-[#ecfccb] text-[#3f6212]'
+                  : 'text-zinc-500 hover:bg-zinc-50 hover:text-[#1a1a2e]'
                 }
               `}
             >
@@ -162,15 +161,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </NavLink>
           ))}
 
-          <div className="my-3 h-px bg-[var(--card-border)]" />
+          <div className="my-3 h-px bg-zinc-100" />
 
-          {/* Settings — navigate to /settings page */}
+          {/* Settings */}
           <NavLink
             to="/settings"
             onClick={onClose}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] ${
-                isActive ? 'bg-[#2C2D35] text-white dark:bg-white/10 dark:text-white' : 'text-[#2C2D35]/60 dark:text-white/50 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35] dark:hover:bg-white/5 dark:hover:text-white'
+              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all min-h-[48px] ${
+                isActive ? 'bg-[#ecfccb] text-[#3f6212]' : 'text-zinc-500 hover:bg-zinc-50 hover:text-[#1a1a2e]'
               }`
             }
           >
@@ -181,13 +180,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Footer - Sign Out */}
-        <div className="p-4 border-t-2 border-[#2C2D35]/8 dark:border-white/5">
+        <div className="p-4 border-t border-zinc-100">
           <NavLink
             to="/profile"
             onClick={onClose}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] mb-1 ${
-                isActive ? 'bg-[#2C2D35] text-white dark:bg-white/10 dark:text-white' : 'text-[#2C2D35]/60 dark:text-white/50 hover:bg-[#2C2D35]/8 hover:text-[#2C2D35] dark:hover:bg-white/5 dark:hover:text-white'
+              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all min-h-[48px] mb-1 ${
+                isActive ? 'bg-[#ecfccb] text-[#3f6212]' : 'text-zinc-500 hover:bg-zinc-50 hover:text-[#1a1a2e]'
               }`
             }
           >
@@ -196,7 +195,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </NavLink>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors min-h-[48px]"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-rose-500 hover:bg-rose-50 transition-colors min-h-[48px]"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             <span>Sign Out</span>
@@ -205,32 +204,32 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 h-screen bg-[var(--app-bg-start)] text-[var(--text-primary)] border-r-2 border-[var(--card-border)] fixed left-0 top-0">
+      <aside className="hidden lg:flex flex-col w-64 h-screen bg-[#fbfbf9] text-[#1a1a2e] border-r border-zinc-200 fixed left-0 top-0">
         {/* Logo */}
-        <div className="p-8 border-b-2 border-[var(--card-border)]">
+        <div className="p-8 border-b border-zinc-200 bg-white">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#2C2D35] flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-[#a3e635] flex items-center justify-center shadow-sm shadow-[#a3e635]/20">
+              <PieChart className="w-5 h-5 text-[#1a1a2e]" />
             </div>
             <div>
-              <h1 className="font-bold text-lg text-[#2C2D35] leading-tight">Finance</h1>
-              <p className="text-xs text-slate-400">Tracker</p>
+              <h1 className="font-bold text-lg text-[#1a1a2e] leading-tight flex items-center gap-1">FlowState <span className="text-lg leading-none">✨</span></h1>
+              <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Finance Tracker</p>
             </div>
           </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto bg-[#fbfbf9]">
           {navItems.map(({ path, label, icon: Icon }) => (
             <NavLink
               key={path}
               to={path}
               end={path === '/'}
               className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 min-h-[48px]
+                flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 min-h-[48px]
                 ${isActive
-                  ? 'btn-primary shadow-lg'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--text-primary)]/5 hover:text-[var(--text-primary)]'
+                  ? 'bg-white shadow-sm border border-zinc-200/60 text-[#1a1a2e]'
+                  : 'text-zinc-500 hover:bg-zinc-100 hover:text-[#1a1a2e]'
                 }
               `}
             >
@@ -240,22 +239,30 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           ))}
         </nav>
 
-        {/* Theme & User Footer */}
-        <div className="p-4 border-t-2 border-[#2C2D35]/10 space-y-1">
+        {/* Footer */}
+        <div className="p-4 border-t border-zinc-200 bg-[#fbfbf9] space-y-1">
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all min-h-[48px] ${
+                isActive ? 'bg-white shadow-sm border border-zinc-200/60 text-[#1a1a2e]' : 'text-zinc-500 hover:bg-zinc-100 hover:text-[#1a1a2e]'
+              }`
+            }
+          >
+            <Settings className="w-5 h-5 flex-shrink-0" />
+            <span>Settings</span>
+          </NavLink>
           <NavLink
             to="/profile"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] ${
-                isActive ? 'btn-primary shadow-lg' : 'text-[var(--text-secondary)] hover:bg-[var(--text-primary)]/5 hover:text-[var(--text-primary)]'
+              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all min-h-[48px] ${
+                isActive ? 'bg-white shadow-sm border border-zinc-200/60 text-[#1a1a2e]' : 'text-zinc-500 hover:bg-zinc-100 hover:text-[#1a1a2e]'
               }`
             }
           >
             <User className="w-5 h-5 flex-shrink-0" />
-            <span>Profil</span>
+            <span>Profile</span>
           </NavLink>
-          <p className="text-xs text-slate-400 text-center pt-2">
-            © {new Date().getFullYear()} Finance Tracker
-          </p>
         </div>
       </aside>
     </>

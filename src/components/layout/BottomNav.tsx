@@ -1,6 +1,5 @@
 import { NavLink, useLocation } from 'react-router';
-import { Home, Repeat, PieChart, User, Plus } from 'lucide-react';
-
+import { Home, Receipt, PieChart, User, Plus } from 'lucide-react';
 
 export function BottomNav() {
   const location = useLocation();
@@ -11,14 +10,14 @@ export function BottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
     >
-      {/* Background blur container with top border */}
-      <div className="bg-[var(--card-bg)] backdrop-blur-2xl border-t border-[var(--card-border)] flex h-[72px] items-stretch px-2 relative">
+      {/* Background container with subtle top shadow */}
+      <div className="bg-white shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.08)] flex h-[76px] items-stretch px-2 relative rounded-t-[20px]">
         {/* Left two tabs */}
-        <div className="flex flex-1 items-stretch justify-around">
+        <div className="flex flex-1 items-stretch justify-around pt-2 pb-safe">
           <NavTab to="/" icon={Home} label="Home" active={path === '/'} />
           <NavTab
             to="/transactions"
-            icon={Repeat}
+            icon={Receipt}
             label="Transaksi"
             active={path.startsWith('/transactions') && path !== '/transactions/new'}
           />
@@ -29,19 +28,19 @@ export function BottomNav() {
           <div className="absolute -top-7">
             <NavLink
               to="/transactions?new=true"
-              className="w-16 h-16 bg-gradient-to-br from-[var(--gradient-hero-start)] to-[var(--gradient-hero-end)] rounded-[1.25rem] flex items-center justify-center active:scale-95 transition-transform shadow-xl shadow-[var(--gradient-hero-start)]/30 text-white"
+              className="w-14 h-14 bg-gradient-to-tr from-[#84cc16] to-[#a3e635] rounded-full flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#a3e635]/40 text-black border-4 border-[var(--app-bg-end)]"
             >
-              <Plus className="w-8 h-8" strokeWidth={2.5} />
+              <Plus className="w-6 h-6" strokeWidth={3} />
             </NavLink>
           </div>
         </div>
 
         {/* Right two tabs */}
-        <div className="flex flex-1 items-stretch justify-around">
+        <div className="flex flex-1 items-stretch justify-around pt-2 pb-safe">
           <NavTab
             to="/budget"
             icon={PieChart}
-            label="Budgets"
+            label="Budget"
             active={path.startsWith('/budget')}
           />
           <NavTab
@@ -73,10 +72,10 @@ function NavTab({
       className="group relative flex flex-col items-center justify-center flex-1 gap-1"
     >
       <Icon
-        className={`w-6 h-6 transition-colors ${active ? 'text-[var(--gradient-hero-start)] drop-shadow-sm' : 'text-[var(--text-secondary)] peer-hover:text-[var(--text-primary)]'}`}
+        className={`w-6 h-6 transition-colors ${active ? 'text-[#84cc16]' : 'text-[#a1a1aa] peer-hover:text-[#52525b]'}`}
         strokeWidth={active ? 2.5 : 2}
       />
-      <span className={`text-[10px] font-bold tracking-wide transition-colors ${active ? 'text-[var(--gradient-hero-start)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
+      <span className={`text-[10px] font-bold tracking-wide transition-colors ${active ? 'text-[#84cc16]' : 'text-[#a1a1aa] group-hover:text-[#52525b]'}`}>
         {label}
       </span>
     </NavLink>

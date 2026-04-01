@@ -1,6 +1,6 @@
 /**
  * Design Tokens - Personal Finance Tracker
- * Semantic color system, spacing scale, typography, and shadows
+ * Semantic color system, spacing scale, typography, and shadows for FlowState Theme
  */
 
 // ============================================================================
@@ -8,21 +8,21 @@
 // ============================================================================
 
 export const colors = {
-  // Primary - Blue
+  // Primary - FlowState Lime Green
   primary: {
-    50: '#eff6ff',
-    100: '#dbeafe',
-    200: '#bfdbfe',
-    300: '#93c5fd',
-    400: '#60a5fa',
-    500: '#3b82f6',
-    600: '#2563eb',
-    700: '#1d4ed8',
-    800: '#1e40af',
-    900: '#1e3a8a',
+    50: '#f7fee7',
+    100: '#ecfccb',
+    200: '#d9f99d',
+    300: '#bef264',
+    400: '#a3e635',
+    500: '#84cc16',
+    600: '#65a30d',
+    700: '#4d7c0f',
+    800: '#3f6212',
+    900: '#365314',
   },
 
-  // Income - Green (semantic)
+  // Income - Semantic Green
   income: {
     50: '#f0fdf4',
     100: '#dcfce7',
@@ -36,48 +36,48 @@ export const colors = {
     900: '#14532d',
   },
 
-  // Expense - Red (semantic)
+  // Expense - Semantic Dark/Red
   expense: {
-    50: '#fef2f2',
-    100: '#fee2e2',
-    200: '#fecaca',
-    300: '#fca5a5',
-    400: '#f87171',
-    500: '#ef4444',
-    600: '#dc2626',
-    700: '#b91c1c',
-    800: '#991b1b',
-    900: '#7f1d1d',
+    50: '#f8fafc',
+    100: '#f1f5f9',
+    200: '#e2e8f0',
+    300: '#cbd5e1',
+    400: '#94a3b8',
+    500: '#64748b',
+    600: '#475569',
+    700: '#334155',
+    800: '#1e293b',
+    900: '#0f172a',
   },
 
   // Neutral - Gray scale
   gray: {
-    50: '#f9fafb',
-    100: '#f3f4f6',
-    200: '#e5e7eb',
-    300: '#d1d5db',
-    400: '#9ca3af',
-    500: '#6b7280',
-    600: '#4b5563',
-    700: '#374151',
-    800: '#1f2937',
-    900: '#111827',
-    950: '#030712',
+    50: '#fafafa',
+    100: '#f4f4f5',
+    200: '#e4e4e7',
+    300: '#d4d4d8',
+    400: '#a1a1aa',
+    500: '#71717a',
+    600: '#52525b',
+    700: '#3f3f46',
+    800: '#27272a',
+    900: '#18181b',
+    950: '#09090b',
   },
 
-  // Category colors - For badges/icons
+  // Category colors - Pastel backgrounds with strong text
   category: {
-    food: { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' },      // amber
-    transport: { bg: '#dbeafe', text: '#1e40af', border: '#93c5fd' }, // blue
-    entertainment: { bg: '#f3e8ff', text: '#6b21a8', border: '#d8b4fe' }, // purple
-    shopping: { bg: '#fce7f3', text: '#9d174d', border: '#f9a8d4' },  // pink
-    bills: { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' },     // red
-    health: { bg: '#d1fae5', text: '#065f46', border: '#6ee7b7' },    // emerald
-    education: { bg: '#e0e7ff', text: '#3730a3', border: '#a5b4fc' }, // indigo
-    salary: { bg: '#dcfce7', text: '#166534', border: '#86efac' },    // green
+    food: { bg: '#ffedd5', text: '#c2410c', border: '#fdba74' },      // orange/amber 
+    transport: { bg: '#ffe4e6', text: '#e11d48', border: '#fda4af' }, // rose
+    entertainment: { bg: '#f3e8ff', text: '#7e22ce', border: '#d8b4fe' }, // purple
+    shopping: { bg: '#dbeafe', text: '#1d4ed8', border: '#93c5fd' },  // blue
+    bills: { bg: '#fce7f3', text: '#be185d', border: '#f9a8d4' },     // pink
+    health: { bg: '#dcfce7', text: '#15803d', border: '#86efac' },    // green
+    education: { bg: '#e0e7ff', text: '#4338ca', border: '#a5b4fc' }, // indigo
+    salary: { bg: '#ecfccb', text: '#4d7c0f', border: '#bef264' },    // lime
     freelance: { bg: '#ccfbf1', text: '#0f766e', border: '#5eead4' }, // teal
-    investment: { bg: '#fef9c3', text: '#854d0e', border: '#fde047' }, // yellow
-    default: { bg: '#f3f4f6', text: '#374151', border: '#d1d5db' },   // gray
+    investment: { bg: '#fef3c7', text: '#b45309', border: '#fcd34d' }, // amber
+    default: { bg: '#f4f4f5', text: '#52525b', border: '#e4e4e7' },   // zinc
   },
 } as const;
 
@@ -135,6 +135,7 @@ export const typography = {
     medium: '500',
     semibold: '600',
     bold: '700',
+    extrabold: '800',
   },
 
   letterSpacing: {
@@ -158,34 +159,9 @@ export const shadows = {
   xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
   '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
   inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
+  card: '0 4px 20px -2px rgba(0, 0, 0, 0.04)',
   none: 'none',
 } as const;
-
-// ============================================================================
-// TRANSITIONS
-// ============================================================================
-
-export const transitions = {
-  duration: {
-    fast: '150ms',
-    normal: '200ms',
-    slow: '300ms',
-    slower: '500ms',
-  },
-  timing: {
-    linear: 'linear',
-    ease: 'ease',
-    'ease-in': 'ease-in',
-    'ease-out': 'ease-out',
-    'ease-in-out': 'ease-in-out',
-    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-    smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  },
-} as const;
-
-// ============================================================================
-// BORDER RADIUS
-// ============================================================================
 
 export const borderRadius = {
   none: '0',
@@ -196,86 +172,6 @@ export const borderRadius = {
   xl: '0.75rem',    // 12px
   '2xl': '1rem',    // 16px
   '3xl': '1.5rem',  // 24px
+  card: '20px',
   full: '9999px',
-} as const;
-
-// ============================================================================
-// Z-INDEX SCALE
-// ============================================================================
-
-export const zIndex = {
-  hide: -1,
-  base: 0,
-  docked: 10,
-  dropdown: 1000,
-  sticky: 1100,
-  banner: 1200,
-  overlay: 1300,
-  modal: 1400,
-  popover: 1500,
-  skipLink: 1600,
-  toast: 1700,
-  tooltip: 1800,
-} as const;
-
-// ============================================================================
-// FOCUS RING - Accessible focus states
-// ============================================================================
-
-export const focusRing = {
-  DEFAULT: 'ring-2 ring-offset-2 ring-blue-500 focus:outline-none',
-  primary: 'focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:outline-none',
-  income: 'focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:outline-none',
-  expense: 'focus:ring-2 focus:ring-offset-2 focus:ring-red-500 focus:outline-none',
-  danger: 'focus:ring-2 focus:ring-offset-2 focus:ring-red-500 focus:outline-none',
-} as const;
-
-// ============================================================================
-// BREAKPOINTS (for reference in JS)
-// ============================================================================
-
-export const breakpoints = {
-  sm: '640px',
-  md: '768px',
-  lg: '1024px',
-  xl: '1280px',
-  '2xl': '1536px',
-} as const;
-
-// ============================================================================
-// UTILITY CLASSES HELPERS
-// ============================================================================
-
-export const utilityClasses = {
-  // Transaction amount styling
-  incomeAmount: 'text-green-700 font-semibold',
-  expenseAmount: 'text-red-700 font-semibold',
-
-  // Transaction row backgrounds
-  incomeRow: 'bg-green-50/50 hover:bg-green-50',
-  expenseRow: 'bg-red-50/50 hover:bg-red-50',
-
-  // Category badge base
-  categoryBadge: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-
-  // Card/container
-  card: 'bg-white rounded-lg border border-gray-200 shadow-sm',
-  cardHover: 'hover:shadow-md hover:-translate-y-0.5 transition-all duration-200',
-
-  // Form elements
-  input: 'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm',
-  inputError: 'border-red-300 focus:border-red-500 focus:ring-red-500',
-
-  // Button variants
-  btnPrimary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-  btnIncome: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
-  btnExpense: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-  btnOutline: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500',
-  btnGhost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-
-  // Empty state
-  emptyState: 'text-center py-12 text-gray-500',
-
-  // Loading skeleton
-  skeleton: 'animate-pulse bg-gray-200 rounded',
 } as const;

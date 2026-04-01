@@ -29,7 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--app-bg-start)] to-[var(--app-bg-end)] text-[var(--text-primary)] selection:bg-[var(--text-primary)]/10 flex flex-col relative w-full overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--app-bg-start)] to-[var(--app-bg-end)] text-[var(--text-primary)] selection:bg-[var(--accent-primary)]/30 flex flex-col relative w-full overflow-x-hidden">
       {/* Main Sidebar Component (Handles both Mobile and Desktop internally) */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
