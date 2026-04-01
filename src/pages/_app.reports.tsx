@@ -1,10 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { ChartSkeleton, StatCardSkeleton, TipCard, FilterPills } from '../components/ui';
+import { ChartSkeleton, StatCardSkeleton, TipCard } from '../components/ui';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -13,21 +11,17 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
   AreaChart,
   Area,
 } from 'recharts';
 import {
   BarChart3,
   TrendingUp,
-  PieChart as PieChartIcon,
-  Calendar,
   Wallet,
   Rocket
 } from 'lucide-react';
 import { reportsApi } from '../api/client';
 import { formatCurrency } from '../lib/utils';
-import { CategoryIcon } from '../components/ui';
 
 export const meta = () => [
   { title: 'Reports & Analytics | Finance Tracker' },
@@ -148,11 +142,13 @@ function StatCard({ title, value, icon, color }: StatCardProps) {
 }
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="flow-card p-3 shadow-lg border border-zinc-100 z-50 rounded-[16px]">
         <p className="text-sm font-bold text-[#1a1a2e] mb-2">{label}</p>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 text-[13px] font-medium">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
@@ -352,7 +348,7 @@ export default function ReportsPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f4f4f5" />
                   <XAxis dataKey="monthLabel" tick={{ fontSize: 11, fill: '#a1a1aa' }} axisLine={false} tickLine={false} tickMargin={10} />
-                  <YAxis tick={{ fontSize: 11, fill: '#a1a1aa' }} axisLine={false} tickLine={false} tickFormatter={(val) => \`\${(val/1000)}k\`} />
+                  <YAxis tick={{ fontSize: 11, fill: '#a1a1aa' }} axisLine={false} tickLine={false} tickFormatter={(val: number) => `${(val/1000)}k`} />
                   <Tooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="income" name="Pemasukan" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorInc)" />
                   <Area type="monotone" dataKey="expenses" name="Pengeluaran" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExp)" />
@@ -378,9 +374,10 @@ export default function ReportsPage() {
                   <PieChart>
                     <Pie data={categories} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={2} dataKey="amount" stroke="none">
                       {categories.map((entry, index) => (
-                        <Cell key={\`cell-\${index}\`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <Tooltip content={({ active, payload }: any) => {
                       if (active && payload && payload.length) {
                         const data = payload[0].payload;
@@ -403,9 +400,9 @@ export default function ReportsPage() {
                   <p className="text-[11px] font-bold uppercase tracking-wider text-[#a1a1aa] mb-0.5">TOTAL</p>
                   <p className="text-[15px] font-extrabold text-[#1a1a2e] leading-none">
                      {totalExpenses > 1000000 
-                       ? \`\${(totalExpenses / 1000000).toFixed(1)}jt\` 
+                       ? `${(totalExpenses / 1000000).toFixed(1)}jt` 
                        : totalExpenses > 1000 
-                          ? \`\${(totalExpenses / 1000).toFixed(0)}rb\`
+                          ? `${(totalExpenses / 1000).toFixed(0)}rb`
                           : formatCurrency(totalExpenses)
                      }
                   </p>
