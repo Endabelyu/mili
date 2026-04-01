@@ -3,13 +3,11 @@ import { type MetaFunction, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { User, ArrowLeft, Check } from 'lucide-react';
+import { User, ArrowLeft, Check, Sparkles } from 'lucide-react';
 
 export const meta: MetaFunction = () => [
   { title: 'Edit Profil | Finance Tracker' },
 ];
-
-
 
 export default function EditProfilePage() {
   const { user, updateUser } = useAuth();
@@ -43,31 +41,36 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 pb-28 animate-fade-in pt-2">
+    <div className="max-w-xl mx-auto space-y-6 pb-28 md:pb-8 pt-4 lg:pt-8 px-4 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-6">
         <button
           type="button"
           onClick={() => navigate('/profile')}
-          className="w-9 h-9 rounded-xl flex items-center justify-center bg-[var(--text-primary)]/5 hover:bg-[var(--text-primary)]/10 transition-colors"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-[#f4f4f5] hover:bg-zinc-200 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4 text-[var(--text-primary)]" />
+          <ArrowLeft className="w-5 h-5 text-[#1a1a2e]" />
         </button>
-        <h1 className="text-lg font-bold text-[var(--text-primary)]">Edit Profil</h1>
+        <div>
+          <h1 className="text-[20px] font-extrabold text-[#1a1a2e] tracking-tight">Edit Profil</h1>
+        </div>
       </div>
 
       {/* Avatar Preview */}
-      <div className="flex justify-center">
-        <div className="w-20 h-20 rounded-2xl bg-[var(--gradient-hero-start)]/20 border-2 border-[var(--gradient-hero-start)]/30 flex items-center justify-center">
-          <User className="w-9 h-9 text-[var(--gradient-hero-start)]" />
+      <div className="flex justify-center mb-6">
+        <div className="w-24 h-24 rounded-full bg-[#ecfccb] border-4 border-white shadow-sm flex items-center justify-center relative">
+          <User className="w-10 h-10 text-[#65a30d]" />
+          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-zinc-100">
+             <Sparkles className="w-4 h-4 text-[#f59e0b] fill-[#f59e0b]" />
+          </div>
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="glass-card p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="flow-card p-6 space-y-5 border-none shadow-sm">
         <div>
-          <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
-            Nama Tampilan
+          <label className="block text-sm font-bold text-[#1a1a2e] mb-2">
+            Nama Lengkap
           </label>
           <Input
             id="name"
@@ -76,42 +79,45 @@ export default function EditProfilePage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Masukkan nama Anda"
+            className="h-12 text-[#1a1a2e] border-zinc-200 focus:border-[#a3e635] focus:ring-[#a3e635] bg-white"
             autoFocus
           />
           {error && (
-            <p className="mt-2 text-sm text-red-500">{error}</p>
+            <p className="mt-2 text-[13px] font-bold text-[#ef4444]">{error}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
-            Email
+          <label className="block text-sm font-bold text-[#1a1a2e] mb-2">
+            Alamat Email
           </label>
           <Input
             type="email"
             value={user.email}
             disabled
-            className="opacity-50 cursor-not-allowed"
+            className="h-12 bg-zinc-50 border-zinc-200 text-zinc-500 cursor-not-allowed"
           />
-          <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
-            Email tidak dapat diubah.
+          <p className="mt-2 text-[12px] font-medium text-[#71717a]">
+            Email terikat dengan akun Anda dan tidak dapat diubah di sini.
           </p>
         </div>
 
-        <Button
-          type="submit"
-          isLoading={isLoading}
-          className="w-full"
-        >
-          {success ? (
-            <>
-              <Check className="w-4 h-4 mr-2" />
-              Tersimpan!
-            </>
-          ) : (
-            'Simpan Perubahan'
-          )}
-        </Button>
+        <div className="pt-2">
+           <Button
+             type="submit"
+             disabled={isLoading}
+             className={`w-full h-12 text-sm shadow-md transition-all ${success ? 'bg-[#22c55e] hover:bg-[#16a34a] text-white ring-[#22c55e]' : ''}`}
+           >
+             {isLoading ? 'Menyimpan...' : success ? (
+               <span className="flex items-center justify-center">
+                 <Check className="w-5 h-5 mr-2" />
+                 Tersimpan!
+               </span>
+             ) : (
+               'Simpan Perubahan'
+             )}
+           </Button>
+        </div>
       </form>
     </div>
   );

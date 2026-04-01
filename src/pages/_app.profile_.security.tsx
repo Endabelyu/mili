@@ -78,7 +78,7 @@ export default function SecurityPage() {
     placeholder: string;
   }) => (
     <div>
-      <label htmlFor={id} className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
+      <label htmlFor={id} className="block text-sm font-bold text-[#1a1a2e] mb-2">
         {label}
       </label>
       <div className="relative">
@@ -88,42 +88,44 @@ export default function SecurityPage() {
           value={form[field]}
           onChange={handleChange(field)}
           placeholder={placeholder}
-          className="pr-11"
+          className="pr-12 h-12 bg-white border-zinc-200 focus:border-[var(--text-primary)] focus:ring-[var(--text-primary)]"
         />
         <button
           type="button"
           onClick={() => setShowPass(prev => ({ ...prev, [showKey]: !prev[showKey] }))}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a1a1aa] hover:text-[#1a1a2e] transition-colors p-1"
         >
-          {showPass[showKey] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {showPass[showKey] ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
         </button>
       </div>
     </div>
   );
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 pb-28 animate-fade-in pt-2">
+    <div className="max-w-xl mx-auto space-y-6 pb-28 md:pb-8 pt-4 lg:pt-8 px-4 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-6">
         <button
           type="button"
           onClick={() => navigate('/profile')}
-          className="w-9 h-9 rounded-xl flex items-center justify-center bg-[var(--text-primary)]/5 hover:bg-[var(--text-primary)]/10 transition-colors"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-[#f4f4f5] hover:bg-zinc-200 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4 text-[var(--text-primary)]" />
+          <ArrowLeft className="w-5 h-5 text-[#1a1a2e]" />
         </button>
-        <h1 className="text-lg font-bold text-[var(--text-primary)]">Keamanan</h1>
+        <div>
+          <h1 className="text-[20px] font-extrabold text-[#1a1a2e] tracking-tight">Keamanan</h1>
+        </div>
       </div>
 
       {/* Icon */}
-      <div className="flex justify-center">
-        <div className="w-20 h-20 rounded-2xl bg-[var(--gradient-hero-start)]/20 border-2 border-[var(--gradient-hero-start)]/30 flex items-center justify-center">
-          <Shield className="w-9 h-9 text-[var(--gradient-hero-start)]" />
+      <div className="flex justify-center mb-6">
+        <div className="w-24 h-24 rounded-full bg-[#fbfbf9] border-4 border-white shadow-sm flex items-center justify-center">
+          <Shield className="w-10 h-10 text-[#a3e635]" />
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="glass-card p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="flow-card p-6 space-y-5 border-none shadow-sm bg-white">
         <PasswordInput
           id="currentPassword"
           label="Kata Sandi Saat Ini"
@@ -147,25 +149,27 @@ export default function SecurityPage() {
         />
 
         {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-500">
-            {error}
+          <div className="p-4 rounded-xl bg-[#fef2f2] border border-[#fecaca] flex items-start gap-2">
+            <span className="text-[13px] font-bold text-[#ef4444]">{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-500 flex items-center gap-2">
-            <Check className="w-4 h-4" />
-            Kata sandi berhasil diubah!
+          <div className="p-4 rounded-xl bg-[#f0fdf4] border border-[#bbf7d0] flex items-center gap-2">
+            <Check className="w-5 h-5 text-[#22c55e] flex-shrink-0" />
+             <span className="text-[13px] font-bold text-[#16a34a]">Kata sandi berhasil diubah!</span>
           </div>
         )}
 
-        <Button type="submit" isLoading={isLoading} className="w-full">
-          Ubah Kata Sandi
-        </Button>
+        <div className="pt-2">
+           <Button type="submit" disabled={isLoading} className="w-full h-12 text-sm shadow-md">
+             {isLoading ? 'Menyimpan...' : 'Ubah Kata Sandi'}
+           </Button>
+        </div>
       </form>
 
-      <p className="text-center text-xs text-[var(--text-secondary)] px-4">
-        Setelah mengubah kata sandi, Anda akan tetap masuk di perangkat ini.
+      <p className="text-center text-[12px] font-medium text-[#a1a1aa] px-4 pt-2 pb-8">
+        Setelah mengubah kata sandi, sesi di perangkat ini tetap berjalan.
       </p>
     </div>
   );

@@ -1,82 +1,103 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, Loader2, Wallet } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Mail, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 
-export default function ForgotPassword() {
-  const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+export default function ForgotPasswordPage() {
+  const { forgetPassword } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [email, setEmail] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      setError('Email is required');
+      setError('Email wajib diisi');
       return;
     }
     setError('');
-    setIsSubmitting(true);
+    setIsLoading(true);
     try {
-      // Simulate API call for now since we don't have the forgot password endpoint typed out
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await forgetPassword(email);
       setSuccess(true);
-    } catch {
-      setError('An unexpected error occurred. Please try again.');
+    } catch (err: any) {
+      setError(err?.body?.message || err?.message || 'Gagal mengirim email reset kata sandi');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 glass-card p-8 sm:p-10">
-        <div className="mx-auto w-full max-w-sm lg:w-[380px] relative z-20">
-          <Link to="/auth/login" className="mb-8 inline-flex items-center text-sm font-medium opacity-70 hover:opacity-100 transition-colors">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to sign in
-          </Link>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-[#fbfbf9]">
+      <div className="w-full max-w-md space-y-8 flow-card border-none shadow-sm p-8 sm:p-10 animate-fade-in">
+        <div className="text-center">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1a1a2e]">Lupa Kata Sandi</h1>
+          <p className="mt-2 text-sm font-medium text-[#71717a]">
+            Masukkan alamat email Anda untuk menerima tautan reset kata sandi.
+          </p>
+        </div>
 
-          <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--gradient-hero-start)] to-[var(--gradient-hero-end)]">
-              <Wallet className="h-6 w-6 text-white" />
+        {success ? (
+          <div className="rounded-xl bg-[#f0fdf4] p-6 text-center border border-[#bbf7d0]">
+            <CheckCircle2 className="mx-auto h-12 w-12 text-[#16a34a] mb-4" />
+            <h3 className="text-lg font-bold text-[#15803d]">Email Terkirim!</h3>
+            <p className="mt-2 text-sm font-medium text-[#16a34a]">
+              Periksa kotak masuk Anda untuk instruksi menyetel ulang kata sandi.
+            </p>
+            <div className="mt-6">
+              <Link to="/auth/login">
+                <Button variant="outline" className="w-full border-[#bbf7d0] text-[#15803d] hover:bg-[#dcfce7]">
+                  Kembali ke Masuk
+                </Button>
+              </Link>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Finance Tracker</h1>
           </div>
-
-          <div>
-            <h2 className="text-2xl font-semibold mb-2">Reset Password</h2>
-            <p className="text-sm opacity-80 mb-8">Enter your email address to receive a password reset link.</p>
-
+        ) : (
+          <>
             {error && (
-              <div className="mb-6 rounded-2xl bg-red-50 p-4">
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="rounded-xl bg-[#fef2f2] p-4 flex gap-2 items-start border border-[#fecaca]">
+                <AlertCircle className="h-5 w-5 text-[#ef4444] flex-shrink-0" />
+                <p className="text-sm font-bold text-[#b91c1c]">{error}</p>
               </div>
             )}
 
-            {success ? (
-              <div className="border border-[var(--gradient-success-start)] rounded-2xl p-6 text-center" style={{ background: 'var(--card-bg)' }}>
-                <Mail className="mx-auto h-10 w-10 text-[var(--gradient-success-end)] mb-4" />
-                <h3 className="text-lg font-medium mb-2">Check your email</h3>
-                <p className="text-sm opacity-80 mb-6">If an account exists, a reset link has been sent.</p>
-                <Link to="/auth/login" className="btn btn-primary w-full">
-                  Return to login
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+              <div>
+                <label htmlFor="email" className="block text-sm font-bold text-[#1a1a2e] mb-2">
+                  Alamat Email
+                </label>
+                <div className="mt-1 relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="pl-10 h-12 bg-white"
+                    placeholder="anda@email.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Button type="submit" className="w-full h-12 shadow-sm text-sm" disabled={isLoading}>
+                  {isLoading ? 'Mengirim...' : 'Kirim Tautan Reset'}
+                </Button>
+                
+                <Link to="/auth/login" className="flex items-center justify-center text-sm font-bold text-[#a1a1aa] hover:text-[#1a1a2e] transition-colors py-2">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Kembali ke Masuk
                 </Link>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium opacity-90">Email address</label>
-                  <div className="mt-2 relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 opacity-70" />
-                    <input type="email" required className="input pl-11" placeholder="name@example.com" value={email} onChange={e => setEmail(e.target.value)} />
-                  </div>
-                </div>
-                <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full shadow-lg disabled:opacity-70">
-                  {isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Sending...</> : 'Send reset link'}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );
