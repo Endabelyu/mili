@@ -11,6 +11,9 @@ const TransactionsPage = React.lazy(() => import('./pages/_app.transactions'));
 const BudgetPage = React.lazy(() => import('./pages/_app.budget'));
 const ReportsPage = React.lazy(() => import('./pages/_app.reports'));
 const ProfilePage = React.lazy(() => import('./pages/_app.profile'));
+const RewardsPage = React.lazy(() => import('./pages/_app.rewards'));
+const ChallengePage = React.lazy(() => import('./pages/_app.challenge'));
+const SubscriptionPage = React.lazy(() => import('./pages/_app.subscription'));
 const ProfileEditPage = React.lazy(() => import('./pages/_app.profile_.edit'));
 const ProfileSecurityPage = React.lazy(() => import('./pages/_app.profile_.security'));
 const SettingsPage = React.lazy(() => import('./pages/_app.settings'));
@@ -71,6 +74,9 @@ export default function App() {
           <Route path="/budget"            element={<ProtectedRoute><BudgetPage /></ProtectedRoute>} />
           <Route path="/reports"           element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
           <Route path="/profile"           element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/rewards"           element={<ProtectedRoute><RewardsPage /></ProtectedRoute>} />
+          <Route path="/challenge"         element={<ProtectedRoute><ChallengePage /></ProtectedRoute>} />
+          <Route path="/subscription/:id"  element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
           <Route path="/profile/edit"      element={<ProtectedRoute><ProfileEditPage /></ProtectedRoute>} />
           <Route path="/profile/security"  element={<ProtectedRoute><ProfileSecurityPage /></ProtectedRoute>} />
           <Route path="/settings"          element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
