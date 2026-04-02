@@ -68,7 +68,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const forgetPassword = async (email: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (authClient as any).forgetPassword({
       email,
       redirectTo: '/auth/reset-password',

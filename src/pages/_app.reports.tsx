@@ -142,13 +142,11 @@ function StatCard({ title, value, icon, color }: StatCardProps) {
 }
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="flow-card p-3 shadow-lg border border-zinc-100 z-50 rounded-[16px]">
         <p className="text-sm font-bold text-[#1a1a2e] mb-2">{label}</p>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 text-[13px] font-medium">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
@@ -377,7 +375,6 @@ export default function ReportsPage() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <Tooltip content={({ active, payload }: any) => {
                       if (active && payload && payload.length) {
                         const data = payload[0].payload;

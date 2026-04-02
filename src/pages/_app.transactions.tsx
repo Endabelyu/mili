@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, ShoppingBag, Coffee, Car, Pizza, Music, Clapperboard, Monitor, CheckCircle, Lightbulb
+  ArrowLeft, ShoppingBag, Coffee, Car, Pizza, Music, Monitor
 } from 'lucide-react';
-import { CategoryIcon } from '../components/ui';
 
 export default function TransactionsPage() {
   const [view, setView] = useState<'daily' | 'monthly'>('monthly');
@@ -145,7 +144,7 @@ export default function TransactionsPage() {
 
 // ─── Phase 4: OLED Dark Mode Entry Component ──────────────────────────────────────────────
 function OledExpenseMode({ onClose }: { onClose: () => void }) {
-  const [amount, setAmount] = useState('200000');
+  const [amount, _setAmount] = useState('200000');
   const [activeCategory, setActiveCategory] = useState('DRINKS');
 
   const categories = [

@@ -10,7 +10,7 @@ export function BottomNav() {
   let fabHidden = false;
   let fabPosition: 'center' | 'right' = 'center';
   let fabColor: 'green' | 'orange' | 'glow' = 'green';
-  let fabRoute = '/transactions?new=true';
+  const fabRoute = '/transactions?new=true';
 
   // Gamification pages and Dashboard (Wallet)
   if (path === '/' || path.startsWith('/rewards')) {
