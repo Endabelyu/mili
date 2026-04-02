@@ -1,281 +1,100 @@
-import '../styles/animations.css';
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { budgetsApi, categoriesApi } from '../api/client';
-import { type Budget, type Category } from '../types';
-import { Modal } from '../components/ui';
-import { BudgetCard } from '../components/finance/BudgetCard';
-import { BudgetForm } from '../components/finance/BudgetForm';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { Rocket, Wallet } from 'lucide-react';
-import { formatCurrency } from '../lib/utils';
-import { CategoryIcon } from '../components/ui';
+import { Calendar, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export const meta = () => [
-  { title: 'Budget | Finance Tracker' },
-];
+export default function BillsPage() {
+  const navigate = useNavigate();
 
-interface BudgetWithSpending extends Budget {
-  category: Category;
-  spent: string;
-  remaining: string;
-  percentageUsed: number;
-}
-
-function getCurrentMonth(): string {
-  return new Date().toISOString().slice(0, 7);
-}
-
-function calculateSummary(budgets: BudgetWithSpending[]) {
-  return budgets.reduce(
-    (acc, budget) => {
-      const limit = Number(budget.limitAmount);
-      const spent = Number(budget.spent);
-      acc.totalBudgeted += limit;
-      acc.totalSpent += spent;
-      return acc;
-    },
-    { totalBudgeted: 0, totalSpent: 0 }
-  );
-}
-
-export default function BudgetPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [budgets, setBudgets] = useState<BudgetWithSpending[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const currentMonth = searchParams.get('month') || getCurrentMonth();
-
-  useEffect(() => {
-    let isMounted = true;
-    setIsLoading(true);
-
-    const loadData = async () => {
-      try {
-        const [budgetsData, categoriesData] = await Promise.all([
-          budgetsApi.list({ month: currentMonth }),
-          categoriesApi.list(),
-        ]);
-
-        if (isMounted) {
-          setBudgets(budgetsData as BudgetWithSpending[]);
-          setCategories(categoriesData);
-        }
-      } catch (err) {
-        console.error('Failed to load budget data', err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    loadData();
-    return () => { isMounted = false; };
-  }, [currentMonth]);
-
-  const handleDelete = async (id: string) => {
-    try {
-      await budgetsApi.delete(id);
-      setBudgets(prev => prev.filter(b => b.id !== id));
-    } catch (err) {
-      console.error('Failed to delete budget', err);
-    }
-  };
-  
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<BudgetWithSpending | null>(null);
-
-  useEffect(() => {
-    if (searchParams.get('new') === 'true') {
-      setIsModalOpen(true);
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('new');
-      setSearchParams(newParams, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
-
-  const summary = calculateSummary(budgets);
-  const overallPercentage = summary.totalBudgeted > 0
-    ? Math.round((summary.totalSpent / summary.totalBudgeted) * 100)
-    : 0;
-  
-  const expenseCategories = categories.filter(c => c.type === 'expense' || c.type === 'both');
-  const budgetedCategoryIds = new Set(budgets.map(b => b.categoryId));
-  const categoriesWithoutBudget = expenseCategories.filter(c => !budgetedCategoryIds.has(c.id));
-  
-  useKeyboardShortcuts([
-    { key: 'n', ctrl: true, meta: true, handler: () => setIsModalOpen(true) },
-    { key: 'Escape', handler: () => { if (isModalOpen) { setIsModalOpen(false); setEditingBudget(null); } } },
-  ]);
-  
-  if (isLoading) {
-      return <div className="p-8 animate-pulse text-center text-zinc-400 font-medium">Memuat budget...</div>;
-  }
-  
-  const dateObj = new Date(currentMonth + '-01');
-  const monthName = dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const subscriptions = [
+    { id: 1, name: 'Netflix Premium', price: 19.99, date: 'July 24', paid: false, icon: 'N', color: 'bg-black text-[#e50914]' },
+    { id: 2, name: 'Spotify Family', price: 16.99, date: 'July 26', paid: false, icon: 'S', color: 'bg-[#1db954] text-white' },
+    { id: 3, name: 'Iron Paradise Gym', price: 45.00, date: 'July 15', paid: true, icon: '💪', color: 'bg-zinc-100' },
+    { id: 4, name: 'Adobe Creative Cloud', price: 52.99, date: 'July 30', paid: false, icon: 'A', color: 'bg-[#ff0000] text-white' },
+  ];
 
   return (
-    <div className="space-y-6 pb-24 md:pb-8 max-w-2xl mx-auto px-4 pt-4 lg:pt-8 w-full animate-fade-in">
+    <div className="space-y-6 pb-32 pt-8 w-full max-w-sm mx-auto animate-fade-in">
       
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-[#ecfccb] border-2 border-white flex items-center justify-center shadow-sm shrink-0">
-             <Wallet className="w-6 h-6 text-[#65a30d]" />
-          </div>
-          <div>
-            <h1 className="text-[22px] font-extrabold text-[#1a1a2e] tracking-tight">Anggaran</h1>
-            <p className="text-sm font-medium text-[#71717a]">Kelola keuangan bulan {monthName}</p>
-          </div>
-        </div>
+      {/* Mega Header */}
+      <div className="bg-[#d9f99d] px-6 py-10 -mx-4 -mt-8 rounded-b-[48px] shadow-sm flex flex-col items-center">
+         <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-[#65a30d] mb-4 shadow-sm">
+            <Calendar className="w-8 h-8" strokeWidth={2.5}/>
+         </div>
+         <p className="text-[12px] font-extrabold tracking-widest uppercase text-[#3f6212] opacity-80 mb-1">
+           Subscription Flow
+         </p>
+         <h1 className="text-[15px] font-bold text-[#1a1a2e] mb-2">Total Due This Month</h1>
+         <p className="text-[44px] font-extrabold text-[#1a1a2e] tracking-tight leading-none">
+           $458.20
+         </p>
+      </div>
+
+      <div className="px-4 space-y-8">
         
-        <input 
-          type="month" 
-          value={currentMonth}
-          onChange={(e) => {
-            const newParams = new URLSearchParams(searchParams);
-            newParams.set('month', e.target.value);
-            setSearchParams(newParams);
-          }}
-          className="bg-zinc-100 text-[#1a1a2e] font-bold px-3 py-2 rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-[#a3e635]"
-        />
-      </div>
-
-      {/* Encouragement Buddy Card */}
-      <div className="flow-card p-5 relative overflow-hidden bg-[#fbfbf9] border-[#f0f0ea]">
-         <div className="flex gap-4 relative z-10">
-           <div className="w-[72px] h-[72px] flex-shrink-0 bg-[#a3e635] rounded-full flex items-center justify-center text-[40px] shadow-sm border-[4px] border-white shadow-[#a3e635]/20">
-             🐻
-           </div>
-           <div className="flex-1 mt-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#65a30d]">
-                  Bulan {monthName}
-                </span>
-                {overallPercentage <= 80 && (
-                   <span className="w-2 h-2 rounded-full bg-[#84cc16]"></span>
-                )}
+        {/* Upcoming Timeline */}
+        <div>
+          <h3 className="text-[17px] font-extrabold text-[#1a1a2e] mb-4">Upcoming Timeline</h3>
+          <div className="bg-white rounded-[32px] p-5 shadow-sm border border-zinc-50 flex justify-between items-center relative">
+            {/* Connecting Line */}
+            <div className="absolute top-[40px] left-8 right-8 h-1 bg-zinc-100 rounded-full z-0" />
+            
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+              <div key={i} className="flex flex-col items-center gap-3 relative z-10">
+                <span className="text-[12px] font-bold text-[#a1a1aa]">{day}</span>
+                <div className={`w-4 h-4 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center
+                  ${i === 2 || i === 4 ? 'bg-[#ff914d] w-5 h-5 shadow-[#ff914d]/40' : 'bg-zinc-200'}
+                `}></div>
               </div>
-              <h3 className="font-extrabold text-[#1a1a2e] text-[20px] mb-1 leading-tight">
-                {overallPercentage > 100 
-                  ? "Oops, sedikit over!" 
-                  : overallPercentage > 80 
-                    ? "Hati-hati pengeluaran" 
-                    : "Anda luar biasa!"}
-              </h3>
-              <p className="text-[#71717a] text-[13px] font-medium leading-snug">
-                {overallPercentage > 100 
-                  ? "Total pengeluaran sudah melebih anggaran."
-                  : `Anda baru menggunakan ${overallPercentage}% dari total anggaran. Pertahankan!`} 🚀
-              </p>
-           </div>
-         </div>
-      </div>
-
-      {/* Summary Chips */}
-      {summary.totalBudgeted > 0 && (
-         <div className="flex gap-3">
-           <div className="flex-1 flow-card py-3 px-4 flex items-center gap-3 border-none shadow-sm shadow-[#ecfccb]/50 bg-[#ecfccb]/30">
-             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-               <Wallet className="w-4 h-4 text-[#3b82f6]" />
-             </div>
-             <div>
-               <p className="text-[10px] uppercase font-bold tracking-wider text-[#3f6212]">TERPAKAI</p>
-               <p className="font-extrabold text-[#1a1a2e] text-[15px]">{formatCurrency(summary.totalSpent)}</p>
-             </div>
-           </div>
-           
-           <div className="flex-1 flow-card py-3 px-4 flex items-center gap-3 border-none shadow-sm shadow-[#f3e8ff]/50 bg-[#f3e8ff]/40">
-             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-               <Rocket className="w-4 h-4 text-[#a855f7]" />
-             </div>
-             <div>
-               <p className="text-[10px] uppercase font-bold tracking-wider text-[#7e22ce]">ANGGARAN</p>
-               <p className="font-extrabold text-[#1a1a2e] text-[15px]">{formatCurrency(summary.totalBudgeted)}</p>
-             </div>
-           </div>
-         </div>
-      )}
-
-      {/* Active Budgets */}
-      {budgets.length > 0 && (
-        <div className="pt-2 max-w-[100vw]">
-          <div className="flex items-center justify-between mb-3 px-1">
-             <h2 className="text-[17px] font-bold text-[#1a1a2e]">Anggaran Aktif</h2>
-             <span className="text-[13px] font-bold text-[#a1a1aa]">{budgets.length} Kategori</span>
-          </div>
-          <div className="space-y-4">
-            {budgets.map((budget) => (
-              <BudgetCard
-                key={budget.id}
-                budget={budget}
-                onEdit={() => setEditingBudget(budget)}
-                onDelete={() => handleDelete(budget.id)}
-              />
             ))}
           </div>
         </div>
-      )}
 
-      {/* Categories without Budget */}
-      {categoriesWithoutBudget.length > 0 && (
-         <div className="pt-4 pb-12">
-           <h2 className="text-[15px] font-bold text-[#1a1a2e] mb-3 px-1">Buat Anggaran Baru</h2>
-           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-             {categoriesWithoutBudget.map((category) => (
-               <div
-                 key={category.id}
-                 className="flow-card p-3 border-dashed border-2 bg-transparent hover:bg-zinc-50 cursor-pointer flex flex-col items-center justify-center text-center gap-2"
-                 onClick={() => {
-                   setEditingBudget({
-                     id: '',
-                     categoryId: category.id,
-                     category,
-                     month: currentMonth,
-                     limitAmount: '0',
-                     spent: '0',
-                     remaining: '0',
-                     percentageUsed: 0,
-                     userId: '',
-                     createdAt: new Date(),
-                   } as BudgetWithSpending);
-                   setIsModalOpen(true);
-                 }}
+        {/* Subscriptions List */}
+        <div>
+           <div className="flex items-center justify-between mb-4">
+             <h3 className="text-[17px] font-extrabold text-[#1a1a2e]">Your Subscriptions</h3>
+             <button className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center shadow-sm">
+               <TrendingUp className="w-4 h-4 text-[#1a1a2e]" />
+             </button>
+           </div>
+
+           <div className="space-y-3">
+             {subscriptions.map((sub) => (
+               <div 
+                 key={sub.id} 
+                 onClick={() => navigate(`/subscription/${sub.id}`)}
+                 className="bg-white rounded-[32px] p-4 flex items-center justify-between shadow-sm border border-zinc-50 cursor-pointer active:scale-95 transition-transform"
                >
-                 <CategoryIcon category={category.id} size="md" />
-                 <div>
-                   <h3 className="font-bold text-[#1a1a2e] text-[13px]">{category.label}</h3>
-                   <p className="text-[11px] font-medium text-[#71717a]">Tambah +</p>
+                 <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-extrabold text-xl shadow-inner ${sub.color}`}>
+                       {sub.icon}
+                    </div>
+                    <div>
+                      <p className={`text-[15px] font-extrabold ${sub.paid ? 'text-zinc-400 line-through' : 'text-[#1a1a2e]'}`}>
+                        {sub.name}
+                      </p>
+                      <p className="text-[12px] font-bold text-[#a1a1aa] mt-0.5">
+                        Due {sub.date}
+                      </p>
+                    </div>
+                 </div>
+
+                 <div className="flex flex-col flex-end items-end gap-1.5">
+                    <span className={`text-[17px] font-extrabold tracking-tight ${sub.paid ? 'text-zinc-400' : 'text-[#1a1a2e]'}`}>
+                      ${sub.price.toFixed(2)}
+                    </span>
+                    {sub.paid && (
+                      <span className="bg-[#ecfccb] text-[#3f6212] px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider uppercase">
+                         PAID
+                      </span>
+                    )}
                  </div>
                </div>
              ))}
            </div>
-         </div>
-      )}
-      
-      {/* Modal Form */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingBudget(null);
-        }}
-        title={editingBudget?.id ? 'Edit Anggaran' : 'Set Anggaran Baru'}
-      >
-        <BudgetForm
-          budget={editingBudget}
-          categories={expenseCategories as any}
-          currentMonth={currentMonth}
-          onSuccess={() => {
-            setIsModalOpen(false);
-            setEditingBudget(null);
-          }}
-          onCancel={() => {
-            setIsModalOpen(false);
-            setEditingBudget(null);
-          }}
-        />
-      </Modal>
+        </div>
+
+      </div>
+
     </div>
   );
 }
