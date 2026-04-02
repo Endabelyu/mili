@@ -3,59 +3,37 @@
 /* ── BASE & VARIABLES ─────────────────────────────────────── */
 @layer base {
   :root {
-    /* FlowState Light Theme */
-    --app-bg-start: #fbfbf9; /* Warm cream */
-    --app-bg-end: #f4f4f0;   /* Slightly deeper cream */
+    /* Duit App Light Theme */
+    --app-bg: #FBFBF9; /* Warm cream */
+    --card-bg: #FFFFFF;
     
-    --card-bg: #ffffff;
-    --card-hover: #fafaf8;
-    --card-border: #f0f0ea;
-    
-    --text-primary: #1a1a2e; /* Dark navy/almost black */
+    --text-primary: #1a1a2e; /* Dark navy/block */
     --text-secondary: #71717a; /* Muted gray */
     
-    /* Vibrant Accent Gradients */
-    --gradient-hero-start: #a3e635; /* Lime green 400 */
-    --gradient-hero-end: #65a30d;   /* Lime green 600 */
-    
-    --gradient-success-start: #4ade80;
-    --gradient-success-end: #16a34a;
-    
-    --gradient-danger-start: #f87171;
-    --gradient-danger-end: #dc2626;
-
-    /* Semantic */
-    --accent-primary: #b8e93b; 
-    --accent-income: #22c55e;
-    --accent-expense: #1e293b;
+    /* Vibrant Accent Gradients / Solids */
+    --duit-green: #8dfc3d; /* Bright neon green for FAB and highlights */
+    --duit-orange: #ff914d; /* Bright orange for Challenges/Monthly */
   }
-
-  /* Remove other themes for now to enforce the new singular visual identity */
 
   html {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   body {
-    background: linear-gradient(135deg, var(--app-bg-start), var(--app-bg-end));
+    background-color: var(--app-bg);
     color: var(--text-primary);
     min-height: 100vh;
-    background-attachment: fixed;
   }
 }
 
 /* ── COMPONENT UTILITIES ──────────────────────────────────── */
 @layer components {
-  .font-handwriting {
-    font-family: 'Caveat', cursive;
-  }
-
-  /* FlowState Card Primitive */
+  /* Duit App Card Primitive */
   .flow-card {
     background: var(--card-bg);
-    border-radius: 20px;
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
-    border: 1px solid var(--card-border);
+    border-radius: 32px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+    border: none;
     overflow: hidden;
   }
 
