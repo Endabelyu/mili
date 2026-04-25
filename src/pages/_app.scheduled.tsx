@@ -1,0 +1,409 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, RefreshCw, X, ArrowLeft, MoreVertical, Trash2 } from 'lucide-react';
+import { Alert } from '../components/ui/Alert';
+import { scheduledApi, categoriesApi, accountsApi, type ScheduledTransaction } from '../api/client';
+import { usePreferences } from '../hooks/usePreferences';
+
+// ─── Status Toggle Component ──────────────────────────────────────────────────
+function StatusToggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
+  return (
+    <button 
+      onClick={(e) => { e.stopPropagation(); onToggle(); }}
+      className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${active ? 'bg-[#12B76A]' : 'bg-[var(--muted)]'}`}
+    >
+      <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${active ? 'translate-x-5' : 'translate-x-0 shadow-sm'}`} />
+    </button>
+  );
+}
+
+const FREQUENCIES = [
+  { id: 'daily', label: 'Harian' },
+  { id: 'weekly', label: 'Mingguan' },
+  { id: 'monthly', label: 'Bulanan' },
+  { id: 'yearly', label: 'Tahunan' },
+];
+
+export default function ScheduledPage() {
+  const { formatMoney } = usePreferences();
+  const queryClient = useQueryClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Alert Modal state
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    isConfirm?: boolean;
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+
+  const closeAlert = () => setAlertConfig(prev => ({ ...prev, isOpen: false }));
+
+  // Form State
+  const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [amount, setAmount] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [accountId, setAccountId] = useState('');
+  const [description, setDescription] = useState('');
+  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+  const [nextRunDate, setNextRunDate] = useState('');
+
+  const [selectedScheduled, setSelectedScheduled] = useState<ScheduledTransaction | null>(null);
+
+  const { data: scheduled = [] } = useQuery({
+    queryKey: ['scheduled'],
+    queryFn: () => scheduledApi.list(),
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoriesApi.list(),
+  });
+
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: () => accountsApi.list(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: Omit<ScheduledTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'status'>) =>
+      scheduledApi.create(data as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scheduled'] });
+      setIsModalOpen(false);
+      resetForm();
+    },
+    onError: () => setSaving(false),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: Partial<ScheduledTransaction>) =>
+      scheduledApi.update(selectedScheduled!.id, data as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scheduled'] });
+      setIsModalOpen(false);
+      resetForm();
+    },
+    onError: () => setSaving(false),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => scheduledApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scheduled'] });
+      resetForm();
+    },
+    onError: () => setSaving(false),
+  });
+
+  const resetForm = () => {
+    setIsModalOpen(false);
+    setType('expense');
+    setAmount('');
+    setCategoryId('');
+    setAccountId('');
+    setDescription('');
+    setFrequency('monthly');
+    setNextRunDate('');
+    setSaving(false);
+    setSelectedScheduled(null);
+  };
+
+  const handleSave = () => {
+    if (!amount || !categoryId || !nextRunDate) return;
+    setSaving(true);
+    const payload = {
+      type,
+      amount: parseFloat(amount),
+      categoryId,
+      accountId: accountId || null,
+      description: description || null,
+      frequency,
+      nextRunDate,
+    };
+
+    if (selectedScheduled) {
+      updateMutation.mutate(payload);
+    } else {
+      createMutation.mutate(payload);
+    }
+  };
+
+  const handleEdit = (item: ScheduledTransaction) => {
+    setSelectedScheduled(item);
+    setType(item.type as any);
+    setAmount(String(item.amount));
+    setCategoryId(item.categoryId);
+    setAccountId(item.accountId || '');
+    setDescription(item.description || '');
+    setFrequency(item.frequency as any);
+    setNextRunDate(new Date(item.nextRunDate).toISOString().split('T')[0]);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (!selectedScheduled) return;
+    if (window.confirm(`Hapus jadwal "${selectedScheduled.description || selectedScheduled.category?.label}"?`)) {
+      setSaving(true);
+      deleteMutation.mutate(selectedScheduled.id);
+    }
+  };
+
+  const totalMonthly = scheduled.reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0);
+
+  const filteredCategories = categories.filter(c => c.type === type || c.type === 'both');
+
+  return (
+    <div className="space-y-6 animate-fade-in pb-10">
+
+      <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center gap-4">
+          <button className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em] leading-tight">Pengeluaran Terjadwal</h1>
+            <p className="text-[13px] font-medium text-[var(--text-dim-2)] opacity-60">Tagihan berulang & langganan</p>
+          </div>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Hero Card - Green Summary */}
+      <div className="rounded-[32px] bg-gradient-to-br from-[#12B76A] to-[#0E9355] p-8 text-white shadow-xl shadow-[#12B76A]/20">
+        <p className="text-[12px] font-bold opacity-70 uppercase tracking-widest mb-3">Total Per Bulan</p>
+        <p className="text-[36px] font-bold tracking-[-0.02em] leading-none mb-6">{formatMoney(totalMonthly)}</p>
+        <div className="flex items-center gap-3 pt-4 border-t border-white/10 text-[13px] font-bold">
+          <span>{scheduled.length} aktif</span>
+          <span className="opacity-40">·</span>
+          <span>1 dijeda</span>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-[16px] font-bold text-[var(--text)] px-1">Semua Jadwal</h3>
+
+        {scheduled.length === 0 ? (
+          <div className="text-center py-20 px-6 bg-[var(--card)] rounded-[32px] border border-[var(--border)]">
+            <div className="w-20 h-20 rounded-3xl bg-[#12B76A]/10 text-[#12B76A] flex items-center justify-center mx-auto mb-6">
+              <RefreshCw className="w-10 h-10" />
+            </div>
+            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada jadwal</h3>
+            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[320px] mx-auto leading-relaxed">Jadwalkan pengeluaran rutin Anda seperti langganan Netflix, BPJS, atau tagihan listrik.</p>
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="px-8 py-4 rounded-2xl bg-[var(--text)] text-[var(--bg)] font-bold text-[15px] shadow-xl transition-all active:scale-95"
+            >
+              Buat Jadwal Pertama
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {scheduled.map((item) => (
+              <div 
+                key={item.id} 
+                onClick={() => handleEdit(item)}
+                className="flow-card p-5 flex items-center justify-between gap-4 group transition-all hover:shadow-lg cursor-pointer"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-14 h-14 rounded-[20px] bg-[var(--muted)] flex items-center justify-center text-[28px] shrink-0 group-hover:scale-105 transition-transform">
+                    {item.category?.icon || '📦'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[17px] font-bold text-[var(--text)] truncate">{item.description || item.category?.label}</p>
+                      <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#12B76A15] text-[#12B76A] uppercase tracking-wider">
+                        {FREQUENCIES.find(f => f.id === item.frequency)?.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1 text-[13px] font-medium text-[var(--text-dim-2)] opacity-70">
+                      <span>{item.account?.name || 'Cash'}</span>
+                      <span>·</span>
+                      <span>Jatuh tempo {new Date(item.nextRunDate).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
+                      <span>·</span>
+                      <span className="text-[#12B76A] font-bold">7 hari lagi</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-3 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <p className="text-[18px] font-bold text-[var(--text)] tracking-tight">
+                      {formatMoney(parseFloat(String(item.amount)))}
+                    </p>
+                    <div className="p-1.5 text-[var(--text-dim-2)] hover:bg-[var(--muted)] rounded-lg transition-all">
+                      <MoreVertical className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <StatusToggle active={item.status === 'active'} onToggle={() => {}} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ─── Add Schedule Modal ─── */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in z-[190]" onClick={resetForm} />
+          <div 
+            className="relative z-[200] w-full max-w-[500px] bg-[var(--bg)] rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-[var(--border)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
+              <h2 className="text-[18px] font-bold text-[var(--text)]">{selectedScheduled ? 'Edit Transaksi Terjadwal' : 'Tambah Transaksi Terjadwal'}</h2>
+              <div className="flex items-center gap-2">
+                {selectedScheduled && (
+                  <button 
+                    onClick={handleDelete}
+                    disabled={saving}
+                    className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+                <button 
+                  onClick={resetForm} 
+                  className="relative z-[210] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] hover:bg-[var(--border)] transition-all active:scale-95"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
+              {/* Type */}
+              <div className="flex p-1 bg-[var(--muted)] rounded-[14px] w-fit mx-auto">
+                {(['expense', 'income'] as const).map((tp) => (
+                  <button
+                    key={tp}
+                    type="button"
+                    onClick={() => { setType(tp); setCategoryId(''); }}
+                    className={`px-4 py-1.5 text-[13px] font-bold rounded-[11px] transition-all ${
+                      type === tp ? 'bg-[var(--card)] text-[var(--text)] shadow-sm' : 'text-[var(--text-dim-2)]'
+                    }`}
+                  >
+                    {tp === 'expense' ? 'Pengeluaran' : 'Pemasukan'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Amount */}
+              <div className="space-y-3">
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Jumlah</label>
+                <input
+                  value={amount ? parseInt(amount, 10).toLocaleString('id-ID') : ''}
+                  onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="0"
+                  inputMode="numeric"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
+                />
+              </div>
+
+              {/* Category */}
+              <div className="space-y-3">
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Kategori</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                >
+                  <option value="">Pilih Kategori...</option>
+                  {filteredCategories.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Account (Required) */}
+              <div className="space-y-3">
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Sumber Rekening</label>
+                <select
+                  value={accountId}
+                  onChange={(e) => setAccountId(e.target.value)}
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                >
+                  <option value="">Pilih Rekening...</option>
+                  {accounts.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Frequency */}
+              <div className="space-y-3">
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Frekuensi</label>
+                <select
+                  value={frequency}
+                  onChange={(e) => setFrequency(e.target.value as any)}
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                >
+                  {FREQUENCIES.map(f => (
+                    <option key={f.id} value={f.id}>{f.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Next Run Date */}
+              <div className="space-y-3">
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Tanggal Mulai Tagihan</label>
+                <input
+                  type="date"
+                  value={nextRunDate}
+                  onChange={(e) => setNextRunDate(e.target.value)}
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-3">
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Keterangan</label>
+                <input
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Contoh: Pembayaran Listrik Token"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-[var(--border)] shrink-0">
+              <button
+                onClick={handleSave}
+                disabled={!amount || !categoryId || !accountId || !nextRunDate || saving}
+                className="w-full py-4 rounded-[16px] bg-[#12B76A] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
+              >
+                {saving ? 'Menyimpan...' : selectedScheduled ? 'Simpan Perubahan' : 'Jadwalkan Transaksi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ─── Global Alert ─── */}
+      <Alert
+        isOpen={alertConfig.isOpen}
+        onClose={closeAlert}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        isConfirm={alertConfig.isConfirm}
+        onConfirm={alertConfig.onConfirm}
+        confirmLabel="Hapus"
+      />
+    </div>
+  );
+}
