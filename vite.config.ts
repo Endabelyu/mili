@@ -6,6 +6,10 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    port: 4016,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       '@app': fileURLToPath(new URL('./src', import.meta.url)),

@@ -1,224 +1,256 @@
-import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, ShoppingBag, Coffee, Car, Pizza, Music, Monitor
-} from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '../lib/query-keys';
+import { transactionsApi, reportsApi } from '../api/client';
+import { usePreferences } from '../hooks/usePreferences';
+import { ArrowLeft, MoreHorizontal, Filter, ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
+
+// ─── Category emoji map (keyed by BE category ID from seed data) ─────────────
+const CAT_EMOJI: Record<string, string> = {
+  salary: '💰', freelance: '💻', investments: '📈', gifts: '🎁', 'other-income': '💵',
+  food: '🍜', transport: '🚗', housing: '🏠', utilities: '💡', entertainment: '🎬',
+  shopping: '🛍️', healthcare: '💊', education: '📚', travel: '✈️', 'other-expense': '📦',
+};
+
+// ─── Group transactions by date ──────────────────────────────────────────────
+function groupByDate(items: any[]) {
+  const groups: Record<string, any[]> = {};
+  for (const item of items) {
+    const d = new Date(item.date);
+    const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  }
+  return Object.entries(groups)
+    .sort(([a], [b]) => b.localeCompare(a)) // newest first
+    .map(([dateStr, txns]) => {
+      const d = new Date(dateStr + 'T00:00:00');
+      return {
+        day: d.getDate(),
+        month: d.toLocaleDateString('id-ID', { month: 'short' }).replace('.', ''),
+        year: d.getFullYear(),
+        transactions: txns,
+      };
+    });
+}
 
 export default function TransactionsPage() {
-  const [view, setView] = useState<'daily' | 'monthly'>('monthly');
-  const location = useLocation();
-  const navigate = useNavigate();
-  const isNewExpense = location.search.includes('new=true');
+  const [view, setView] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('daily');
+  const { formatMoney, t } = usePreferences();
 
-  if (isNewExpense) {
-    return <OledExpenseMode onClose={() => navigate('/transactions')} />;
+  // Fetch real transactions
+  const { data: txnsData, isLoading: txnsLoading } = useQuery({
+    queryKey: queryKeys.transactions.list({ limit: 50 }),
+    queryFn: () => transactionsApi.list({ limit: 50 }),
+  });
+
+  // Fetch real summary
+  const { data: summaryData, isLoading: summaryLoading } = useQuery({
+    queryKey: queryKeys.reports.summary(),
+    queryFn: () => reportsApi.summary(),
+  });
+
+  // Fetch category breakdown
+  const { data: catData, isLoading: catLoading } = useQuery({
+    queryKey: queryKeys.reports.byCategory(),
+    queryFn: () => reportsApi.byCategory(),
+  });
+
+  const isLoading = txnsLoading || summaryLoading || catLoading;
+
+  // Group transactions by date for daily view
+  const dateGroups = useMemo(() => {
+    if (!txnsData?.items) return [];
+    return groupByDate(txnsData.items);
+  }, [txnsData]);
+
+  const income = summaryData?.income ?? 0;
+  const expenses = summaryData?.expenses ?? 0;
+  const balance = summaryData?.balance ?? 0;
+  const topCategories = catData?.slice(0, 5) ?? [];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pb-10 animate-pulse">
+        <div className="h-10 w-48 bg-[var(--muted)] rounded-lg" />
+        <div className="h-48 bg-[var(--muted)] rounded-[16px]" />
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-20 bg-[var(--muted)] rounded-[16px]" />)}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6 pb-32 pt-8 w-full max-w-2xl mx-auto animate-fade-in px-4">
-      
-      {/* Segmented Control */}
-      <div className="flex bg-[#f4f4f5] rounded-full p-1 max-w-[280px] mx-auto mb-6 shadow-inner">
-         <button 
-           onClick={() => setView('daily')}
-           className={`flex-1 py-1.5 rounded-full text-[13px] font-extrabold tracking-wider transition-all ${view === 'daily' ? 'bg-white shadow-sm text-[#1a1a2e]' : 'text-[#71717a]'}`}
-         >
-           DAILY
-         </button>
-         <button 
-           onClick={() => setView('monthly')}
-           className={`flex-1 py-1.5 rounded-full text-[13px] font-extrabold tracking-wider transition-all ${view === 'monthly' ? 'bg-white shadow-sm text-[#1a1a2e]' : 'text-[#71717a]'}`}
-         >
-           MONTHLY
-         </button>
+    <div className="space-y-6 pb-10 animate-fade-in">
+      {/* Removed Redundant Top Navigation as per User Request */}
+
+      <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center gap-4">
+          <button className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em]">Riwayat Transaksi</h1>
+        </div>
+        <button className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors">
+          <Filter className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* View Toggle */}
+      <div className="flex items-center gap-8 border-b border-[var(--border)] px-1">
+        {(['daily', 'weekly', 'monthly', 'total'] as const).map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`py-4 text-[15px] font-bold transition-all relative ${
+              view === v 
+                ? 'text-[var(--text)]' 
+                : 'text-[var(--text-dim-2)] opacity-50'
+            }`}
+          >
+            {v === 'daily' ? 'Harian' : v === 'weekly' ? 'Mingguan' : v === 'monthly' ? 'Bulanan' : 'Total'}
+            {view === v && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#12B76A] rounded-t-full" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Hero Card - Summary */}
+      <div className="rounded-[32px] bg-gradient-to-br from-[#12B76A] to-[#0E9355] p-8 text-white shadow-xl shadow-[#12B76A]/20">
+        <div className="grid grid-cols-3 gap-8">
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-bold opacity-70 uppercase tracking-widest flex items-center gap-2">
+              <ArrowUpCircle className="w-3.5 h-3.5" />
+              Masuk
+            </p>
+            <p className="text-[20px] font-bold">{formatMoney(income)}</p>
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-bold opacity-70 uppercase tracking-widest flex items-center gap-2">
+              <ArrowDownCircle className="w-3.5 h-3.5" />
+              Keluar
+            </p>
+            <p className="text-[20px] font-bold">{formatMoney(expenses)}</p>
+          </div>
+          <div className="space-y-1.5 border-l border-white/10 pl-8">
+            <p className="text-[11px] font-bold opacity-70 uppercase tracking-widest flex items-center gap-2">
+              <Wallet className="w-3.5 h-3.5" />
+              Saldo
+            </p>
+            <p className="text-[20px] font-bold">{formatMoney(balance)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Pills */}
+      <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
+        {['Semua', 'Pemasukan', 'Pengeluaran', 'Transfer'].map((label, i) => (
+          <button
+            key={label}
+            className={`px-6 py-2.5 rounded-2xl text-[14px] font-bold whitespace-nowrap transition-all active:scale-95 ${
+              i === 0 ? 'bg-[var(--text)] text-[var(--bg)] shadow-lg' : 'bg-[var(--muted)] text-[var(--text-dim-2)] hover:bg-[var(--border)]'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {view === 'monthly' && (
         <div className="animate-fade-in">
-          {/* Monthly Flow Hero */}
-          <div className="bg-gradient-to-br from-[#ff914d] to-[#ea580c] rounded-[32px] p-6 shadow-xl shadow-[#ea580c]/20 text-white flex flex-col items-center text-center">
-             <p className="text-[11px] font-extrabold tracking-widest uppercase opacity-80 mb-2">
-               Monthly Flow
-             </p>
-             <h2 className="text-[44px] font-extrabold tracking-tight leading-none mb-6">
-               +$1,350.00
-             </h2>
-             <div className="flex gap-4 w-full">
-               <div className="flex-1 bg-white/20 backdrop-blur rounded-[24px] py-4 flex flex-col items-center">
-                 <p className="text-[11px] font-bold text-white/80">Spent</p>
-                 <p className="text-[18px] font-extrabold">$2,450</p>
-               </div>
-               <div className="flex-1 bg-white/20 backdrop-blur rounded-[24px] py-4 flex flex-col items-center">
-                 <p className="text-[11px] font-bold text-white/80">Earned</p>
-                 <p className="text-[18px] font-extrabold">$3,800</p>
-               </div>
-             </div>
-          </div>
-
-          {/* Category Breakdown */}
-          <div className="mt-8">
-            <h3 className="text-[17px] font-extrabold text-[#1a1a2e] mb-4">Category Breakdown</h3>
-            <div className="bg-white rounded-[32px] p-6 shadow-sm border border-zinc-50 space-y-5">
-              
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-2">
-                     <Pizza className="w-4 h-4 text-[#ef4444]" />
-                     <span className="text-[14px] font-bold text-[#1a1a2e]">Food & Drinks</span>
-                  </div>
-                  <span className="text-[14px] font-extrabold text-[#1a1a2e]">$450</span>
-                </div>
-                <div className="w-full h-3 bg-zinc-100 rounded-full overflow-hidden">
-                   <div className="h-full bg-[#ef4444] rounded-full" style={{ width: '60%' }} />
-                </div>
+          {/* Category Breakdown — real data */}
+          {topCategories.length > 0 && (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h3 className="text-[14px] font-bold text-[var(--text)] tracking-[-0.01em]">{t('txn.categoryBreakdown')}</h3>
               </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-2">
-                     <ShoppingBag className="w-4 h-4 text-[#8b5cf6]" />
-                     <span className="text-[14px] font-bold text-[#1a1a2e]">Shopping</span>
+              <div className="flow-card p-4 space-y-4">
+                {topCategories.map((cat) => (
+                  <div key={cat.categoryId} className="flex items-center gap-3">
+                    <div className="flow-icon-badge" style={{ background: `${cat.color}15` }}>
+                      <span className="text-[18px]">{CAT_EMOJI[cat.categoryId] || '📦'}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between mb-1.5">
+                        <span className="text-[13px] font-bold text-[var(--text)]">{cat.label}</span>
+                        <span className="text-[13px] font-bold text-[var(--text)] tabular-nums">{formatMoney(cat.amount)}</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-[var(--muted)] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${cat.percentage}%`, backgroundColor: cat.color }} />
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-[14px] font-extrabold text-[#1a1a2e]">$220</span>
-                </div>
-                <div className="w-full h-3 bg-zinc-100 rounded-full overflow-hidden">
-                   <div className="h-full bg-[#8b5cf6] rounded-full" style={{ width: '40%' }} />
-                </div>
+                ))}
               </div>
-
             </div>
-          </div>
+          )}
         </div>
       )}
 
       {view === 'daily' && (
         <div className="animate-fade-in space-y-6">
-           {/* Stash Buddy Tip */}
-           <div className="bg-gradient-to-r from-[#ecfccb] to-[#d9f99d] rounded-[32px] p-5 shadow-sm border border-[#bef264] flex gap-4 items-center">
-              <span className="text-4xl shrink-0">🐻</span>
-              <div>
-                <h4 className="text-[15px] font-extrabold text-[#3f6212] mb-0.5">Stash Buddy's Tip</h4>
-                <p className="text-[13px] font-bold text-[#4d7c0f]">You saved 15% more this week than last week! Grab a coffee, on me! ☕</p>
+          {dateGroups.length === 0 ? (
+            <div className="flow-card p-12 text-center">
+              <p className="text-[48px] mb-4">📭</p>
+              <p className="text-[16px] font-bold text-[var(--text)] mb-1">Belum ada transaksi</p>
+              <p className="text-[13px] font-medium text-[var(--text-dim)]">Mulai catat pengeluaran dan pemasukan Anda</p>
+            </div>
+          ) : (
+            dateGroups.map((group) => (
+              <div key={`${group.day}-${group.month}-${group.year}`}>
+                <div className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="text-[18px] font-bold text-[var(--text)] tracking-[-0.01em]">{group.day}</div>
+                  <div>
+                    <div className="text-[11px] text-[var(--text-dim)] font-bold tracking-[0.02em] uppercase">{group.month}</div>
+                    <div className="text-[10px] text-[var(--text-dim-2)]">{group.year}</div>
+                  </div>
+                </div>
+                <div className="flow-card">
+                  {group.transactions.map((tx: any) => (
+                    <TransactionRow
+                      key={tx.id}
+                      emoji={CAT_EMOJI[tx.categoryId] || tx.category?.icon || '📦'}
+                      label={tx.description || tx.category?.label || tx.categoryId}
+                      category={tx.category?.label || tx.categoryId}
+                      amount={parseFloat(String(tx.amount))}
+                      isIncome={tx.type === 'income'}
+                      formatMoney={formatMoney}
+                    />
+                  ))}
+                </div>
               </div>
-           </div>
-
-           {/* Date Group */}
-           <div>
-             <h3 className="text-[12px] font-extrabold text-[#a1a1aa] tracking-widest uppercase mb-4 ml-2">Dec 31</h3>
-             <div className="space-y-3">
-               
-               <div className="bg-white rounded-[32px] p-4 flex items-center justify-between shadow-sm">
-                  <div className="flex items-center gap-4">
-                     <div className="w-14 h-14 rounded-full bg-[#ecfccb] flex items-center justify-center text-[#65a30d]">
-                        <Coffee className="w-6 h-6" strokeWidth={2.5}/>
-                     </div>
-                     <div>
-                       <p className="text-[15px] font-extrabold text-[#1a1a2e]">Starbucks</p>
-                       <p className="text-[12px] font-bold text-[#a1a1aa] mt-0.5">9:41 AM</p>
-                     </div>
-                  </div>
-                  <span className="text-[17px] font-extrabold text-[#1a1a2e] tracking-tight">-$6.50</span>
-               </div>
-
-               <div className="bg-white rounded-[32px] p-4 flex items-center justify-between shadow-sm">
-                  <div className="flex items-center gap-4">
-                     <div className="w-14 h-14 rounded-full bg-[#e0e7ff] flex items-center justify-center text-[#4f46e5]">
-                        <ShoppingBag className="w-6 h-6" strokeWidth={2.5}/>
-                     </div>
-                     <div>
-                       <p className="text-[15px] font-extrabold text-[#1a1a2e]">Uniqlo</p>
-                       <p className="text-[12px] font-bold text-[#a1a1aa] mt-0.5">1:15 PM</p>
-                     </div>
-                  </div>
-                  <span className="text-[17px] font-extrabold text-[#1a1a2e] tracking-tight">-$42.00</span>
-               </div>
-
-             </div>
-           </div>
+            ))
+          )}
         </div>
       )}
-
     </div>
   );
 }
 
-// ─── Phase 4: OLED Dark Mode Entry Component ──────────────────────────────────────────────
-function OledExpenseMode({ onClose }: { onClose: () => void }) {
-  const [amount, _setAmount] = useState('200000');
-  const [activeCategory, setActiveCategory] = useState('DRINKS');
-
-  const categories = [
-    { id: 'FOOD', icon: Pizza, color: '#ef4444' },
-    { id: 'DRINKS', icon: Coffee, color: '#a3e635' }, // Active neon one in mock
-    { id: 'APPS', icon: Monitor, color: '#3b82f6' },
-    { id: 'FITS', icon: ShoppingBag, color: '#8b5cf6' },
-    { id: 'TRANSIT', icon: Car, color: '#f59e0b' },
-    { id: 'FUN', icon: Music, color: '#ec4899' },
-  ];
-
+// ─── Transaction Row Component ───────────────────────────────────────────────
+function TransactionRow({ emoji, label, category, amount, isIncome, formatMoney }: {
+  emoji: string; label: string; category: string; amount: number; isIncome?: boolean;
+  formatMoney: (n: number) => string;
+}) {
   return (
-    <div className="fixed inset-0 bg-[#09090b] z-40 flex flex-col pt-12 pb-32 px-6 animate-fade-in text-white selection:bg-[#a3e635]/30">
-       
-       <button onClick={onClose} className="absolute top-6 left-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
-         <ArrowLeft className="w-6 h-6 text-white" />
-       </button>
-
-       {/* Top: Amount & Chat Bubble */}
-       <div className="flex flex-col items-center justify-center mt-12 mb-10 flex-1 min-h-[160px]">
-          <p className="text-[#a3e635] text-[15px] font-extrabold tracking-widest uppercase mb-4 opacity-90 text-center">
-            New Expense
-          </p>
-          <div className="flex items-baseline gap-2 mb-6">
-             <span className="text-[32px] font-bold text-zinc-500">Rp</span>
-             <h1 className="text-[64px] font-extrabold tracking-tighter text-white leading-none">
-               {Number(amount).toLocaleString('id-ID')}
-             </h1>
-          </div>
-
-          {/* Indomie Equivalency Pill */}
-          <div className="bg-[#18181b] border border-zinc-800 rounded-full px-5 py-2.5 flex items-center gap-3 shadow-xl">
-             <span className="text-xl">🐻</span>
-             <p className="text-[12px] font-bold text-zinc-300 tracking-wider">
-               <span className="text-[#a3e635] font-extrabold">SETARA 3 BUNGKUS INDOMIE</span> 🍜
-             </p>
-          </div>
-       </div>
-
-       {/* Category Orbs */}
-       <div className="grid grid-cols-3 gap-4 mb-auto justify-items-center w-full max-w-[300px] mx-auto">
-          {categories.map((cat) => {
-             const isAct = activeCategory === cat.id;
-             const CIcon = cat.icon;
-             return (
-               <div key={cat.id} onClick={() => setActiveCategory(cat.id)} className="flex flex-col items-center gap-2 cursor-pointer group">
-                  <div className={`w-[68px] h-[68px] rounded-full flex items-center justify-center transition-all duration-300
-                    ${isAct 
-                      ? 'bg-transparent border-4 border-[#a3e635] shadow-[0_0_30px_rgba(163,230,53,0.4)] scale-110' 
-                      : 'bg-[#18181b] border-2 border-transparent group-hover:bg-[#27272a]'
-                    }
-                  `}>
-                     <CIcon className={`w-8 h-8 ${isAct ? 'text-[#a3e635]' : 'text-zinc-500'}`} />
-                  </div>
-                  <span className={`text-[10px] font-extrabold tracking-widest uppercase transition-colors ${isAct ? 'text-[#a3e635]' : 'text-zinc-600'}`}>
-                    {cat.id}
-                  </span>
-               </div>
-             );
-          })}
-       </div>
-
-       {/* Custom T9 Numpad */}
-       <div className="mt-auto grid grid-cols-3 gap-2 px-4 pb-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, '<'].map((key, i) => (
-            <button 
-              key={i} 
-              className="h-[60px] flex items-center justify-center text-[28px] font-extrabold active:bg-white/10 rounded-2xl transition-colors"
-            >
-              {key}
-            </button>
-          ))}
-       </div>
-
+    <div className="flex items-center gap-4 px-6 py-4 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]">
+      <div className="w-12 h-12 rounded-[16px] bg-[var(--muted)] flex items-center justify-center text-[22px] shrink-0 border border-transparent group-hover:border-[var(--border)] transition-all">
+        {emoji}
+      </div>
+      <div className="flex-1 min-w-0 pr-4">
+        <p className="text-[15px] font-bold text-[var(--text)] truncate">{label}</p>
+        <p className="text-[12px] font-medium text-[var(--text-dim-2)] mt-0.5 opacity-60 uppercase tracking-wider text-[10px]">{category}</p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className={`text-[16px] font-bold tabular-nums ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
+          {isIncome ? '+' : '−'}{formatMoney(Math.abs(amount))}
+        </p>
+        <button className="lg:opacity-0 lg:group-hover:opacity-100 mt-1">
+          <MoreHorizontal className="w-4 h-4 text-[var(--text-dim-2)]" />
+        </button>
+      </div>
     </div>
   );
 }

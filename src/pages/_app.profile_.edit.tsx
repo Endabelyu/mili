@@ -60,58 +60,60 @@ export default function EditProfilePage() {
         <button
           type="button"
           onClick={() => navigate('/profile')}
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-[#f4f4f5] hover:bg-zinc-200 transition-colors"
+          className="icon-btn"
         >
-          <ArrowLeft className="w-5 h-5 text-[#1a1a2e]" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-[20px] font-extrabold text-[#1a1a2e] tracking-tight">Edit Profil</h1>
+          <h1 className="text-[20px] font-bold text-[var(--text)] tracking-[-0.02em]">Edit Profil</h1>
         </div>
       </div>
 
       {/* Avatar Preview */}
       <div className="flex justify-center mb-6">
-        <div className="w-24 h-24 rounded-full bg-[#ecfccb] border-4 border-white shadow-sm flex items-center justify-center relative">
-          <User className="w-10 h-10 text-[#65a30d]" />
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-zinc-100">
+        <div className="w-24 h-24 rounded-full p-0.5 flex items-center justify-center relative" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)' }}>
+          <div className="w-full h-full rounded-full bg-orange-100 overflow-hidden border-2 border-[var(--card)] flex items-center justify-center">
+            {user?.image ? <img src={user.image} className="w-full h-full object-cover" alt="Profile" /> : <User className="w-10 h-10 text-[var(--accent)]" />}
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[var(--card)] shadow-sm flex items-center justify-center border border-[var(--border)]">
              <Sparkles className="w-4 h-4 text-[#f59e0b] fill-[#f59e0b]" />
           </div>
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="flow-card p-6 space-y-5 border-none shadow-sm">
+      <form onSubmit={handleSubmit(onSubmit)} className="flow-card p-6 space-y-5">
         <div>
-          <label className="block text-sm font-bold text-[#1a1a2e] mb-2">
+          <label className="block text-[13px] font-semibold text-[var(--text)] mb-2">
             Nama Lengkap
           </label>
           <Input
             id="name"
             type="text"
             placeholder="Masukkan nama Anda"
-            className={`h-12 text-[#1a1a2e] bg-white ${errors.name ? 'border-red-500' : 'border-zinc-200 focus:border-[#a3e635] focus:ring-[#a3e635]'}`}
+            className={`h-12 ${errors.name ? 'border-[var(--expense)]' : ''}`}
             autoFocus
             {...register('name')}
           />
           {errors.name && (
-            <p className="mt-2 text-[13px] font-bold text-[#ef4444]">{errors.name.message}</p>
+            <p className="mt-2 text-[12px] font-semibold text-[var(--expense)]">{errors.name.message}</p>
           )}
           {error && !errors.name && (
-            <p className="mt-2 text-[13px] font-bold text-[#ef4444]">{error}</p>
+            <p className="mt-2 text-[12px] font-semibold text-[var(--expense)]">{error}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-[#1a1a2e] mb-2">
+          <label className="block text-[13px] font-semibold text-[var(--text)] mb-2">
             Alamat Email
           </label>
           <Input
             type="email"
             value={user.email}
             disabled
-            className="h-12 bg-zinc-50 border-zinc-200 text-zinc-500 cursor-not-allowed"
+            className="h-12 opacity-60 cursor-not-allowed"
           />
-          <p className="mt-2 text-[12px] font-medium text-[#71717a]">
+          <p className="mt-2 text-[11px] font-medium text-[var(--text-dim)]">
             Email terikat dengan akun Anda dan tidak dapat diubah di sini.
           </p>
         </div>
@@ -120,7 +122,7 @@ export default function EditProfilePage() {
            <Button
              type="submit"
              disabled={isLoading}
-             className={`w-full h-12 text-sm shadow-md transition-all ${success ? 'bg-[#22c55e] hover:bg-[#16a34a] text-white ring-[#22c55e]' : ''}`}
+             className={`w-full ${success ? 'bg-[var(--income)] hover:bg-[#12B76A]' : ''}`}
            >
              {isLoading ? 'Menyimpan...' : success ? (
                <span className="flex items-center justify-center">

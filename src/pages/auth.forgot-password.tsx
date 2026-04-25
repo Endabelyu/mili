@@ -42,25 +42,25 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-[#fbfbf9]">
-      <div className="w-full max-w-md space-y-8 flow-card border-none shadow-sm p-8 sm:p-10 animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: 'var(--bg)' }}>
+      <div className="w-full max-w-[420px] space-y-8 flow-card p-8 sm:p-10 animate-fade-in">
         <div className="text-center">
-          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1a1a2e]">Lupa Kata Sandi</h1>
-          <p className="mt-2 text-sm font-medium text-[#71717a]">
+          <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--text)]">Lupa Kata Sandi</h1>
+          <p className="mt-2 text-[13px] text-[var(--text-dim)]">
             Masukkan alamat email Anda untuk menerima tautan reset kata sandi.
           </p>
         </div>
 
         {success ? (
-          <div className="rounded-xl bg-[#f0fdf4] p-6 text-center border border-[#bbf7d0]">
-            <CheckCircle2 className="mx-auto h-12 w-12 text-[#16a34a] mb-4" />
-            <h3 className="text-lg font-bold text-[#15803d]">Email Terkirim!</h3>
-            <p className="mt-2 text-sm font-medium text-[#16a34a]">
+          <div className="rounded-xl p-6 text-center" style={{ background: 'rgba(18,183,106,0.08)', border: '1px solid rgba(18,183,106,0.2)' }}>
+            <CheckCircle2 className="mx-auto h-10 w-10 text-[var(--income)] mb-4" />
+            <h3 className="text-[16px] font-bold text-[var(--income)]">Email Terkirim!</h3>
+            <p className="mt-2 text-[13px] text-[var(--income)] opacity-80">
               Periksa kotak masuk Anda untuk instruksi menyetel ulang kata sandi.
             </p>
-            <div className="mt-6">
+            <div className="mt-5">
               <Link to="/auth/login">
-                <Button variant="outline" className="w-full border-[#bbf7d0] text-[#15803d] hover:bg-[#dcfce7]">
+                <Button variant="outline" className="w-full">
                   Kembali ke Masuk
                 </Button>
               </Link>
@@ -69,39 +69,39 @@ export default function ForgotPasswordPage() {
         ) : (
           <>
             {error && (
-              <div className="rounded-xl bg-[#fef2f2] p-4 flex gap-2 items-start border border-[#fecaca]">
-                <AlertCircle className="h-5 w-5 text-[#ef4444] flex-shrink-0" />
-                <p className="text-sm font-bold text-[#b91c1c]">{error}</p>
+              <div className="rounded-xl p-4 flex gap-2 items-start" style={{ background: 'rgba(240,68,56,0.08)', border: '1px solid rgba(240,68,56,0.2)' }}>
+                <AlertCircle className="h-4 w-4 text-[var(--expense)] flex-shrink-0 mt-0.5" />
+                <p className="text-[13px] font-medium text-[var(--expense)]">{error}</p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
               <div>
-                <label htmlFor="email" className="block text-sm font-bold text-[#1a1a2e] mb-2">
+                <label htmlFor="email" className="block text-[13px] font-medium text-[var(--text)] mb-2">
                   Alamat Email
                 </label>
-                <div className="mt-1 relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-dim-2)]" />
                   <Input
                     id="email"
                     type="email"
                     autoComplete="email"
-                    className={`pl-10 h-12 bg-white ${errors.email ? 'border-red-500' : ''}`}
+                    className={`pl-10 ${errors.email ? 'border-[var(--expense)]' : ''}`}
                     placeholder="anda@email.com"
                     {...register('email')}
                   />
                 </div>
                 {errors.email && (
-                  <p className="mt-1 text-xs text-red-500 font-medium">{errors.email.message}</p>
+                  <p className="mt-1 text-[12px] text-[var(--expense)] font-medium">{errors.email.message}</p>
                 )}
               </div>
 
               <div className="space-y-3">
-                <Button type="submit" className="w-full h-12 shadow-sm text-sm" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Mengirim...' : 'Kirim Tautan Reset'}
                 </Button>
                 
-                <Link to="/auth/login" className="flex items-center justify-center text-sm font-bold text-[#a1a1aa] hover:text-[#1a1a2e] transition-colors py-2">
+                <Link to="/auth/login" className="flex items-center justify-center text-[13px] font-medium text-[var(--text-dim)] hover:text-[var(--text)] transition-colors py-2">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Kembali ke Masuk
                 </Link>
