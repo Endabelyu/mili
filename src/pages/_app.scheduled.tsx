@@ -163,16 +163,15 @@ export default function ScheduledPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-
       <div className="flex items-center justify-between pt-4">
         <div className="flex items-center gap-4">
-          <button className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors">
+          <button 
+            onClick={() => window.history.back()}
+            className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
-            <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em] leading-tight">Pengeluaran Terjadwal</h1>
-            <p className="text-[13px] font-medium text-[var(--text-dim-2)] opacity-60">Tagihan berulang & langganan</p>
-          </div>
+          <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em]">Terjadwal</h1>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -182,20 +181,39 @@ export default function ScheduledPage() {
         </button>
       </div>
 
-      {/* Hero Card - Green Summary */}
-      <div className="rounded-[32px] bg-gradient-to-br from-[#12B76A] to-[#0E9355] p-8 text-white shadow-xl shadow-[#12B76A]/20">
-        <p className="text-[12px] font-bold opacity-70 uppercase tracking-widest mb-3">Total Per Bulan</p>
-        <p className="text-[36px] font-bold tracking-[-0.02em] leading-none mb-6">{formatMoney(totalMonthly)}</p>
-        <div className="flex items-center gap-3 pt-4 border-t border-white/10 text-[13px] font-bold">
-          <span>{scheduled.length} aktif</span>
-          <span className="opacity-40">·</span>
-          <span>1 dijeda</span>
+      {/* Summary Card - White Style to match Transactions */}
+      <div className="rounded-[24px] bg-[var(--card)] p-6 border border-[var(--border)] shadow-sm">
+        <div className="grid grid-cols-3 gap-6">
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Pemasukan</p>
+            <p className="text-[18px] font-bold text-[var(--income)]">{formatMoney(scheduled.filter(s => s.type === 'income').reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0))}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Pengeluaran</p>
+            <p className="text-[18px] font-bold text-[var(--expense)]">{formatMoney(scheduled.filter(s => s.type === 'expense').reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0))}</p>
+          </div>
+          <div className="space-y-1 border-l border-[var(--border)] pl-6">
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Total</p>
+            <p className="text-[18px] font-bold text-[var(--text)]">{formatMoney(totalMonthly)}</p>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-[16px] font-bold text-[var(--text)] px-1">Semua Jadwal</h3>
+      {/* Filter Pills */}
+      <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
+        {['Semua', 'Aktif', 'Dijeda'].map((label, i) => (
+          <button
+            key={label}
+            className={`px-6 py-2.5 rounded-2xl text-[14px] font-bold whitespace-nowrap transition-all active:scale-95 ${
+              i === 0 ? 'bg-[var(--text)] text-[var(--bg)] shadow-lg' : 'bg-[var(--muted)] text-[var(--text-dim-2)] hover:bg-[var(--border)]'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
+      <div className="space-y-4">
         {scheduled.length === 0 ? (
           <div className="text-center py-20 px-6 bg-[var(--card)] rounded-[32px] border border-[var(--border)]">
             <div className="w-20 h-20 rounded-3xl bg-[#12B76A]/10 text-[#12B76A] flex items-center justify-center mx-auto mb-6">
@@ -211,40 +229,36 @@ export default function ScheduledPage() {
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="flow-card">
             {scheduled.map((item) => (
               <div 
                 key={item.id} 
                 onClick={() => handleEdit(item)}
-                className="flow-card p-5 flex items-center justify-between gap-4 group transition-all hover:shadow-lg cursor-pointer"
+                className="flex items-center gap-4 px-6 py-5 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]"
               >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-14 h-14 rounded-[20px] bg-[var(--muted)] flex items-center justify-center text-[28px] shrink-0 group-hover:scale-105 transition-transform">
-                    {item.category?.icon || '📦'}
+                <div className="w-14 h-14 rounded-[20px] bg-[var(--muted)] flex items-center justify-center text-[28px] shrink-0 border border-transparent group-hover:border-[var(--border)] transition-all">
+                  {item.category?.icon || '📦'}
+                </div>
+                <div className="flex-1 min-w-0 pr-4">
+                  <div className="flex items-center gap-2">
+                    <p className="text-[17px] font-bold text-[var(--text)] truncate">{item.description || item.category?.label}</p>
+                    <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#12B76A15] text-[#12B76A] uppercase tracking-wider">
+                      {FREQUENCIES.find(f => f.id === item.frequency)?.label}
+                    </span>
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[17px] font-bold text-[var(--text)] truncate">{item.description || item.category?.label}</p>
-                      <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#12B76A15] text-[#12B76A] uppercase tracking-wider">
-                        {FREQUENCIES.find(f => f.id === item.frequency)?.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-1 text-[13px] font-medium text-[var(--text-dim-2)] opacity-70">
-                      <span>{item.account?.name || 'Cash'}</span>
-                      <span>·</span>
-                      <span>Jatuh tempo {new Date(item.nextRunDate).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
-                      <span>·</span>
-                      <span className="text-[#12B76A] font-bold">7 hari lagi</span>
-                    </div>
+                  <div className="flex items-center gap-1.5 mt-1 text-[13px] font-medium text-[var(--text-dim-2)] opacity-70">
+                    <span>{item.account?.name || 'Cash'}</span>
+                    <span>·</span>
+                    <span>Jatuh tempo {new Date(item.nextRunDate).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-end gap-3 shrink-0">
                   <div className="flex items-center gap-3">
-                    <p className="text-[18px] font-bold text-[var(--text)] tracking-tight">
-                      {formatMoney(parseFloat(String(item.amount)))}
+                    <p className={`text-[18px] font-bold tracking-tight ${item.type === 'income' ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
+                      {item.type === 'income' ? '+' : '−'}{formatMoney(parseFloat(String(item.amount)))}
                     </p>
-                    <div className="p-1.5 text-[var(--text-dim-2)] hover:bg-[var(--muted)] rounded-lg transition-all">
+                    <div className="p-1.5 text-[var(--text-dim-2)] hover:bg-[var(--muted)] rounded-lg transition-all opacity-0 group-hover:opacity-100">
                       <MoreVertical className="w-4 h-4" />
                     </div>
                   </div>
