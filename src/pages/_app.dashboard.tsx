@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { transactionsApi, reportsApi } from '../api/client';
-import { type Transaction } from '../types';
+import { queryKeys } from '../lib/query-keys';
 import {
   Bell,
   Plus,
@@ -41,29 +41,23 @@ function DashboardSkeleton() {
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [balance, setBalance] = useState(0);
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [txns, summaryData] = await Promise.all([
-          transactionsApi.list({ limit: 4 }),
-          reportsApi.summary(),
-        ]);
-        setRecentTransactions(txns?.items || []);
-        const income = summaryData?.income ?? 0;
-        const expenses = summaryData?.expenses ?? 0;
-        setBalance(income - expenses);
-      } catch (e) {
-        console.error('Dashboard load failed', e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const { data: txnsData, isLoading: txnsLoading } = useQuery({
+    queryKey: queryKeys.transactions.list({ limit: 4 }),
+    queryFn: () => transactionsApi.list({ limit: 4 }),
+  });
+
+  const { data: summaryData, isLoading: summaryLoading } = useQuery({
+    queryKey: queryKeys.reports.summary(),
+    queryFn: () => reportsApi.summary(),
+  });
+
+  const isLoading = txnsLoading || summaryLoading;
+  const recentTransactions = txnsData?.items || [];
+  
+  const income = summaryData?.income ?? 0;
+  const expenses = summaryData?.expenses ?? 0;
+  const balance = income - expenses;
 
   if (isLoading) return <DashboardSkeleton />;
 

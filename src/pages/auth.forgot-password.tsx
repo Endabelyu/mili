@@ -1,27 +1,38 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Mail, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Format email tidak valid'),
+});
+
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+
 export default function ForgotPasswordPage() {
   const { forgetPassword } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [email, setEmail] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      setError('Email wajib diisi');
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+  });
+
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
     setError('');
     setIsLoading(true);
     try {
-      await forgetPassword(email);
+      await forgetPassword(data.email);
       setSuccess(true);
     } catch (err: any) {
       setError(err?.body?.message || err?.message || 'Gagal mengirim email reset kata sandi');
@@ -64,7 +75,7 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-bold text-[#1a1a2e] mb-2">
                   Alamat Email
@@ -73,16 +84,16 @@ export default function ForgotPasswordPage() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
                   <Input
                     id="email"
-                    name="email"
                     type="email"
                     autoComplete="email"
-                    required
-                    className="pl-10 h-12 bg-white"
+                    className={`pl-10 h-12 bg-white ${errors.email ? 'border-red-500' : ''}`}
                     placeholder="anda@email.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    {...register('email')}
                   />
                 </div>
+                {errors.email && (
+                  <p className="mt-1 text-xs text-red-500 font-medium">{errors.email.message}</p>
+                )}
               </div>
 
               <div className="space-y-3">

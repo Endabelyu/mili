@@ -1,9 +1,19 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Sparkles } from 'lucide-react';
+
+const loginSchema = z.object({
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(1, 'Kata sandi wajib diisi'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -12,21 +22,22 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   const registered = searchParams.get('registered') === 'true';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setError('Email dan kata sandi diperlukan');
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
     setError('');
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(data.email, data.password);
       navigate('/');
     } catch (err: any) {
       setError(err?.body?.message || err?.message || 'Email atau kata sandi tidak valid');
@@ -68,7 +79,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-[#1a1a2e] mb-2">
@@ -78,16 +89,16 @@ export default function LoginPage() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
                 <Input
                   id="email"
-                  name="email"
                   type="email"
                   autoComplete="email"
-                  required
-                  className="pl-10 h-12 bg-white"
+                  className={`pl-10 h-12 bg-white ${errors.email ? 'border-red-500' : ''}`}
                   placeholder="anda@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  {...register('email')}
                 />
               </div>
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-500 font-medium">{errors.email.message}</p>
+              )}
             </div>
 
             <div>
@@ -98,14 +109,11 @@ export default function LoginPage() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
                 <Input
                   id="password"
-                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  required
-                  className="pl-10 pr-10 h-12 bg-white"
+                  className={`pl-10 pr-10 h-12 bg-white ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  {...register('password')}
                 />
                 <button
                   type="button"
@@ -115,6 +123,9 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1 text-xs text-red-500 font-medium">{errors.password.message}</p>
+              )}
             </div>
           </div>
 

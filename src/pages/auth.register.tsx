@@ -1,54 +1,49 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Sparkles } from 'lucide-react';
 
+const registerSchema = z.object({
+  name: z.string().min(1, 'Nama wajib diisi'),
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(8, 'Kata sandi minimal 8 karakter'),
+  confirmPassword: z.string().min(1, 'Konfirmasi kata sandi wajib diisi'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Konfirmasi kata sandi tidak cocok",
+  path: ["confirmPassword"],
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
+
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register: authRegister } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password) {
-      setError('Semua form wajib diisi');
-      return;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setError('Konfirmasi kata sandi tidak cocok');
-      return;
-    }
-    if (formData.password.length < 8) {
-      setError('Kata sandi harus minimal 8 karakter');
-      return;
-    }
-    
+  const onSubmit = async (data: RegisterFormValues) => {
     setError('');
     setIsLoading(true);
     
     try {
-      await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
+      await authRegister({
+        name: data.name,
+        email: data.email,
+        password: data.password
       });
       navigate('/auth/login?registered=true');
     } catch (err: any) {
@@ -83,7 +78,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
           <div>
             <label htmlFor="name" className="block text-sm font-bold text-[#1a1a2e] mb-2">
               Nama Lengkap
@@ -92,16 +87,16 @@ export default function RegisterPage() {
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
               <Input
                 id="name"
-                name="name"
                 type="text"
                 autoComplete="name"
-                required
-                className="pl-10 h-12 bg-white"
+                className={`pl-10 h-12 bg-white ${errors.name ? 'border-red-500' : ''}`}
                 placeholder="Rizal Doe"
-                value={formData.name}
-                onChange={handleChange}
+                {...register('name')}
               />
             </div>
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-500 font-medium">{errors.name.message}</p>
+            )}
           </div>
 
           <div>
@@ -112,16 +107,16 @@ export default function RegisterPage() {
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
               <Input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
-                required
-                className="pl-10 h-12 bg-white"
+                className={`pl-10 h-12 bg-white ${errors.email ? 'border-red-500' : ''}`}
                 placeholder="anda@email.com"
-                value={formData.email}
-                onChange={handleChange}
+                {...register('email')}
               />
             </div>
+            {errors.email && (
+              <p className="mt-1 text-xs text-red-500 font-medium">{errors.email.message}</p>
+            )}
           </div>
 
           <div>
@@ -132,14 +127,11 @@ export default function RegisterPage() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
               <Input
                 id="password"
-                name="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
-                required
-                className="pl-10 pr-10 h-12 bg-white"
+                className={`pl-10 pr-10 h-12 bg-white ${errors.password ? 'border-red-500' : ''}`}
                 placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
+                {...register('password')}
               />
               <button
                 type="button"
@@ -149,7 +141,11 @@ export default function RegisterPage() {
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
-            <p className="mt-1.5 text-xs font-medium text-[#71717a]">Minimal 8 karakter.</p>
+            {errors.password ? (
+              <p className="mt-1 text-xs text-red-500 font-medium">{errors.password.message}</p>
+            ) : (
+              <p className="mt-1.5 text-xs font-medium text-[#71717a]">Minimal 8 karakter.</p>
+            )}
           </div>
           
           <div>
@@ -160,16 +156,16 @@ export default function RegisterPage() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 opacity-40 text-[#1a1a2e]" />
               <Input
                 id="confirmPassword"
-                name="confirmPassword"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
-                required
-                className="pl-10 h-12 bg-white"
+                className={`pl-10 h-12 bg-white ${errors.confirmPassword ? 'border-red-500' : ''}`}
                 placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={handleChange}
+                {...register('confirmPassword')}
               />
             </div>
+            {errors.confirmPassword && (
+              <p className="mt-1 text-xs text-red-500 font-medium">{errors.confirmPassword.message}</p>
+            )}
           </div>
 
           <Button type="submit" className="w-full h-12 mt-2 shadow-md text-sm" disabled={isLoading}>

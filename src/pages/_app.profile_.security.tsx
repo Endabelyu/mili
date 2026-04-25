@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { type MetaFunction, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Input } from '../components/ui/Input';
@@ -9,14 +12,24 @@ export const meta: MetaFunction = () => [
   { title: 'Keamanan | Finance Tracker' },
 ];
 
+const securitySchema = z.object({
+  currentPassword: z.string().min(1, 'Masukkan kata sandi saat ini.'),
+  newPassword: z.string().min(8, 'Kata sandi baru minimal 8 karakter.'),
+  confirmPassword: z.string().min(1, 'Konfirmasi kata sandi wajib diisi.'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Konfirmasi kata sandi tidak cocok.",
+  path: ["confirmPassword"],
+}).refine((data) => data.currentPassword !== data.newPassword, {
+  message: "Kata sandi baru harus berbeda.",
+  path: ["newPassword"],
+});
+
+type SecurityFormValues = z.infer<typeof securitySchema>;
+
 export default function SecurityPage() {
   const { changePassword } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  
   const [showPass, setShowPass] = useState({
     current: false,
     new: false,
@@ -26,36 +39,26 @@ export default function SecurityPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const handleChange = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm(prev => ({ ...prev, [field]: e.target.value }));
-    setError('');
-  };
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SecurityFormValues>({
+    resolver: zodResolver(securitySchema),
+  });
 
-  const validate = (): string | null => {
-    if (!form.currentPassword) return 'Masukkan kata sandi saat ini.';
-    if (form.newPassword.length < 8) return 'Kata sandi baru minimal 8 karakter.';
-    if (form.newPassword !== form.confirmPassword) return 'Konfirmasi kata sandi tidak cocok.';
-    if (form.currentPassword === form.newPassword) return 'Kata sandi baru harus berbeda.';
-    return null;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const validationError = validate();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+  const onSubmit = async (data: SecurityFormValues) => {
     setIsLoading(true);
     setError('');
     try {
       await changePassword({
-        currentPassword: form.currentPassword,
-        newPassword: form.newPassword,
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
         revokeOtherSessions: false,
       });
       setSuccess(true);
-      setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      reset();
       setTimeout(() => navigate('/profile'), 1500);
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan. Coba lagi.');
@@ -70,12 +73,14 @@ export default function SecurityPage() {
     field,
     showKey,
     placeholder,
+    errorMsg,
   }: {
     id: string;
     label: string;
-    field: keyof typeof form;
+    field: keyof SecurityFormValues;
     showKey: keyof typeof showPass;
     placeholder: string;
+    errorMsg?: string;
   }) => (
     <div>
       <label htmlFor={id} className="block text-sm font-bold text-[#1a1a2e] mb-2">
@@ -85,10 +90,9 @@ export default function SecurityPage() {
         <Input
           id={id}
           type={showPass[showKey] ? 'text' : 'password'}
-          value={form[field]}
-          onChange={handleChange(field)}
+          {...register(field)}
           placeholder={placeholder}
-          className="pr-12 h-12 bg-white border-zinc-200 focus:border-[var(--text-primary)] focus:ring-[var(--text-primary)]"
+          className={`pr-12 h-12 bg-white ${errorMsg ? 'border-red-500' : 'border-zinc-200 focus:border-[var(--text-primary)] focus:ring-[var(--text-primary)]'}`}
         />
         <button
           type="button"
@@ -98,6 +102,9 @@ export default function SecurityPage() {
           {showPass[showKey] ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
         </button>
       </div>
+      {errorMsg && (
+        <p className="mt-1 text-xs text-red-500 font-medium">{errorMsg}</p>
+      )}
     </div>
   );
 
@@ -125,13 +132,14 @@ export default function SecurityPage() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flow-card p-6 space-y-5 border-none shadow-sm bg-white">
+      <form onSubmit={handleSubmit(onSubmit)} className="flow-card p-6 space-y-5 border-none shadow-sm bg-white">
         <PasswordInput
           id="currentPassword"
           label="Kata Sandi Saat Ini"
           field="currentPassword"
           showKey="current"
           placeholder="Masukkan kata sandi saat ini"
+          errorMsg={errors.currentPassword?.message}
         />
         <PasswordInput
           id="newPassword"
@@ -139,6 +147,7 @@ export default function SecurityPage() {
           field="newPassword"
           showKey="new"
           placeholder="Minimal 8 karakter"
+          errorMsg={errors.newPassword?.message}
         />
         <PasswordInput
           id="confirmPassword"
@@ -146,6 +155,7 @@ export default function SecurityPage() {
           field="confirmPassword"
           showKey="confirm"
           placeholder="Ulangi kata sandi baru"
+          errorMsg={errors.confirmPassword?.message}
         />
 
         {error && (

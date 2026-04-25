@@ -1,5 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '../lib/query-keys';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { ChartSkeleton, StatCardSkeleton, TipCard } from '../components/ui';
 import {
@@ -165,70 +167,60 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function ReportsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // FlowState reference suggests simple views without complex tabs if possible, 
-  // but we will keep `viewMode` state just in case, though heavily leaning on charts.
-
-  const [summary, setSummary] = useState<ReportSummary>({ income: 0, expenses: 0, balance: 0, savingsRate: 0, transactionCount: 0 });
-  const [categories, setCategories] = useState<CategoryBreakdown[]>([]);
-  const [monthly, setMonthly] = useState<MonthlyData[]>([]);
-
   const currentMonth = searchParams.get('month') || getCurrentMonth();
+  
+  const { data: sumData, isLoading: summaryLoading } = useQuery({
+    queryKey: queryKeys.reports.summary(currentMonth),
+    queryFn: () => reportsApi.summary(currentMonth ? { month: currentMonth } as any : undefined),
+  });
 
-  useEffect(() => {
-    let isMounted = true;
-    setIsLoading(true);
+  const { data: catData, isLoading: catLoading } = useQuery({
+    queryKey: queryKeys.reports.byCategory(currentMonth),
+    queryFn: () => reportsApi.byCategory(currentMonth ? { month: currentMonth } as any : undefined),
+  });
 
-    const loadData = async () => {
-      try {
-        const [sumData, catData, monData] = await Promise.all([
-          reportsApi.summary(currentMonth ? { month: currentMonth } as any : undefined),
-          reportsApi.byCategory(currentMonth ? { month: currentMonth } as any : undefined),
-          reportsApi.monthly(),
-        ]);
+  const { data: monData, isLoading: monLoading } = useQuery({
+    queryKey: queryKeys.reports.monthly(),
+    queryFn: () => reportsApi.monthly(),
+  });
 
-        if (!isMounted) return;
+  const isLoading = summaryLoading || catLoading || monLoading;
 
-        setSummary({
-          income: sumData.income ?? 0,
-          expenses: sumData.expenses ?? 0,
-          balance: (sumData.income ?? 0) - (sumData.expenses ?? 0),
-          savingsRate: sumData.income > 0 ? (((sumData.income - sumData.expenses) / sumData.income) * 100) : 0,
-          transactionCount: sumData.transactionCount ?? 0,
-        });
-
-        const categoryArr = [...catData];
-        const totalCat = categoryArr.reduce((acc, curr) => acc + curr.amount, 0);
-        
-        // Use FlowState pleasing semantic colors for the first few categories
-        const predefinedColors = ['#f59e0b', '#3b82f6', '#22c55e', '#a855f7', '#06b6d4', '#f43f5e', '#ec4899', '#64748b'];
-
-        categoryArr.forEach((c, idx) => {
-          c.percentage = totalCat > 0 ? Number(((c.amount / totalCat) * 100).toFixed(1)) : 0;
-          c.color = predefinedColors[idx % predefinedColors.length];
-        });
-
-        setCategories(categoryArr.sort((a,b) => b.amount - a.amount));
-
-        const monthlyArr = monData.map(data => ({
-          month: data.month,
-          income: data.income ?? 0,
-          expenses: data.expenses ?? 0,
-          balance: (data.income ?? 0) - (data.expenses ?? 0)
-        })).slice(-6);
-        setMonthly(monthlyArr);
-
-      } catch (err) {
-        console.error('Failed to load reports', err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
+  const summary: ReportSummary = useMemo(() => {
+    if (!sumData) return { income: 0, expenses: 0, balance: 0, savingsRate: 0, transactionCount: 0 };
+    return {
+      income: sumData.income ?? 0,
+      expenses: sumData.expenses ?? 0,
+      balance: (sumData.income ?? 0) - (sumData.expenses ?? 0),
+      savingsRate: sumData.income > 0 ? (((sumData.income - sumData.expenses) / sumData.income) * 100) : 0,
+      transactionCount: sumData.transactionCount ?? 0,
     };
+  }, [sumData]);
 
-    loadData();
-    return () => { isMounted = false; };
-  }, [currentMonth]);
+  const categories: CategoryBreakdown[] = useMemo(() => {
+    if (!catData) return [];
+    const categoryArr = [...catData];
+    const totalCat = categoryArr.reduce((acc, curr) => acc + curr.amount, 0);
+    const predefinedColors = ['#f59e0b', '#3b82f6', '#22c55e', '#a855f7', '#06b6d4', '#f43f5e', '#ec4899', '#64748b'];
+
+    categoryArr.forEach((c, idx) => {
+      c.percentage = totalCat > 0 ? Number(((c.amount / totalCat) * 100).toFixed(1)) : 0;
+      c.color = predefinedColors[idx % predefinedColors.length];
+    });
+
+    return categoryArr.sort((a,b) => b.amount - a.amount);
+  }, [catData]);
+
+  const monthly: MonthlyData[] = useMemo(() => {
+    if (!monData) return [];
+    return monData.map(data => ({
+      month: data.month,
+      income: data.income ?? 0,
+      expenses: data.expenses ?? 0,
+      balance: (data.income ?? 0) - (data.expenses ?? 0)
+    })).slice(-6);
+  }, [monData]);
+
 
   const monthlyChartData = useMemo(() => {
     return monthly.map((m) => ({

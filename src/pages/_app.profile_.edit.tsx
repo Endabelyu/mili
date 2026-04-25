@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { type MetaFunction, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Input } from '../components/ui/Input';
@@ -9,28 +12,38 @@ export const meta: MetaFunction = () => [
   { title: 'Edit Profil | Finance Tracker' },
 ];
 
+const editProfileSchema = z.object({
+  name: z.string().min(1, 'Nama tidak boleh kosong.'),
+});
+
+type EditProfileFormValues = z.infer<typeof editProfileSchema>;
+
 export default function EditProfilePage() {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   
-  const [name, setName] = useState(user?.name ?? '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<EditProfileFormValues>({
+    resolver: zodResolver(editProfileSchema),
+    defaultValues: {
+      name: user?.name ?? '',
+    },
+  });
+
   if (!user) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setError('Nama tidak boleh kosong.');
-      return;
-    }
+  const onSubmit = async (data: EditProfileFormValues) => {
     setError('');
     setIsLoading(true);
     try {
-      await updateUser({ name: trimmed });
+      await updateUser({ name: data.name });
       setSuccess(true);
       setTimeout(() => navigate('/profile'), 1200);
     } catch (err: any) {
@@ -67,22 +80,23 @@ export default function EditProfilePage() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flow-card p-6 space-y-5 border-none shadow-sm">
+      <form onSubmit={handleSubmit(onSubmit)} className="flow-card p-6 space-y-5 border-none shadow-sm">
         <div>
           <label className="block text-sm font-bold text-[#1a1a2e] mb-2">
             Nama Lengkap
           </label>
           <Input
             id="name"
-            name="name"
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
             placeholder="Masukkan nama Anda"
-            className="h-12 text-[#1a1a2e] border-zinc-200 focus:border-[#a3e635] focus:ring-[#a3e635] bg-white"
+            className={`h-12 text-[#1a1a2e] bg-white ${errors.name ? 'border-red-500' : 'border-zinc-200 focus:border-[#a3e635] focus:ring-[#a3e635]'}`}
             autoFocus
+            {...register('name')}
           />
-          {error && (
+          {errors.name && (
+            <p className="mt-2 text-[13px] font-bold text-[#ef4444]">{errors.name.message}</p>
+          )}
+          {error && !errors.name && (
             <p className="mt-2 text-[13px] font-bold text-[#ef4444]">{error}</p>
           )}
         </div>
