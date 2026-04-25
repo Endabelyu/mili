@@ -11,10 +11,12 @@ const BASE_URL = _rawApiUrl.startsWith('http://') || _rawApiUrl.startsWith('http
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;
+  /** Request timeout in milliseconds. Defaults to 10 000 ms. */
+  timeoutMs?: number;
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { params, ...fetchOptions } = options;
+  const { params, timeoutMs = 10_000, ...fetchOptions } = options;
 
   let url = `${BASE_URL}${path}`;
   if (params) {
@@ -26,24 +28,40 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     if (search.toString()) url += `?${search}`;
   }
 
-  const response = await fetch(url, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(fetchOptions.headers || {}),
-    },
-    ...fetchOptions,
-  });
+  // Abort the request automatically after `timeoutMs` milliseconds
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ message: response.statusText }));
-    throw new ApiError(response.status, errorBody.message || response.statusText, errorBody);
+  try {
+    const response = await fetch(url, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(fetchOptions.headers || {}),
+      },
+      ...fetchOptions,
+      // Merge any caller-provided signal with our timeout signal
+      signal: fetchOptions.signal ?? controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ message: response.statusText }));
+      throw new ApiError(response.status, errorBody.message || response.statusText, errorBody);
+    }
+
+    // 204 No Content
+    if (response.status === 204) return undefined as T;
+
+    return response.json() as Promise<T>;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new ApiError(408, `Request timed out after ${timeoutMs}ms`);
+    }
+    throw err;
   }
-
-  // 204 No Content
-  if (response.status === 204) return undefined as T;
-
-  return response.json() as Promise<T>;
 }
 
 export class ApiError extends Error {
