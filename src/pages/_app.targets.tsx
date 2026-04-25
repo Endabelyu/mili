@@ -240,10 +240,17 @@ export default function TargetsPage() {
           </div>
         ) : (
           <div className="grid gap-5">
-            {targets.map((target) => {
-              const current = parseFloat(String(target.currentAmount));
-              const total = parseFloat(String(target.targetAmount));
-              const progress = Math.min((current / total) * 100, 100);
+            {targets
+              .filter(target => {
+                const current = parseFloat(String(target.currentAmount));
+                const total = parseFloat(String(target.targetAmount));
+                const isCompleted = current >= total;
+                return activeTab === 'completed' ? isCompleted : !isCompleted;
+              })
+              .map((target) => {
+                const current = parseFloat(String(target.currentAmount));
+                const total = parseFloat(String(target.targetAmount));
+                const progress = Math.min((current / total) * 100, 100);
 
               return (
                 <div key={target.id} className="flow-card p-6 flex flex-col gap-6 relative group transition-all hover:shadow-xl hover:shadow-[#12B76A05] border-transparent hover:border-[var(--income)]/20">

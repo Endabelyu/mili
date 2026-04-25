@@ -37,24 +37,27 @@ export default function ScanReceiptPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-80px)] flex flex-col animate-fade-in overflow-hidden -m-4 md:-m-8 lg:-m-10 pb-20 lg:pb-0">
-      {/* ─── Close Button (top center, matching reference) ─── */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
-        <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white transition-colors hover:bg-black/50">
-          <X className="w-5 h-5" />
+    <div className="h-full flex flex-col animate-fade-in overflow-hidden pb-24 lg:pb-0">
+      {/* ─── Close Button (top center) ─── */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white transition-all hover:bg-black/60 active:scale-90"
+        >
+          <X className="w-6 h-6" />
         </button>
       </div>
 
       {/* ─── Camera Preview / Scan Frame ─── */}
-      <div className="flex-1 bg-black relative flex flex-col items-center justify-center p-6">
-        <div className="relative w-full max-w-[400px] aspect-[3/4] border-2 border-white/30 rounded-[20px] overflow-hidden shadow-2xl bg-[#111]">
+      <div className="flex-1 bg-black relative flex flex-col items-center justify-center p-8 pt-20">
+        <div className="relative w-full max-w-[420px] aspect-[3/4] border-2 border-white/20 rounded-[32px] overflow-hidden shadow-2xl bg-[#0a0a0a]">
           {/* Live Camera Feed */}
           {error ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                <Camera className="w-8 h-8 text-white/20" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center">
+              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                <Camera className="w-10 h-10 text-white/10" />
               </div>
-              <p className="text-white/60 text-[14px] leading-relaxed">{error}</p>
+              <p className="text-white/50 text-[15px] leading-relaxed font-medium">{error}</p>
             </div>
           ) : (
             <video 
@@ -67,27 +70,35 @@ export default function ScanReceiptPage() {
           )}
 
           {/* Scan Line Animation */}
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-[#12B76A] shadow-[0_0_15px_#12B76A] animate-scan-line z-10" />
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-[#12B76A] shadow-[0_0_20px_#12B76A] animate-scan-line z-10" />
+          
+          {/* Corner Decorations */}
+          <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-[#12B76A] rounded-tl-lg" />
+          <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-[#12B76A] rounded-tr-lg" />
+          <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-[#12B76A] rounded-bl-lg" />
+          <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-[#12B76A] rounded-br-lg" />
         </div>
-        <p className="mt-8 text-white/70 text-[14px] font-medium tracking-wide">Posisikan struk di dalam bingkai</p>
+        <p className="mt-10 text-white/50 text-[14px] font-bold tracking-[0.1em] uppercase">Posisikan struk di dalam bingkai</p>
       </div>
 
       {/* ─── Footer Actions ─── */}
-      <div className="bg-[var(--bg)] p-6 pb-12 lg:pb-8 flex items-center gap-4 shrink-0">
-        <button className="flex-1 h-14 rounded-2xl bg-white border border-[var(--border)] flex items-center justify-center gap-3 text-[15px] font-bold text-[var(--text)] transition-all active:scale-[0.98]">
-          <ImageIcon className="w-5 h-5 text-[var(--text-dim-2)]" />
+      <div className="bg-[var(--bg)] p-8 pb-14 lg:pb-10 flex items-center gap-5 shrink-0 border-t border-[var(--border)]">
+        <button className="flex-1 h-16 rounded-[24px] bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center gap-3 text-[16px] font-bold text-[var(--text)] transition-all active:scale-[0.96] hover:bg-[var(--border)]">
+          <ImageIcon className="w-6 h-6 text-[var(--text-dim-2)]" />
           Unggah Foto
         </button>
-        <button className="flex-1 h-14 rounded-2xl bg-[#12B76A] flex items-center justify-center gap-3 text-[15px] font-bold text-white transition-all active:scale-[0.98] shadow-lg shadow-[#12B76A30]">
-          <Camera className="w-5 h-5" />
+        <button className="flex-1 h-16 rounded-[24px] bg-[#12B76A] flex items-center justify-center gap-3 text-[16px] font-bold text-white transition-all active:scale-[0.96] shadow-xl shadow-[#12B76A25] hover:bg-[#0E9355]">
+          <Camera className="w-6 h-6" />
           Ambil Foto
         </button>
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scan-line {
-          0% { top: 0; }
-          100% { top: 100%; }
+          0% { top: 0; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
         }
         .animate-scan-line {
           animation: scan-line 3s linear infinite;
