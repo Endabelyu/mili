@@ -5,6 +5,7 @@ import { Sentry } from './lib/sentry';
 import LoginPage from './pages/auth.login';
 import DashboardPage from './pages/_app.dashboard';
 import { AppLayout } from './components/layout/AppLayout';
+import { ConsentBanner } from './components/ui/ConsentBanner';
 
 // Lazy-loaded pages
 const TransactionsPage = React.lazy(() => import('./pages/_app.transactions'));
@@ -62,6 +63,7 @@ export default function App() {
           </div>
         )}
       >
+        <ConsentBanner />
         <Routes>
           {/* Auth routes — guests only */}
           <Route path="/auth/login"           element={<GuestRoute><LoginPage /></GuestRoute>} />
