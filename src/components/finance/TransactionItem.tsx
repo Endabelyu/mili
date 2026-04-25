@@ -3,6 +3,7 @@ import { Edit2, Trash2, Loader2, MoreVertical } from 'lucide-react';
 import type { Transaction, Category } from '../../types';
 import { formatCurrency } from '../../lib/utils';
 import { CategoryIcon } from '../ui/CategoryIcon';
+import { Alert } from '../ui/Alert';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -14,13 +15,17 @@ interface TransactionItemProps {
 
 export function TransactionItem({ transaction, category, onEdit, onDelete, style }: TransactionItemProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const isIncome = transaction.type === 'income';
 
-  const handleDelete = async (e: React.MouseEvent) => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Hapus transaksi ini?')) return;
+    setShowConfirm(true);
+  };
 
+  const confirmDelete = async () => {
+    setShowConfirm(false);
     if (onDelete) {
       setIsDeleting(true);
       try {
@@ -39,9 +44,9 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
     <div
       onClick={onEdit}
       className={`
-        group flex items-center justify-between p-4 bg-white
-        transition-all duration-200 cursor-pointer
-        active:bg-zinc-50 lg:hover:bg-zinc-50 relative
+        group flex items-center justify-between p-4 bg-[var(--card)]
+        transition-all duration-200 cursor-pointer border-b border-[var(--border)]
+        active:bg-[var(--muted)] lg:hover:bg-[var(--muted)] relative
         ${isDeleting ? 'opacity-50 pointer-events-none' : ''}
       `}
       style={style}
@@ -50,11 +55,11 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
         <CategoryIcon category={transaction.categoryId} size="md" />
 
         <div className="min-w-0">
-          <p className="font-bold text-[#1a1a2e] text-[15px] truncate mb-0.5" title={transaction.description || category?.label}>
+          <p className="font-bold text-[var(--text)] text-[14px] tracking-[-0.01em] truncate mb-0.5" title={transaction.description || category?.label}>
             {transaction.description || category?.label || 'Tanpa keterangan'}
           </p>
-          <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#71717a] truncate">
-            {timeString && <span>{timeString}</span>}
+          <div className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--text-dim)] truncate">
+            {timeString && <span className="tabular-nums">{timeString}</span>}
             {timeString && <span className="opacity-50">•</span>}
             <span className="capitalize">{category?.label || transaction.categoryId}</span>
           </div>
@@ -65,8 +70,8 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
         {/* Amount */}
         <span
           className={`
-            font-bold text-[16px] whitespace-nowrap
-            ${isIncome ? 'text-[#16a34a]' : 'text-[#1a1a2e]'}
+            font-bold text-[15px] tracking-[-0.01em] whitespace-nowrap tabular-nums
+            ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}
           `}
         >
           {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
@@ -80,14 +85,14 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
               onEdit?.();
             }}
             disabled={isDeleting}
-            className="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+            className="p-2 text-[var(--text-dim-2)] hover:text-[var(--accent)] hover:bg-[var(--accent-tint)] rounded-full transition-colors"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             disabled={isDeleting}
-            className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+            className="p-2 text-[var(--text-dim-2)] hover:text-[var(--expense)] hover:bg-[var(--expense)]/10 rounded-full transition-colors"
           >
             {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
           </button>
@@ -98,6 +103,17 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
            <MoreVertical className="w-5 h-5" />
         </div>
       </div>
+
+      <Alert
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        title="Hapus Transaksi?"
+        message="Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak bisa dibatalkan."
+        type="error"
+        isConfirm={true}
+        onConfirm={confirmDelete}
+        confirmLabel="Hapus"
+      />
     </div>
   );
 }

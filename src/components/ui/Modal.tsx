@@ -48,9 +48,9 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
         <div
           className={`
-            relative overflow-hidden rounded-xl bg-white text-left shadow-2xl
+            relative overflow-hidden rounded-[16px] bg-[var(--card)] text-left shadow-2xl
             w-full ${sizeStyles[size]} modal-content
-            ring-1 ring-black/5
+            border border-[var(--border)]
           `}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
@@ -58,17 +58,17 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           aria-labelledby="modal-title"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-            <h3 id="modal-title" className="text-lg font-semibold text-gray-900">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--muted)]">
+            <h3 id="modal-title" className="text-[18px] font-bold text-[var(--text)] tracking-[-0.01em]">
               {title}
             </h3>
             <button
               onClick={onClose}
               className="
-                text-gray-400 hover:text-gray-600 hover:bg-gray-100
-                rounded-lg p-2 -mr-2
+                text-[var(--text-dim)] hover:text-[var(--text)] hover:bg-[var(--border)]
+                rounded-[10px] p-2 -mr-2
                 transition-all duration-150
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
+                focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1
               "
               aria-label="Close modal"
             >

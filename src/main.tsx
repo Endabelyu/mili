@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
+import { PreferencesProvider } from './hooks/usePreferences';
 import App from './App';
 import './index.css';
 import { initSentry } from './lib/sentry';
@@ -34,11 +35,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <PreferencesProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </PreferencesProvider>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </React.StrictMode>
 );
+

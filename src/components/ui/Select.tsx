@@ -21,25 +21,25 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, helperText, options, groups, className = '', children, ...props }, ref) => {
     const baseStyles = `
-      block w-full rounded-2xl border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-md
-      shadow-sm
-      text-[var(--text-primary)]
+      block w-full rounded-[10px] border-[var(--border)] bg-[var(--muted)]
+      shadow-none
+      text-[var(--text)]
       appearance-none cursor-pointer
-      focus:outline-none focus:ring-2 focus:ring-[var(--gradient-hero-start)]/20 focus:border-[var(--gradient-hero-start)]
+      focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 focus:border-[var(--accent)]
       disabled:opacity-50
       transition-all duration-200 ease-out
     `;
 
     const errorStyles = error
-      ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
-      : 'hover:border-[var(--text-primary)]/40';
+      ? 'border-[var(--expense)] focus:border-[var(--expense)] focus:ring-[var(--expense)]/10'
+      : 'hover:border-[var(--text-dim-2)]';
 
-    const sizeStyles = 'px-4 py-3 text-sm min-h-[44px]';
+    const sizeStyles = 'px-4 py-2.5 text-[14px] min-h-[44px]';
 
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-gray-700">
+          <label htmlFor={props.id} className="block text-[13px] font-bold text-[var(--text)] mb-1.5 ml-1">
             {label}
           </label>
         )}
@@ -88,7 +88,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </div>
         
         {(error || helperText) && (
-          <p className={`text-sm ${error ? 'text-red-600' : 'text-gray-500'}`}>
+          <p className={`text-[12px] font-medium ml-1 ${error ? 'text-[var(--expense)]' : 'text-[var(--text-dim)]'}`}>
             {error || helperText}
           </p>
         )}

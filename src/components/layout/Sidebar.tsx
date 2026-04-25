@@ -1,270 +1,87 @@
-import { NavLink, Link } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 import { 
-  Home,
-  Receipt,
-  PieChart,
-  BarChart3,
-  X,
-  Settings,
-  User,
-  ChevronRight,
-  LogOut,
+  LayoutGrid, 
+  Activity, 
+  Calendar, 
+  Wallet, 
+  Target, 
+  BarChart3, 
+  Receipt, 
+  Clock, 
+  Scan, 
+  Bell, 
+  User, 
+  Settings
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useNavigate } from 'react-router';
-import { useEffect, useRef } from 'react';
+import { formatName } from '../../lib/utils';
 
-const navItems = [
-  { path: '/', label: 'Home', icon: Home },
-  { path: '/transactions', label: 'Transactions', icon: Receipt },
-  { path: '/budget', label: 'Budget', icon: PieChart },
-  { path: '/reports', label: 'Reports', icon: BarChart3 },
-];
-
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { user, isLoading: isPending, logout } = useAuth();
-  const navigate = useNavigate();
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number | null>(null);
-
-  const userInitials = user?.name
-    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
-    : user?.email?.[0].toUpperCase() || '?';
-
-  // Handle swipe to close
-  useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartX.current = e.touches[0].clientX;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (touchStartX.current === null) return;
-      
-      const touchX = e.touches[0].clientX;
-      const diff = touchX - touchStartX.current;
-      
-      // Swipe left to close (when diff is negative and significant)
-      if (diff < -80 && touchStartX.current < 100) {
-        onClose();
-        touchStartX.current = null;
-      }
-    };
-
-    const sidebar = sidebarRef.current;
-    if (sidebar) {
-      sidebar.addEventListener('touchstart', handleTouchStart, { passive: true });
-      sidebar.addEventListener('touchmove', handleTouchMove, { passive: true });
-    }
-
-    return () => {
-      if (sidebar) {
-        sidebar.removeEventListener('touchstart', handleTouchStart);
-        sidebar.removeEventListener('touchmove', handleTouchMove);
-      }
-    };
-  }, [onClose]);
-
-  // Prevent body scroll when sidebar is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  const handleSignOut = async () => {
-    await logout();
-    onClose();
-    navigate('/login');
-  };
+export function Sidebar() {
+  const location = useLocation();
+  const { user, logout } = useAuth();
+  const path = location.pathname;
 
   return (
-    <>
-      {/* Backdrop Overlay */}
-      <div
-        className={`
-          fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden
-          transition-opacity duration-300
-          ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
-        `}
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <aside className="hidden lg:flex flex-col w-[260px] border-r border-[var(--border)] bg-[var(--card)] h-screen fixed top-0 left-0 z-50">
+      {/* Brand */}
+      <div className="p-8 pb-4">
+        <div className="flex items-center gap-3">
+           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg, #12B76A 0%, #0E9355 100%)' }}>
+             <Wallet className="w-6 h-6" />
+           </div>
+           <div>
+             <h1 className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text)] leading-tight">Saku</h1>
+             <p className="text-[10px] font-bold text-[var(--text-dim-2)] tracking-[0.1em] uppercase">Financial Tracker</p>
+           </div>
+        </div>
+      </div>
 
-      {/* Sidebar Drawer */}
-      <aside
-        ref={sidebarRef}
-        className={`
-          fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw]
-          bg-white text-[#1a1a2e]
-          border-r border-zinc-100
-          shadow-2xl shadow-black/10
-          transform transition-transform duration-300 ease-out
-          flex flex-col
-          lg:hidden
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}
-      >
-        <div className="p-6 bg-[#fbfbf9] border-b border-zinc-100">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-14 h-14 rounded-full bg-[#ecfccb] border-2 border-white flex items-center justify-center text-[#4d7c0f] font-bold text-xl shadow-sm">
-              {user?.image ? (
-                <img src={user.image} alt={user.name || user.email} className="w-full h-full rounded-full object-cover" />
-              ) : (
-                userInitials
-              )}
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-colors"
-              aria-label="Close menu"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      {/* Nav Links */}
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+        <SidebarLink to="/" icon={LayoutGrid} label="Dasbor" active={path === '/'} />
+        <SidebarLink to="/transactions" icon={Activity} label="Transaksi" active={path.startsWith('/transactions')} />
+        <SidebarLink to="/calendar" icon={Calendar} label="Kalender" active={path.startsWith('/calendar')} />
+        <SidebarLink to="/accounts" icon={Wallet} label="Akun" active={path.startsWith('/accounts')} />
+        <SidebarLink to="/targets" icon={Target} label="Target" active={path.startsWith('/targets')} />
+        <SidebarLink to="/analytics" icon={BarChart3} label="Analitik" active={path.startsWith('/analytics')} />
+        <SidebarLink to="/budget" icon={Receipt} label="Anggaran" active={path.startsWith('/budget')} />
+        <SidebarLink to="/scheduled" icon={Clock} label="Terjadwal" active={path.startsWith('/scheduled')} />
+        <SidebarLink to="/scan" icon={Scan} label="Scan Struk" active={path.startsWith('/scan')} />
+        <SidebarLink to="/notifications" icon={Bell} label="Notifikasi" active={path.startsWith('/notifications')} />
+        <SidebarLink to="/profile" icon={User} label="Profil" active={path.startsWith('/profile')} />
+      </nav>
+
+      {/* Bottom Actions */}
+      <div className="p-4 border-t border-[var(--border)]">
+        <SidebarLink to="/settings" icon={Settings} label="Pengaturan" active={path.startsWith('/settings')} />
+        
+        <div className="flex items-center gap-3 px-4 py-3 mt-2">
+          <div className="w-9 h-9 rounded-full bg-[var(--muted)] overflow-hidden flex items-center justify-center border border-[var(--border)]">
+             {user?.image ? <img src={user.image} className="w-full h-full object-cover" alt="Profile" /> : <User className="w-5 h-5 text-[var(--text-dim-2)]" />}
           </div>
-          <p className="text-base font-bold text-[#1a1a2e] truncate">
-            {isPending ? '...' : (user?.name || user?.email || 'Guest')}
-          </p>
-          <p className="text-xs text-zinc-500 truncate">
-            {user?.email && user.name ? user.email : ''}
-          </p>
+          <div className="flex-1 min-w-0">
+             <p className="text-[13px] font-bold text-[var(--text)] truncate">{formatName(user?.name)}</p>
+             <button onClick={logout} className="text-[11px] font-bold text-[var(--expense)] hover:underline">Keluar</button>
+          </div>
         </div>
+      </div>
+    </aside>
+  );
+}
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {navItems.map(({ path, label, icon: Icon }) => (
-            <NavLink
-              key={path}
-              to={path}
-              end={path === '/'}
-              onClick={onClose}
-              className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-2xl
-                text-sm font-semibold transition-all duration-200 min-h-[48px]
-                ${isActive
-                  ? 'bg-[#ecfccb] text-[#3f6212]'
-                  : 'text-zinc-500 hover:bg-zinc-50 hover:text-[#1a1a2e]'
-                }
-              `}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              <span>{label}</span>
-            </NavLink>
-          ))}
-
-          <div className="my-3 h-px bg-zinc-100" />
-
-          {/* Settings */}
-          <NavLink
-            to="/settings"
-            onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all min-h-[48px] ${
-                isActive ? 'bg-[#ecfccb] text-[#3f6212]' : 'text-zinc-500 hover:bg-zinc-50 hover:text-[#1a1a2e]'
-              }`
-            }
-          >
-            <Settings className="w-5 h-5 flex-shrink-0" />
-            <span className="flex-1 text-left">Settings</span>
-            <ChevronRight className="w-4 h-4 opacity-40" />
-          </NavLink>
-        </nav>
-
-        {/* Footer - Sign Out */}
-        <div className="p-4 border-t border-zinc-100">
-          <NavLink
-            to="/profile"
-            onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all min-h-[48px] mb-1 ${
-                isActive ? 'bg-[#ecfccb] text-[#3f6212]' : 'text-zinc-500 hover:bg-zinc-50 hover:text-[#1a1a2e]'
-              }`
-            }
-          >
-            <User className="w-5 h-5 flex-shrink-0" />
-            <span>Profil</span>
-          </NavLink>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-rose-500 hover:bg-rose-50 transition-colors min-h-[48px]"
-          >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 h-screen bg-[#fbfbf9] text-[#1a1a2e] border-r border-zinc-200 fixed left-0 top-0">
-        {/* Logo */}
-        <div className="p-8 border-b border-zinc-200 bg-white">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#a3e635] flex items-center justify-center shadow-sm shadow-[#a3e635]/20">
-              <PieChart className="w-5 h-5 text-[#1a1a2e]" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg text-[#1a1a2e] leading-tight flex items-center gap-1">FlowState <span className="text-lg leading-none">✨</span></h1>
-              <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Finance Tracker</p>
-            </div>
-          </Link>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto bg-[#fbfbf9]">
-          {navItems.map(({ path, label, icon: Icon }) => (
-            <NavLink
-              key={path}
-              to={path}
-              end={path === '/'}
-              className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 min-h-[48px]
-                ${isActive
-                  ? 'bg-white shadow-sm border border-zinc-200/60 text-[#1a1a2e]'
-                  : 'text-zinc-500 hover:bg-zinc-100 hover:text-[#1a1a2e]'
-                }
-              `}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              <span>{label}</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-zinc-200 bg-[#fbfbf9] space-y-1">
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all min-h-[48px] ${
-                isActive ? 'bg-white shadow-sm border border-zinc-200/60 text-[#1a1a2e]' : 'text-zinc-500 hover:bg-zinc-100 hover:text-[#1a1a2e]'
-              }`
-            }
-          >
-            <Settings className="w-5 h-5 flex-shrink-0" />
-            <span>Settings</span>
-          </NavLink>
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all min-h-[48px] ${
-                isActive ? 'bg-white shadow-sm border border-zinc-200/60 text-[#1a1a2e]' : 'text-zinc-500 hover:bg-zinc-100 hover:text-[#1a1a2e]'
-              }`
-            }
-          >
-            <User className="w-5 h-5 flex-shrink-0" />
-            <span>Profile</span>
-          </NavLink>
-        </div>
-      </aside>
-    </>
+function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: any; label: string; active: boolean }) {
+  return (
+    <NavLink
+      to={to}
+      className={`
+        flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-bold transition-all duration-200
+        ${active 
+          ? 'bg-[#12B76A15] text-[#12B76A]' 
+          : 'text-[var(--text-dim)] hover:bg-[var(--muted)] hover:text-[var(--text)]'}
+      `}
+    >
+      <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 1.8} />
+      <span>{label}</span>
+    </NavLink>
   );
 }

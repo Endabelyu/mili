@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button, Input } from '@app/components/ui';
-import { Loader2, DollarSign, Tag, Calendar, Target } from 'lucide-react';
 import { budgetsApi } from '@app/api/client';
+import { usePreferences } from '@app/hooks/usePreferences';
+import { Tag, Calendar, Target, Loader2 } from 'lucide-react';
 import type { Budget, Category } from '@app/types';
 
 interface BudgetWithSpending extends Budget {
@@ -20,6 +21,7 @@ interface BudgetFormProps {
 }
 
 export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCancel }: BudgetFormProps) {
+  const { currency } = usePreferences();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!budget?.id;
 
@@ -27,6 +29,21 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
     budget?.categoryId || ''
   );
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
 
   // Update selected category when budget changes
   useEffect(() => {
@@ -93,50 +110,71 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Category Select */}
-      <div>
-        <label htmlFor="categoryId" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
+      <div className="space-y-1.5" ref={categoryDropdownRef}>
+        <label className="block text-[13px] font-bold text-[var(--text)] mb-1.5 ml-1">
           Category
         </label>
-        <div className="relative group">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <Tag className="w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
-          </div>
-          <select
-            id="categoryId"
-            name="categoryId"
-            value={selectedCategoryId}
-            onChange={(e) => setSelectedCategoryId(e.target.value)}
+        <div className="relative">
+          <button
+            type="button"
             disabled={isEditing}
+            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
             className={`
-              w-full rounded-lg border px-10 py-2.5 text-sm
-              bg-[var(--card-bg)] backdrop-blur-md appearance-none cursor-pointer
+              w-full rounded-[16px] border border-transparent px-4 py-3.5 text-[15px] font-semibold text-left
+              bg-[var(--muted)] flex items-center justify-between
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-[var(--gradient-hero-start)]/20 focus:border-[var(--gradient-hero-start)]
-              ${errors.categoryId ? 'border-red-300 focus:border-red-500' : 'border-[var(--card-border)]'}
-              ${isEditing ? 'bg-white/10 dark:bg-black/20 cursor-not-allowed' : ''}
+              focus:outline-none focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)]
+              ${errors.categoryId ? 'border-red-300' : ''}
+              ${isEditing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
           >
-            <option value="" disabled>Select a category</option>
-            {availableCategories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.icon && `${category.icon} `}{category.label}
-              </option>
-            ))}
-          </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 flex items-center justify-center text-[18px]">
+                {selectedCategory ? selectedCategory.icon || '📦' : <Tag className="w-4 h-4 text-gray-400" />}
+              </div>
+              <span className={selectedCategory ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'}>
+                {selectedCategory ? selectedCategory.label : 'Select a category'}
+              </span>
+            </div>
+            <svg className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
-          </div>
+          </button>
+          <input type="hidden" name="categoryId" value={selectedCategoryId} />
+
+          {/* Custom Dropdown List */}
+          {isCategoryDropdownOpen && !isEditing && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-xl z-[100] overflow-hidden animate-fade-in">
+              <div className="max-h-[260px] overflow-y-auto py-2">
+                {availableCategories.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategoryId(category.id);
+                      setIsCategoryDropdownOpen(false);
+                    }}
+                    className={`
+                      w-full px-4 py-3 flex items-center gap-3 text-[14px] font-bold text-left transition-colors
+                      ${selectedCategoryId === category.id ? 'bg-[var(--accent-tint)] text-[var(--accent)]' : 'text-[var(--text)] hover:bg-[var(--muted)]'}
+                    `}
+                  >
+                    <span className="text-[18px] w-6 flex justify-center">{category.icon || '📦'}</span>
+                    <span>{category.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         {errors.categoryId && (
-          <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+          <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1 ml-1">
             <span className="w-1 h-1 rounded-full bg-red-500" />
             {errors.categoryId}
           </p>
         )}
         {isEditing && (
-          <p className="mt-1 text-xs text-[var(--text-secondary)]">
+          <p className="mt-1 text-xs text-[var(--text-secondary)] ml-1">
             Category cannot be changed when editing. Delete and recreate to change categories.
           </p>
         )}
@@ -179,7 +217,9 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
         </label>
         <div className="relative group">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <DollarSign className="w-5 h-5 text-blue-500" />
+            <span className="text-[16px] font-bold text-blue-500">
+              {currency === 'IDR' ? 'Rp' : '$'}
+            </span>
           </div>
           <Input
             id="limitAmount"
@@ -213,7 +253,10 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
       <div>
         <p className="text-xs font-medium text-[var(--text-secondary)] mb-2">Quick select</p>
         <div className="flex flex-wrap gap-2">
-          {[50, 100, 200, 500, 1000].map((amount) => (
+          {(currency === 'IDR' 
+            ? [50000, 100000, 200000, 500000, 1000000, 2000000] 
+            : [50, 100, 200, 500, 1000, 2000]
+          ).map((amount) => (
             <button
               key={amount}
               type="button"
@@ -223,9 +266,9 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
                   input.value = amount.toString();
                 }
               }}
-              className="px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] bg-white/10 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-black/40 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-[13px] font-bold text-[var(--text-secondary)] bg-[var(--muted)] hover:bg-[var(--border)] rounded-lg transition-colors border border-[var(--border)]"
             >
-              ${amount}
+              {currency === 'IDR' ? (amount / 1000) + 'rb' : '$' + amount}
             </button>
           ))}
         </div>

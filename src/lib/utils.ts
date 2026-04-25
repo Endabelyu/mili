@@ -15,3 +15,11 @@ export function formatDate(dateStr: string | Date) {
     year: 'numeric',
   });
 }
+export function formatName(name?: string | null) {
+  if (!name) return 'User';
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}

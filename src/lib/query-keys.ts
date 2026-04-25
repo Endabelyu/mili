@@ -13,4 +13,8 @@ export const queryKeys = {
     monthly: (months?: number) => ['reports', 'monthly', months] as const,
   },
   categories: { all: ['categories'] as const },
+  accounts: { all: ['accounts'] as const },
+  calendar: {
+    monthly: (month: string) => ['calendar', month] as const,
+  },
 };

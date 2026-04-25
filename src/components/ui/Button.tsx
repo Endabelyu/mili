@@ -8,11 +8,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-  primary: 'bg-[var(--gradient-hero-start)] text-[var(--app-bg-start)] hover:brightness-110 focus:ring-[var(--gradient-hero-start)]/50 shadow-sm hover:shadow',
-  secondary: 'bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] border border-[var(--card-border)] hover:bg-[var(--text-primary)]/5 focus:ring-[var(--card-border)]',
-  outline: 'bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] border border-[var(--card-border)] hover:bg-[var(--text-primary)]/5 focus:ring-[var(--card-border)] hover:border-[var(--text-primary)]/40',
-  ghost: 'bg-transparent text-[var(--text-primary)] hover:bg-[var(--text-primary)]/5 focus:ring-[var(--text-primary)]/20',
-  danger: 'bg-[var(--gradient-danger-start)] text-white hover:brightness-110 focus:ring-[var(--gradient-danger-start)]/50 shadow-sm hover:shadow',
+  primary: 'btn-primary shadow-sm hover:shadow',
+  secondary: 'bg-[var(--muted)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--muted-2)] focus:ring-[var(--border)]',
+  outline: 'bg-transparent text-[var(--text)] border border-[var(--border)] hover:bg-[var(--muted)] focus:ring-[var(--border)]',
+  ghost: 'bg-transparent text-[var(--text)] hover:bg-[var(--muted)] focus:ring-[var(--muted-2)]',
+  danger: 'bg-[var(--expense)] text-white hover:brightness-110 focus:ring-[var(--expense)]/50 shadow-sm hover:shadow',
 };
 
 const sizeStyles = {
@@ -24,11 +24,11 @@ const sizeStyles = {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', isLoading, children, className = '', disabled, ...props }, ref) => {
     const baseStyles = `
-      inline-flex items-center justify-center font-semibold rounded-lg
+      inline-flex items-center justify-center font-bold rounded-[12px]
       focus:outline-none focus:ring-2 focus:ring-offset-1
       transition-all duration-200 ease-out
       disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none
-      active:scale-[0.98]
+      active:scale-[0.98] tracking-[-0.01em]
     `;
 
     return (

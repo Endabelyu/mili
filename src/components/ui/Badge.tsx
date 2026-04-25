@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
 type BadgeSize = 'sm' | 'md';
 
+
 interface BadgeProps {
   children: ReactNode;
   variant?: BadgeVariant;
@@ -11,11 +12,11 @@ interface BadgeProps {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-zinc-100 text-[#52525b] border-zinc-200',
-  primary: 'bg-[#ecfccb] text-[#4d7c0f] border-[#bef264]',
-  success: 'bg-[#dcfce7] text-[#15803d] border-[#86efac]',
+  default: 'bg-[var(--muted)] text-[var(--text-dim)] border-[var(--border)]',
+  primary: 'bg-[var(--accent-tint)] text-[var(--accent)] border-[var(--accent)]/10',
+  success: 'bg-[#dcfce7] text-[var(--income)] border-[var(--income)]/10',
   warning: 'bg-[#ffedd5] text-[#c2410c] border-[#fdba74]',
-  danger: 'bg-[#fee2e2] text-[#b91c1c] border-[#fca5a5]',
+  danger: 'bg-[#fee2e2] text-[var(--expense)] border-[var(--expense)]/10',
   info: 'bg-[#e0e7ff] text-[#4338ca] border-[#a5b4fc]',
 };
 
@@ -34,7 +35,7 @@ export function Badge({
     <span
       className={`
         inline-flex items-center gap-1
-        font-medium rounded-full border
+        font-bold rounded-lg border
         ${variantStyles[variant]}
         ${sizeStyles[size]}
         ${className}

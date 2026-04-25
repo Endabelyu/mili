@@ -12,8 +12,13 @@ const TransactionsPage = React.lazy(() => import('./pages/_app.transactions'));
 const BudgetPage = React.lazy(() => import('./pages/_app.budget'));
 const ReportsPage = React.lazy(() => import('./pages/_app.reports'));
 const ProfilePage = React.lazy(() => import('./pages/_app.profile'));
+const AccountsPage = React.lazy(() => import('./pages/_app.accounts'));
+const TargetsPage = React.lazy(() => import('./pages/_app.targets'));
+const CalendarPage = React.lazy(() => import('./pages/_app.calendar'));
+const ScheduledPage = React.lazy(() => import('./pages/_app.scheduled'));
+const NotificationsPage = React.lazy(() => import('./pages/_app.notifications'));
+const ScanPage = React.lazy(() => import('./pages/_app.scan'));
 const RewardsPage = React.lazy(() => import('./pages/_app.rewards'));
-const ChallengePage = React.lazy(() => import('./pages/_app.challenge'));
 const SubscriptionPage = React.lazy(() => import('./pages/_app.subscription'));
 const ProfileEditPage = React.lazy(() => import('./pages/_app.profile_.edit'));
 const ProfileSecurityPage = React.lazy(() => import('./pages/_app.profile_.security'));
@@ -44,19 +49,19 @@ export default function App() {
     <React.Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
       <Sentry.ErrorBoundary
         fallback={({ error, resetError }) => (
-          <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white p-4">
-            <h1 className="text-3xl font-bold mb-4 text-rose-500">Oops! Something went wrong.</h1>
-            <p className="text-slate-300 mb-6 text-center max-w-md">
+          <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAF7F2] text-[var(--text)] p-4">
+            <h1 className="text-3xl font-bold mb-4 text-[#F04438]">Oops! Something went wrong.</h1>
+            <p className="text-[var(--text-dim)] mb-6 text-center max-w-md">
               We've encountered an unexpected error. Our team has been notified.
             </p>
-            <div className="bg-slate-800 p-4 rounded-lg border border-slate-700 w-full max-w-lg mb-6 overflow-auto">
-              <code className="text-sm font-mono text-rose-400">
+            <div className="bg-white p-4 rounded-lg border border-[var(--border)] w-full max-w-lg mb-6 overflow-auto">
+              <code className="text-sm font-mono text-[#F04438]">
                 {error instanceof Error ? error.message : String(error)}
               </code>
             </div>
             <button
               onClick={() => resetError()}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              className="px-6 py-2 bg-[#12B76A] text-white rounded-xl font-bold transition-colors"
             >
               Try Again
             </button>
@@ -74,10 +79,21 @@ export default function App() {
           <Route path="/"                  element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/transactions"      element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
           <Route path="/budget"            element={<ProtectedRoute><BudgetPage /></ProtectedRoute>} />
-          <Route path="/reports"           element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route path="/analytics"         element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route path="/reports"           element={<Navigate to="/analytics" replace />} />
           <Route path="/profile"           element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/scheduled"         element={<ProtectedRoute><ScheduledPage /></ProtectedRoute>} />
+          <Route path="/notifications"     element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+          <Route path="/scan"              element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
+          <Route path="/targets"           element={<ProtectedRoute><TargetsPage /></ProtectedRoute>} />
+          
+          {/* Stubs for other navigation */}
+          <Route path="/calendar"          element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+          <Route path="/accounts"          element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+          
+          {/* Legacy/Other routes */}
           <Route path="/rewards"           element={<ProtectedRoute><RewardsPage /></ProtectedRoute>} />
-          <Route path="/challenge"         element={<ProtectedRoute><ChallengePage /></ProtectedRoute>} />
+          <Route path="/challenge"         element={<Navigate to="/targets" replace />} />
           <Route path="/subscription/:id"  element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
           <Route path="/profile/edit"      element={<ProtectedRoute><ProfileEditPage /></ProtectedRoute>} />
           <Route path="/profile/security"  element={<ProtectedRoute><ProfileSecurityPage /></ProtectedRoute>} />

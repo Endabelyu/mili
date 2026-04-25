@@ -14,38 +14,38 @@ const variantStyles = {
   default: {
     bg: 'flow-card border-none',
     border: '',
-    iconBg: 'bg-[var(--text-primary)]/10',
-    iconColor: 'text-[var(--text-primary)]',
-    titleColor: 'text-[var(--text-secondary)] font-semibold',
-    valueColor: 'text-[var(--text-primary)]',
-    hoverShadow: 'hover:-translate-y-1 transition-transform',
+    iconBg: 'bg-[var(--muted)]',
+    iconColor: 'text-[var(--text)]',
+    titleColor: 'text-[var(--text-dim)] font-semibold',
+    valueColor: 'text-[var(--text)]',
+    hoverShadow: 'hover:-translate-y-0.5 transition-transform',
   },
   primary: {
     bg: 'flow-card border-none',
-    border: 'border-[var(--gradient-hero-start)]/30',
-    iconBg: 'bg-[var(--gradient-hero-start)]/20',
-    iconColor: 'text-[var(--gradient-hero-start)]',
-    titleColor: 'text-[var(--text-secondary)] font-semibold',
-    valueColor: 'text-[var(--text-primary)]',
-    hoverShadow: 'hover:-translate-y-1 transition-transform',
+    border: 'border-[var(--accent)]/30',
+    iconBg: 'bg-[var(--accent-tint)]',
+    iconColor: 'text-[var(--accent)]',
+    titleColor: 'text-[var(--text-dim)] font-semibold',
+    valueColor: 'text-[var(--text)]',
+    hoverShadow: 'hover:-translate-y-0.5 transition-transform',
   },
   income: {
     bg: 'flow-card border-none',
-    border: 'border-emerald-500/30',
-    iconBg: 'bg-emerald-500/20',
-    iconColor: 'text-emerald-400',
-    titleColor: 'text-[var(--text-secondary)] font-semibold',
-    valueColor: 'text-[var(--text-primary)]',
-    hoverShadow: 'hover:-translate-y-1 transition-transform',
+    border: 'border-[var(--income)]/30',
+    iconBg: 'bg-[var(--income)]/10',
+    iconColor: 'text-[var(--income)]',
+    titleColor: 'text-[var(--text-dim)] font-semibold',
+    valueColor: 'text-[var(--text)]',
+    hoverShadow: 'hover:-translate-y-0.5 transition-transform',
   },
   expense: {
     bg: 'flow-card border-none',
-    border: 'border-rose-500/30',
-    iconBg: 'bg-rose-500/20',
-    iconColor: 'text-rose-400',
-    titleColor: 'text-[var(--text-secondary)] font-semibold',
-    valueColor: 'text-[var(--text-primary)]',
-    hoverShadow: 'hover:-translate-y-1 transition-transform',
+    border: 'border-[var(--expense)]/30',
+    iconBg: 'bg-[var(--expense)]/10',
+    iconColor: 'text-[var(--expense)]',
+    titleColor: 'text-[var(--text-dim)] font-semibold',
+    valueColor: 'text-[var(--text)]',
+    hoverShadow: 'hover:-translate-y-0.5 transition-transform',
   },
 };
 
@@ -63,13 +63,13 @@ export function StatCard({
 
   if (isLoading) {
     return (
-      <div className={`${styles.bg} ${styles.border} rounded-2xl p-5 animate-pulse`}>
+      <div className={`${styles.bg} ${styles.border} rounded-[16px] p-5 animate-pulse`}>
         <div className="flex items-start justify-between">
           <div className="space-y-3 flex-1">
-            <div className="h-4 w-24 bg-gray-200 rounded" />
-            <div className="h-8 w-32 bg-gray-300 rounded" />
+            <div className="h-4 w-24 bg-[var(--muted)] rounded" />
+            <div className="h-8 w-32 bg-[var(--muted-2)] rounded" />
           </div>
-          <div className="h-10 w-10 rounded-lg bg-gray-200" />
+          <div className="h-10 w-10 rounded-lg bg-[var(--muted)]" />
         </div>
       </div>
     );
@@ -81,41 +81,41 @@ export function StatCard({
   return (
     <div
       className={`
-        relative ${styles.bg} ${styles.border} p-5 md:p-6
-        transition-transform duration-200 ${styles.hoverShadow}
+        relative ${styles.bg} ${styles.border} p-5 md:p-6 rounded-[20px]
+        transition-all duration-200 ${styles.hoverShadow}
       `}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className={`text-sm font-medium ${styles.titleColor} truncate`}>
+          <p className={`text-[12px] font-bold tracking-[0.02em] ${styles.titleColor} truncate uppercase opacity-70`}>
             {title}
           </p>
-          <p className={`text-2xl md:text-3xl font-bold tracking-tight ${styles.valueColor} mt-2 truncate`}>
+          <p className={`text-[24px] font-bold tracking-[-0.02em] ${styles.valueColor} mt-1 truncate tabular-nums`}>
             {value}
           </p>
           {change !== undefined && (
             <div className="flex items-center gap-1.5 mt-2">
               {changeIsPositive ? (
-                <TrendingUp className="w-3.5 h-3.5 text-green-600" />
+                <TrendingUp className="w-3.5 h-3.5 text-[var(--income)]" />
               ) : changeIsNegative ? (
-                <TrendingDown className="w-3.5 h-3.5 text-red-600" />
+                <TrendingDown className="w-3.5 h-3.5 text-[var(--expense)]" />
               ) : (
-                <Minus className="w-3.5 h-3.5 text-gray-400" />
+                <Minus className="w-3.5 h-3.5 text-[var(--text-dim-2)]" />
               )}
               <span
-                className={`text-sm font-medium ${
+                className={`text-[13px] font-bold tabular-nums ${
                   changeIsPositive
-                    ? 'text-green-600 dark:text-emerald-400'
+                    ? 'text-[var(--income)]'
                     : changeIsNegative
-                    ? 'text-red-600 dark:text-rose-400'
-                    : 'text-gray-500 dark:text-gray-400'
+                    ? 'text-[var(--expense)]'
+                    : 'text-[var(--text-dim)]'
                 }`}
               >
                 {change > 0 ? '+' : ''}
                 {change.toFixed(1)}%
               </span>
               {changeLabel && (
-                <span className="text-sm text-gray-500 dark:text-gray-400 truncate">{changeLabel}</span>
+                <span className="text-[12px] font-medium text-[var(--text-dim)] truncate">{changeLabel}</span>
               )}
             </div>
           )}
@@ -123,7 +123,7 @@ export function StatCard({
         <div
           className={`
             ${styles.iconBg} ${styles.iconColor}
-            w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm dark:shadow-none
+            w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
           `}
         >
           <Icon className="w-5 h-5" />

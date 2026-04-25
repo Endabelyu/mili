@@ -81,11 +81,91 @@ export class ApiError extends Error {
 }
 
 
-import { type Transaction, type Budget, type Category } from '../types';
+import { type Transaction, type Budget, type Category, type Account } from '../types';
 
+export const accountsApi = {
+  list: () => request<{ items: Account[] }>('/api/accounts').then(res => res.items),
+  create: (data: Omit<Account, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) =>
+    request<Account>('/api/accounts', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<Account>) =>
+    request<Account>(`/api/accounts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => request<void>(`/api/accounts/${id}`, { method: 'DELETE' }),
+};
+
+export interface CalendarDay {
+  date: string;
+  income: number;
+  expense: number;
+  items: Transaction[];
+}
+
+export const calendarApi = {
+  get: (month: string) => request<{ month: string; days: CalendarDay[] }>(`/api/calendar?month=${month}`),
+};
+export interface Target {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: string | number;
+  currentAmount: string | number;
+  deadline?: string | Date | null;
+  color: string;
+  icon: string;
+  status: 'active' | 'completed' | 'paused';
+}
+
+export const targetsApi = {
+  list: () => request<{ items: Target[] }>('/api/targets').then(res => res.items),
+  create: (data: Omit<Target, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) =>
+    request<Target>('/api/targets', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<Target>) =>
+    request<Target>(`/api/targets/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => request<void>(`/api/targets/${id}`, { method: 'DELETE' }),
+};
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  amount: string;
+  time: string;
+  icon: string;
+  color: string;
+  iconColor: string;
+  unread: boolean;
+}
+
+export const notificationsApi = {
+  list: () => request<{ items: NotificationItem[] }>('/api/notifications').then(res => res.items),
+  markRead: (id: string) => request<void>(`/api/notifications/${id}/read`, { method: 'PUT' }),
+  markAllRead: () => request<void>('/api/notifications/mark-all-read', { method: 'POST' }),
+};
+
+export interface ScheduledTransaction {
+  id: string;
+  userId: string;
+  type: 'income' | 'expense';
+  amount: string | number;
+  categoryId: string;
+  accountId?: string | null;
+  description?: string | null;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  nextRunDate: string | Date;
+  status: 'active' | 'paused' | 'completed';
+  category?: Category;
+  account?: Account;
+}
+
+export const scheduledApi = {
+  list: () => request<{ items: ScheduledTransaction[] }>('/api/scheduled').then(res => res.items),
+  create: (data: Omit<ScheduledTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) =>
+    request<ScheduledTransaction>('/api/scheduled', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<ScheduledTransaction>) =>
+    request<ScheduledTransaction>(`/api/scheduled/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => request<void>(`/api/scheduled/${id}`, { method: 'DELETE' }),
+};
 
 export const transactionsApi = {
-  list: (params?: { limit?: number; page?: number; type?: string; category?: string; search?: string }) =>
+  list: (params?: { limit?: number; page?: number; type?: string; category?: string; search?: string; month?: string }) =>
     request<{ items: Transaction[], pagination: { page: number; limit: number; total: number; totalPages: number } }>('/api/transactions', { params }),
   create: (data: Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) =>
     request<Transaction>('/api/transactions', { method: 'POST', body: JSON.stringify(data) }),
@@ -120,4 +200,6 @@ export const reportsApi = {
 // ─── Categories ───────────────────────────────────────────────────────────────
 export const categoriesApi = {
   list: () => request<{ items: Category[] }>('/api/categories').then(res => res.items),
+  create: (data: { label: string; color: string; icon: string; type: string }) => 
+    request<Category>('/api/categories', { method: 'POST', body: JSON.stringify(data) }),
 };

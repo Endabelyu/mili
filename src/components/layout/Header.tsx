@@ -115,7 +115,7 @@ export function Header({ onMenuClick, title }: HeaderProps) {
           </button>
 
           <Link
-            to="/transactions?new=true"
+            to="?new=true"
             className="flex items-center gap-2 px-5 py-2.5 rounded-full shadow-lg text-sm font-bold bg-[#a3e635] text-[#1a1a2e] hover:bg-[#bef264] active:scale-95 transition-all outline-none"
           >
             <Plus className="w-5 h-5" />

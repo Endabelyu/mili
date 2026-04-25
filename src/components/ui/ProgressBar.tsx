@@ -26,18 +26,18 @@ export function ProgressBar({
   };
 
   const colorStyles = {
-    primary: 'bg-blue-600',
-    success: 'bg-green-600',
+    primary: 'bg-[var(--accent)]',
+    success: 'bg-[var(--income)]',
     warning: 'bg-amber-500',
-    danger: 'bg-red-600',
+    danger: 'bg-[var(--expense)]',
   };
 
   // Dynamic color based on percentage when color is not explicitly set
   const getDynamicColor = () => {
-    if (percentage >= 100) return 'bg-red-600';
+    if (percentage >= 100) return 'bg-[var(--expense)]';
     if (percentage >= 80) return 'bg-amber-500';
     if (percentage >= 60) return 'bg-yellow-500';
-    return 'bg-green-600';
+    return 'bg-[var(--income)]';
   };
 
   const barColor = color === 'success' ? getDynamicColor() : colorStyles[color];
@@ -47,10 +47,10 @@ export function ProgressBar({
       {(showLabel || label) && (
         <div className="flex justify-between items-center mb-2">
           {label && (
-            <span className="text-sm font-medium text-gray-700">{label}</span>
+            <span className="text-[13px] font-bold text-[var(--text)]">{label}</span>
           )}
           {showLabel && (
-            <span className="text-sm text-gray-500">
+            <span className="text-[12px] font-bold text-[var(--text-dim)] tabular-nums">
               {percentage.toFixed(0)}%
             </span>
           )}
@@ -59,7 +59,7 @@ export function ProgressBar({
       
       <div
         className={`
-          w-full bg-gray-200 rounded-full overflow-hidden
+          w-full bg-[var(--muted)] rounded-full overflow-hidden
           ${sizeStyles[size]}
         `}
         role="progressbar"

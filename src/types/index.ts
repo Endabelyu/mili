@@ -7,16 +7,31 @@ export interface Category {
   type: string;
 }
 
+export interface Account {
+  id: string;
+  userId: string;
+  name: string;
+  type: 'bank' | 'e-wallet' | 'cash' | 'investment' | 'credit-card';
+  balance: string | number;
+  currency: string;
+  color: string;
+  icon?: string | null;
+  isDefault?: boolean;
+}
+
 export interface Transaction {
   id: string;
   userId: string;
   amount: string | number;
   type: string;
   categoryId: string;
+  accountId?: string | null;
   description: string | null;
   date: Date | string;
   createdAt: Date;
   updatedAt: Date;
+  category?: Category;
+  account?: Account;
 }
 
 export interface Budget {
@@ -25,4 +40,7 @@ export interface Budget {
   categoryId: string;
   limitAmount: string | number;
   month: string;
+  spent?: string | number;
+  percentageUsed?: number;
+  category?: Category;
 }

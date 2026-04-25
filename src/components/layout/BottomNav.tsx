@@ -1,122 +1,72 @@
-import { NavLink, useLocation, useNavigate } from 'react-router';
-import { Activity, Receipt, Wallet, Settings, Plus } from 'lucide-react';
+import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Home, List, Wallet, MoreHorizontal, Plus } from 'lucide-react';
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
 
-  // Derive dynamic FAB state based on current route
-  let fabHidden = false;
-  let fabPosition: 'center' | 'right' = 'center';
-  let fabColor: 'green' | 'orange' | 'glow' = 'green';
-  const fabRoute = '/transactions?new=true';
-
-  // Gamification pages and Dashboard (Wallet)
-  if (path === '/' || path.startsWith('/rewards')) {
-    fabHidden = true;
-  } 
-  // Challenge detail
-  else if (path.startsWith('/challenge')) {
-    fabPosition = 'right';
-    fabColor = 'orange';
-  }
-  // Flow/Transactions
-  else if (path.startsWith('/transactions')) {
-    fabPosition = 'right';
-    fabColor = 'green';
-  }
-  // Budget/Bills
-  else if (path.startsWith('/budget')) {
-    fabPosition = 'right';
-    fabColor = 'green';
-  }
-  // Settings/Profile
-  else if (path.startsWith('/profile') || path.startsWith('/settings')) {
-    fabPosition = 'center';
-    fabColor = 'green';
-  }
-
-  // Handle Dark Mode new expense route
-  if (location.search.includes('new=true')) {
-    fabColor = 'glow';
-    fabPosition = 'center';
-  }
+  const fabRoute = '?new=true';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
-      {/* Floating Action Button Layer */}
-      {!fabHidden && (
-        <div 
-          className={`absolute flex pointer-events-none w-full px-4 ${
-            fabPosition === 'right' ? 'justify-end bottom-24' : 'justify-center bottom-6'
-          }`}
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
+      {/* Floating Action Button */}
+      <div className="absolute flex justify-center w-full bottom-[42px] pointer-events-none" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <button
+          onClick={() => navigate(fabRoute)}
+          className="pointer-events-auto w-[68px] h-[68px] rounded-full flex items-center justify-center z-20 transition-transform active:scale-95 border-4 border-[var(--bg)]"
+          style={{
+            background: '#63C488', // Match the green color in the reference
+            color: '#fff',
+            boxShadow: '0 4px 12px rgba(99, 196, 136, 0.4)',
+          }}
         >
-          <button
-            onClick={() => navigate(fabRoute)}
-            className={`
-              pointer-events-auto rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 z-20
-              ${fabPosition === 'right' ? 'w-14 h-14' : 'w-16 h-16'}
-              ${fabColor === 'green' ? 'bg-[var(--duit-green)] text-[#1a1a2e] shadow-[#a3e635]/40 border-[5px] border-[var(--app-bg)]' : ''}
-              ${fabColor === 'orange' ? 'bg-[#ff914d] text-white shadow-[#ff914d]/40' : ''}
-              ${fabColor === 'glow' ? 'bg-[var(--duit-green)] text-[#1a1a2e] shadow-[0_0_20px_rgba(163,230,53,0.6)] border-4 border-black' : ''}
-            `}
-          >
-            <Plus className="w-7 h-7" strokeWidth={3} />
-          </button>
-        </div>
-      )}
+          <Plus className="w-8 h-8" strokeWidth={2} />
+        </button>
+      </div>
 
-      {/* Nav Bar Background */}
-      <div className={`
-        flex h-[76px] items-stretch px-2 relative z-10 
-        ${location.search.includes('new=true') ? 'bg-[#09090b]' : 'bg-white shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.06)] rounded-t-[32px]'}
-      `}>
-        {/* Left two tabs */}
-        <div className="flex flex-1 items-stretch justify-around pt-3 pb-safe">
-          <NavTab to="/transactions" icon={Activity} label="FLOW" active={path.startsWith('/transactions')} />
-          <NavTab to="/budget" icon={Receipt} label="BILLS" active={path.startsWith('/budget')} />
-        </div>
+      {/* Nav Bar */}
+      <div
+        className="grid grid-cols-5 border-t border-[var(--border)] bg-[var(--bg)]"
+        style={{
+          padding: '8px 8px calc(8px + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        <NavTab to="/" icon={Home} label="Dasbor" active={path === '/'} />
+        <NavTab to="/transactions" icon={List} label="Transaksi" active={path.startsWith('/transactions')} />
 
-        {/* Center spacing if FAB is centered */}
-        {fabPosition === 'center' && !fabHidden && (
-          <div className="w-16" />
-        )}
+        {/* Center spacer for FAB */}
+        <div className="flex items-center justify-center"></div>
 
-        {/* Right two tabs */}
-        <div className="flex flex-1 items-stretch justify-around pt-3 pb-safe">
-          <NavTab to="/" icon={Wallet} label="WALLET" active={path === '/'} />
-          <NavTab to="/profile" icon={Settings} label="SETTINGS" active={path.startsWith('/profile') || path.startsWith('/settings')} />
-        </div>
+        <NavTab to="/accounts" icon={Wallet} label="Akun" active={path.startsWith('/accounts')} />
+        
+        {/* Lainnya opens the menu modal using a query param */}
+        <Link
+          to="?menu=true"
+          className="flex flex-col items-center justify-center gap-1 py-1.5"
+        >
+          <div className="flex items-center justify-center text-[var(--text-dim)]">
+            <MoreHorizontal className="w-6 h-6" strokeWidth={1.8} />
+          </div>
+          <span className="text-[10px] font-medium text-[var(--text-dim)]">
+            Lainnya
+          </span>
+        </Link>
       </div>
     </nav>
   );
 }
 
 function NavTab({ to, icon: Icon, label, active }: { to: string; icon: React.ElementType; label: string; active: boolean }) {
-  const location = useLocation();
-  const isDarkMode = location.search.includes('new=true'); // simplistic check for demo
-
   return (
     <NavLink
       to={to}
-      className="group relative flex flex-col items-center justify-start pt-1 flex-1 gap-1"
+      className="flex flex-col items-center justify-center gap-1 py-1.5"
     >
-      <div className={`
-        flex rounded-xl p-1 transition-all
-        ${active && isDarkMode ? 'bg-[#a3e635] text-black' : ''}
-        ${!active && isDarkMode ? 'text-zinc-500' : ''}
-        ${active && !isDarkMode ? 'text-[#84cc16]' : ''}
-        ${!active && !isDarkMode ? 'text-[#a1a1aa]' : ''}
-      `}>
-        <Icon className="w-6 h-6" strokeWidth={active ? 2.5 : 2} />
+      <div className={`flex items-center justify-center transition-colors ${active ? 'text-[#63C488]' : 'text-[var(--text-dim)]'}`}>
+        <Icon className="w-6 h-6" strokeWidth={active ? 2.2 : 1.8} />
       </div>
-      <span className={`text-[9px] font-extrabold tracking-wider uppercase transition-colors 
-        ${active && isDarkMode ? 'text-[#a3e635]' : ''}
-        ${!active && isDarkMode ? 'text-zinc-600' : ''}
-        ${active && !isDarkMode ? 'text-[#84cc16]' : ''}
-        ${!active && !isDarkMode ? 'text-[#a1a1aa]' : ''}
-      `}>
+      <span className={`text-[10px] font-medium transition-colors ${active ? 'text-[#63C488]' : 'text-[var(--text-dim)]'}`}>
         {label}
       </span>
     </NavLink>

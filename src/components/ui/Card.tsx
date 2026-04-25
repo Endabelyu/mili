@@ -68,7 +68,7 @@ interface CardTitleProps {
 
 export function CardTitle({ children, className = '' }: CardTitleProps) {
   return (
-    <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>
+    <h3 className={`text-[16px] font-bold text-[var(--text)] tracking-[-0.01em] ${className}`}>
       {children}
     </h3>
   );
@@ -81,7 +81,7 @@ interface CardDescriptionProps {
 
 export function CardDescription({ children, className = '' }: CardDescriptionProps) {
   return (
-    <p className={`text-sm text-gray-500 ${className}`}>
+    <p className={`text-[13px] font-medium text-[var(--text-dim)] ${className}`}>
       {children}
     </p>
   );
@@ -103,7 +103,7 @@ interface CardFooterProps {
 
 export function CardFooter({ children, className = '' }: CardFooterProps) {
   return (
-    <div className={`flex items-center justify-end gap-3 pt-4 mt-4 border-t border-gray-100 ${className}`}>
+    <div className={`flex items-center justify-end gap-3 pt-4 mt-4 border-t border-[var(--border)] ${className}`}>
       {children}
     </div>
   );
