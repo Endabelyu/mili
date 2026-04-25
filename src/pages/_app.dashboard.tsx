@@ -1,50 +1,31 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { transactionsApi, reportsApi } from '../api/client';
+import { transactionsApi, reportsApi, targetsApi, scheduledApi, accountsApi } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
-import {
-  Bell,
-  Plus,
-  BarChart2,
-  Building2,
-  Smartphone,
-  ArrowRightLeft,
-  TrendingUp
-} from 'lucide-react';
-import { formatCurrency, formatDate } from '../lib/utils';
-import { CategoryIcon } from '../components/ui';
+import { usePreferences } from '../hooks/usePreferences';
+import { TrendingUp } from 'lucide-react';
+import { formatName } from '../lib/utils';
+import type { Account } from '../types';
 
-// ─── Skeleton ────────────────────────────────────────────────────────────────
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-8 px-4 pt-6 lg:pt-8 w-full max-w-2xl mx-auto animate-pulse">
-      <div className="flex justify-between items-center">
-        <div className="flex gap-4">
-          <div className="w-14 h-14 bg-zinc-200 rounded-full" />
-          <div className="flex flex-col justify-center gap-2">
-            <div className="w-24 h-5 bg-zinc-200 rounded-md" />
-            <div className="w-32 h-4 bg-zinc-200 rounded-md" />
-          </div>
-        </div>
-        <div className="w-12 h-12 bg-zinc-200 rounded-full" />
-      </div>
-      <div className="w-full h-48 bg-zinc-200 rounded-[40px]" />
-      <div className="flex gap-4 overflow-hidden">
-        <div className="w-48 h-48 bg-zinc-200 rounded-[40px] shrink-0" />
-        <div className="w-48 h-48 bg-zinc-200 rounded-[40px] shrink-0" />
-      </div>
-    </div>
-  );
-}
+// ─── Fallback emoji map ──────────────────────────────────────────────────────
+
+const FALLBACK_EMOJI: Record<string, string> = {
+  salary: '💰', freelance: '💻', investments: '📈', gifts: '🎁', 'other-income': '💵',
+  food: '🍜', transport: '🚗', housing: '🏠', utilities: '💡', entertainment: '🎬',
+  shopping: '🛍️', healthcare: '💊', education: '📚', travel: '✈️', 'other-expense': '📦',
+};
+
+
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t, formatMoney, language } = usePreferences();
 
   const { data: txnsData, isLoading: txnsLoading } = useQuery({
-    queryKey: queryKeys.transactions.list({ limit: 4 }),
-    queryFn: () => transactionsApi.list({ limit: 4 }),
+    queryKey: queryKeys.transactions.list({ limit: 5 }),
+    queryFn: () => transactionsApi.list({ limit: 5 }),
   });
 
   const { data: summaryData, isLoading: summaryLoading } = useQuery({
@@ -52,175 +33,325 @@ export default function DashboardPage() {
     queryFn: () => reportsApi.summary(),
   });
 
-  const isLoading = txnsLoading || summaryLoading;
+  const { data: targetsData } = useQuery({
+    queryKey: ['targets'],
+    queryFn: () => targetsApi.list(),
+  });
+
+  const { data: catData, isLoading: catLoading } = useQuery({
+    queryKey: queryKeys.reports.byCategory(),
+    queryFn: () => reportsApi.byCategory(),
+  });
+
+  const { data: scheduledData } = useQuery({
+    queryKey: ['scheduled'],
+    queryFn: () => scheduledApi.list(),
+  });
+
+  const { data: accountsData } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: () => accountsApi.list(),
+  });
+
   const recentTransactions = txnsData?.items || [];
+  const targets = targetsData || [];
+  const scheduled = scheduledData || [];
+  const topCategories = catData?.slice(0, 5) || [];
+  const accounts = accountsData || [];
   
   const income = summaryData?.income ?? 0;
   const expenses = summaryData?.expenses ?? 0;
-  const balance = income - expenses;
+  const balance = summaryData?.balance ?? 0;
 
-  if (isLoading) return <DashboardSkeleton />;
+  const totalAssets = accounts.reduce((acc: number, curr: Account) => {
+    const val = parseFloat(String(curr.balance));
+    return val > 0 ? acc + val : acc;
+  }, 0);
 
-  const firstName = user?.name ? user.name.split(' ')[0] : (user?.email?.split('@')[0] || 'Buddy');
+  const totalLiabilities = Math.abs(accounts.reduce((acc: number, curr: Account) => {
+    const val = parseFloat(String(curr.balance));
+    return val < 0 ? acc + val : acc;
+  }, 0));
 
-  // Hardcode static accounts for the UI demo based on mockups
-  const bankAccounts = [
-    {
-      id: 1,
-      name: 'MAIN BANK',
-      balance: 8200.00,
-      mask: '**** 4421',
-      bgColor: 'bg-[#dcfce7]',
-      brand: 'bg-[#1e293b]',
-      icon: <Building2 className="w-6 h-6 text-[#fbbf24] fill-[#fbbf24]" />,
-      pill: 'PRIMARY',
-    },
-    {
-      id: 2,
-      name: 'VENMO',
-      balance: 450.80,
-      mask: '@flowstate_u',
-      bgColor: 'bg-[#fce7f3]',
-      brand: 'bg-[#67e8f9]',
-      icon: <Smartphone className="w-5 h-5 text-[#fb923c]" strokeWidth={2.5}/>,
-      pill: null,
-    }
-  ];
+  const netWorth = totalAssets - totalLiabilities;
+
+  const currentMonthName = new Date().toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'short', year: 'numeric' });
 
   return (
-    <div className="space-y-8 pb-32 lg:pb-8 pt-6 lg:pt-8 w-full max-w-2xl mx-auto px-4 sm:px-0">
+    <div className="space-y-8 animate-fade-in pb-10">
+      
+      {/* ─── Hero Header ─── */}
+      <div className="mb-6">
+        <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em]">{formatName(user?.name)}</h1>
+      </div>
 
-      {/* Hero Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link to="/profile" className="w-[52px] h-[52px] rounded-full bg-orange-100 border-[3px] border-white flex items-center justify-center text-2xl shadow-sm shrink-0 overflow-hidden">
-             {user?.image ? <img src={user.image} className="w-full h-full object-cover" alt="Profile" /> : '🐻'}
-          </Link>
-          <div className="flex flex-col">
-            <h1 className="text-[17px] font-extrabold text-[#1a1a2e] mb-0.5 tracking-tight">
-              FlowState
-            </h1>
-            <p className="text-[13px] font-bold text-[#71717a]">
-              Hi, {firstName}! ✨
-            </p>
+      {/* ─── Net Worth Hero Card (Real Data) ─── */}
+      <div className="relative rounded-[20px] p-6 text-white overflow-hidden shadow-lg shadow-[#12B76A20]" style={{ background: 'linear-gradient(135deg, #66C68F 0%, #12B76A 100%)', border: 'none' }}>
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-[12px] font-bold opacity-80 tracking-[0.05em] uppercase">{t('dashboard.netWorth')}</p>
+            <p className="text-[34px] font-bold tracking-[-0.02em] mt-1 tabular-nums">{formatMoney(netWorth)}</p>
+            <div className="flex flex-wrap gap-4 mt-3 text-[12px] font-bold">
+              <span className="opacity-90">{t('dashboard.assets')} <span className="opacity-100 tabular-nums">{formatMoney(totalAssets)}</span></span>
+              {totalLiabilities > 0 && (
+                <span className="opacity-90">{t('dashboard.liabilities')} <span className="opacity-100 tabular-nums">{formatMoney(totalLiabilities)}</span></span>
+              )}
+            </div>
           </div>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/20 backdrop-blur-sm">
+            <TrendingUp className="w-[11px] h-[11px]" /> +0%
+          </span>
         </div>
-        <button className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#1a1a2e] shadow-sm hover:scale-105 transition-transform active:scale-95">
-          <Bell className="w-5 h-5" strokeWidth={2.5}/>
-        </button>
+        {/* Subtle Wave Chart Placeholder */}
+        <div className="absolute bottom-0 left-0 w-full h-16 opacity-30 pointer-events-none">
+          <svg viewBox="0 0 400 100" className="w-full h-full preserve-3d">
+             <path d="M0 80 Q 100 70, 200 85 T 400 75 L 400 100 L 0 100 Z" fill="white" />
+          </svg>
+        </div>
       </div>
 
-      {/* Massive Pocket Money Card */}
-      <div className="rounded-[40px] p-8 text-[#1a1a2e] bg-[var(--duit-green)] shadow-lg shadow-[#a3e635]/20 flex flex-col justify-between">
-        <div className="flex flex-col items-start gap-1">
-          <p className="text-[11px] font-extrabold tracking-widest text-[#3f6212] uppercase opacity-80 mb-1">
-            Total Pocket Money
-          </p>
-          <h2 className="text-[44px] font-extrabold tracking-tight leading-none mb-8">
-            {formatCurrency(balance || 12450.80)}
-          </h2>
+      {/* ─── Monthly Cash Flow (Real Data) ─── */}
+      <div className="flow-card p-6">
+        <div className="flex justify-between items-center mb-5">
+          <h3 className="text-[14px] font-bold text-[var(--text)] tracking-[-0.01em]">{t('dashboard.cashFlow')}</h3>
+          <span className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-70 uppercase tracking-widest">{currentMonthName}</span>
         </div>
-        <div className="flex gap-3">
-          <button className="flex-1 bg-[#121021] text-white rounded-full py-4 px-6 flex items-center justify-center gap-2 font-bold text-[15px] active:scale-95 transition-transform">
-            <div className="bg-white rounded-full p-0.5">
-              <Plus className="w-4 h-4 text-black" strokeWidth={3}/>
+        {summaryLoading ? (
+          <div className="space-y-4 animate-pulse">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="h-12 bg-[var(--muted)] rounded-xl"></div>
+              <div className="h-12 bg-[var(--muted)] rounded-xl"></div>
+              <div className="h-12 bg-[var(--muted)] rounded-xl"></div>
             </div>
-            Add Funds
-          </button>
-          <button className="w-14 bg-[#bced6b] rounded-full flex items-center justify-center active:scale-95 transition-transform shrink-0 shadow-sm border border-[#9ae243]">
-             <BarChart2 className="w-5 h-5 text-black" strokeWidth={3}/>
-          </button>
-        </div>
+            <div className="h-2 bg-[var(--muted)] rounded-full w-full"></div>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div>
+                <p className="text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.income')}</p>
+                <p className="text-[18px] font-bold text-[var(--income)] tabular-nums">{formatMoney(income)}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.expense')}</p>
+                <p className="text-[18px] font-bold text-[var(--expense)] tabular-nums">{formatMoney(expenses)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.balance')}</p>
+                <p className={`text-[18px] font-bold tabular-nums ${balance >= 0 ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
+                  {formatMoney(balance)}
+                </p>
+              </div>
+            </div>
+            <div className="h-2 w-full rounded-full bg-[var(--muted)] overflow-hidden flex">
+              {income === 0 && expenses === 0 ? (
+                <div className="h-full bg-[var(--border)] w-full" />
+              ) : (
+                <>
+                  <div className="h-full bg-[var(--income)]" style={{ width: `${(income / (income + expenses)) * 100}%` }} />
+                  <div className="h-full bg-[var(--expense)]" style={{ width: `${(expenses / (income + expenses)) * 100}%` }} />
+                </>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Accounts Horizontal Scroll */}
-      <div>
-        <div className="flex items-center justify-between mb-5 px-1">
-          <h3 className="text-[19px] font-extrabold text-[#1a1a2e] tracking-tight">Your Accounts</h3>
-          <Link to="/profile" className="text-[13px] font-bold text-[#84cc16] hover:opacity-80 transition-opacity">
-            See All
-          </Link>
+      {/* ─── Pinned Targets (Real Data) ─── */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[14px] font-bold text-[var(--text)]">{t('dashboard.pinnedTargets')}</h3>
+          <Link to="/targets" className="text-[12px] font-bold text-[var(--accent)] hover:underline">{t('common.viewAll')}</Link>
         </div>
         
-        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-          {bankAccounts.map((account) => (
-             <div key={account.id} className={`${account.bgColor} rounded-[40px] p-6 shrink-0 w-[200px] snap-center flex flex-col justify-between shadow-sm relative overflow-hidden h-[220px]`}>
-               <div className="flex justify-between items-start w-full">
-                 <div className={`w-12 h-12 rounded-xl ${account.brand} flex items-center justify-center`}>
-                    {account.icon}
-                 </div>
-                 {account.pill && (
-                   <span className="bg-white/80 backdrop-blur text-[#2563eb] text-[9px] font-extrabold px-3 py-1.5 rounded-full tracking-wider">
-                     {account.pill}
-                   </span>
-                 )}
-               </div>
-               <div>
-                  <p className="text-[11px] font-extrabold text-[#1a1a2e]/60 tracking-wider mb-1.5">{account.name}</p>
-                  <p className="text-[26px] font-extrabold text-[#1e3a8a] tracking-tight leading-none mb-3">
-                    ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-[11px] font-bold text-[#1e3a8a]/40 tracking-wider">{account.mask}</p>
-               </div>
-             </div>
-          ))}
-          {/* Add spacing at the end of scroll */}
-          <div className="w-2 shrink-0" />
-        </div>
+        {targets.length === 0 ? (
+          <div className="text-center py-8 px-6 bg-[var(--card)] rounded-[20px] border border-[var(--border)]">
+            <p className="text-[13px] font-bold text-[var(--text)] mb-1">Belum ada target</p>
+            <p className="text-[11px] text-[var(--text-dim-2)]">Mulai tentukan mimpi finansial Anda sekarang.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {targets.slice(0, 3).map((t: any) => {
+              const progress = Math.min(Math.round((parseFloat(String(t.currentAmount)) / parseFloat(String(t.targetAmount))) * 100), 100);
+              return (
+                <TargetCard 
+                  key={t.id}
+                  icon={() => <span className="text-[18px]">{t.icon || '🎯'}</span>} 
+                  color="bg-[rgba(18,183,106,0.1)]" 
+                  iconColor="text-[#12B76A]" 
+                  label={t.name} 
+                  progress={progress} 
+                  collected={formatMoney(parseFloat(String(t.currentAmount)))} 
+                  target={formatMoney(parseFloat(String(t.targetAmount)))} 
+                />
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* ─── Top Categories (Real Data) ─── */}
+        <section>
+          <h3 className="text-[14px] font-bold text-[var(--text)] mb-4">{t('dashboard.topCategories')}</h3>
+          <div className="flow-card p-5 space-y-5">
+            {catLoading ? (
+              <div className="space-y-4 animate-pulse">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--muted)]" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-[var(--muted)] rounded w-1/3" />
+                      <div className="h-2 bg-[var(--muted)] rounded w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : topCategories.length === 0 ? (
+              <div className="text-center py-6 text-[var(--text-dim)]">
+                <p className="text-[13px] font-bold mb-1">Belum ada data pengeluaran</p>
+                <p className="text-[11px]">Catat pengeluaran untuk melihat kategori teratas.</p>
+              </div>
+            ) : (
+              topCategories.map((cat: any) => (
+                <div key={cat.categoryId} className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--text)]" style={{ backgroundColor: `${cat.color}15` }}>
+                    <span className="text-[18px]">{FALLBACK_EMOJI[cat.categoryId] || '📦'}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <p className="text-[13px] font-bold text-[var(--text)]">{cat.label}</p>
+                      <p className="text-[13px] font-bold text-[var(--text)] tabular-nums">{formatMoney(cat.amount)}</p>
+                    </div>
+                    <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${cat.percentage}%`, backgroundColor: cat.color }} />
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        {/* ─── Upcoming Bills (Real Data) ─── */}
+        <section>
+          <h3 className="text-[14px] font-bold text-[var(--text)] mb-4">{t('dashboard.upcomingBills')}</h3>
+          <div className="flow-card divide-y divide-[var(--border)]">
+            {scheduled.length === 0 ? (
+              <div className="text-center py-11 text-[var(--text-dim)]">
+                <p className="text-[13px] font-bold mb-1">Belum ada tagihan mendatang</p>
+                <p className="text-[11px]">Tambahkan transaksi terjadwal.</p>
+              </div>
+            ) : (
+              scheduled.slice(0, 4).map((item: any) => {
+                const diff = new Date(item.nextRunDate).getTime() - new Date().getTime();
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                const dueStr = days > 0 ? `${days} hari lagi` : days === 0 ? 'Hari ini' : `${Math.abs(days)} hari lalu`;
+                const emoji = item.category?.icon || FALLBACK_EMOJI[item.categoryId] || '📦';
+                return (
+                  <BillItem 
+                    key={item.id}
+                    icon={() => <span className="text-[18px]">{emoji}</span>} 
+                    color="bg-[rgba(18,183,106,0.1)]" 
+                    iconColor="text-[#12B76A]" 
+                    label={item.description || item.category?.label || 'Tagihan'} 
+                    amount={formatMoney(parseFloat(String(item.amount)))} 
+                    due={dueStr} 
+                  />
+                );
+              })
+            )}
+          </div>
+        </section>
       </div>
 
-      {/* Recent Activity */}
-      <div>
-        <h3 className="text-[19px] font-extrabold text-[#1a1a2e] tracking-tight mb-5 px-1">Recent Activity</h3>
-        
-        <div className="space-y-3">
-          {recentTransactions.length > 0 ? recentTransactions.map((tx) => (
-            <div key={tx.id} className="bg-white rounded-[32px] p-4 flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-4">
-                 <div className="w-14 h-14 rounded-full bg-[#f0f9ff] flex items-center justify-center text-[#0ea5e9]">
-                    <CategoryIcon category={tx.categoryId} size="md" />
-                 </div>
-                 <div>
-                   <p className="text-[15px] font-extrabold text-[#1a1a2e]">{tx.description || tx.categoryId}</p>
-                   <p className="text-[12px] font-bold text-[#a1a1aa] mt-0.5">{formatDate(tx.date)}</p>
-                 </div>
-              </div>
-              <span className={`text-[17px] font-extrabold tracking-tight ${tx.type === 'income' ? 'text-[#a3e635]' : 'text-[#1a1a2e]'}`}>
-                {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
-              </span>
+      {/* ─── Recent Transactions (Real Data) ─── */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[14px] font-bold text-[var(--text)]">{t('dashboard.recentTransactions')}</h3>
+          <Link to="/transactions" className="text-[12px] font-bold text-[var(--accent)] hover:underline">{t('common.viewAll')}</Link>
+        </div>
+        <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
+          {txnsLoading ? (
+            <div className="space-y-4 p-5 animate-pulse">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--muted)]" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-[var(--muted)] rounded w-1/4" />
+                    <div className="h-3 bg-[var(--muted)] rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
             </div>
-          )) : (
-            // Mock Data if API is empty for immediate visual
-            <>
-              <div className="bg-white rounded-[32px] p-4 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-[#e0f2fe] flex items-center justify-center">
-                      <ArrowRightLeft className="w-6 h-6 text-[#0ea5e9]" strokeWidth={2.5}/>
+          ) : recentTransactions.length === 0 ? (
+            <div className="text-center py-8 text-[var(--text-dim)]">
+              <p className="text-[24px] mb-2">💸</p>
+              <p className="text-[13px] font-bold mb-1">Belum ada transaksi</p>
+            </div>
+          ) : (
+            recentTransactions.map((tx: any) => {
+              const isIncome = tx.type === 'income';
+              const emoji = tx.category?.icon || FALLBACK_EMOJI[tx.categoryId] || '📦';
+              return (
+                <div key={tx.id} className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer group">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-lg flex-shrink-0 group-hover:bg-[var(--card)] transition-colors">
+                    <span className="text-[18px]">{emoji}</span>
                   </div>
-                  <div>
-                    <p className="text-[15px] font-extrabold text-[#1a1a2e]">Transfer to Venmo</p>
-                    <p className="text-[12px] font-bold text-[#a1a1aa] mt-0.5">Today, 2:45 PM</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-[var(--text)] truncate">{tx.description || tx.category?.label}</p>
+                    <p className="text-[12px] font-medium text-[var(--text-dim)] mt-0.5 opacity-70">
+                      {tx.category?.label || tx.categoryId}
+                    </p>
                   </div>
+                  <span className={`text-[15px] font-bold tabular-nums ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
+                    {isIncome ? '+' : '−'}{formatMoney(Math.abs(parseFloat(tx.amount)))}
+                  </span>
                 </div>
-                <span className="text-[17px] font-extrabold text-[#1a1a2e] tracking-tight">-$50.00</span>
-              </div>
-              <div className="bg-white rounded-[32px] p-4 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-[#fef3c7] flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-[#f59e0b]" strokeWidth={2.5}/>
-                  </div>
-                  <div>
-                    <p className="text-[15px] font-extrabold text-[#1a1a2e]">Savings Interest</p>
-                    <p className="text-[12px] font-bold text-[#a1a1aa] mt-0.5">Yesterday</p>
-                  </div>
-                </div>
-                <span className="text-[17px] font-extrabold text-[#84cc16] tracking-tight">+$12.40</span>
-              </div>
-            </>
+              );
+            })
           )}
         </div>
-      </div>
+      </section>
+    </div>
+  );
+}
 
+// ─── Shared Mockup Components ────────────────────────────────────────────────
+function TargetCard({ icon: Icon, color, iconColor, label, progress, collected, target }: any) {
+  return (
+    <div className="flow-card p-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center ${iconColor}`}>
+          <Icon className="w-5 h-5" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
+          <p className="text-[11px] font-bold text-[var(--text-dim-2)] opacity-70">{progress}%</p>
+        </div>
+      </div>
+      <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden mb-3">
+        <div className={`h-full ${iconColor.replace('text', 'bg')}`} style={{ width: `${progress}%` }} />
+      </div>
+      <div className="flex justify-between items-center text-[11px] font-bold">
+        <span className="text-[var(--text-dim)]">{collected}</span>
+        <span className="text-[var(--text-dim-2)] opacity-60">{target}</span>
+      </div>
+    </div>
+  );
+}
+
+function BillItem({ icon: Icon, color, iconColor, label, amount, due }: any) {
+  return (
+    <div className="flex items-center gap-4 px-5 py-4">
+      <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center ${iconColor}`}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-bold text-[var(--text)]">{label}</p>
+        <p className="text-[11px] font-bold text-[var(--text-dim-2)] opacity-70 mt-0.5">{due}</p>
+      </div>
+      <p className="text-[13px] font-bold text-[var(--text)] tabular-nums">{amount}</p>
     </div>
   );
 }
