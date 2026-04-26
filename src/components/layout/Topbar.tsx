@@ -20,7 +20,7 @@ import { notificationsApi } from '../../api/client';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useDebounce } from '../../hooks/useDebounce';
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, React.ElementType> = {
   Zap,
   Coffee,
   Target,

@@ -68,7 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const forgetPassword = async (email: string) => {
-    const { error } = await (authClient as any).forgetPassword({
+    const client = authClient as unknown as { 
+      forgetPassword: (data: { email: string; redirectTo: string }) => Promise<{ error: { message?: string } | null }> 
+    };
+    const { error } = await client.forgetPassword({
       email,
       redirectTo: '/auth/reset-password',
     });

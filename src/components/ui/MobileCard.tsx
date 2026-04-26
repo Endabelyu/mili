@@ -54,7 +54,7 @@ export function MobileCard({
     : { className: baseStyles };
 
   return (
-    <Component {...props as any}>
+    <Component {...(props as React.HTMLAttributes<HTMLElement> & { href?: string })}>
       {children}
     </Component>
   );
