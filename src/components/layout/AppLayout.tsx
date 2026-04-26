@@ -3,11 +3,13 @@ import { BottomNav } from './BottomNav';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { InstallPrompt, OfflineIndicator, UpdatePrompt } from '@app/components/pwa';
-import { NewTransactionModal } from '../finance/NewTransactionModal';
-import { TransactionEntryChoice } from '../finance/TransactionEntryChoice';
-import { ScanModal } from '../finance/ScanModal';
-import { MoreMenuModal } from './MoreMenuModal';
+import { lazy, Suspense } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+
+const NewTransactionModal = lazy(() => import('../finance/NewTransactionModal').then(module => ({ default: module.NewTransactionModal })));
+const TransactionEntryChoice = lazy(() => import('../finance/TransactionEntryChoice').then(module => ({ default: module.TransactionEntryChoice })));
+const ScanModal = lazy(() => import('../finance/ScanModal').then(module => ({ default: module.ScanModal })));
+const MoreMenuModal = lazy(() => import('./MoreMenuModal').then(module => ({ default: module.MoreMenuModal })));
 import type { ReactNode } from 'react';
 
 interface AppLayoutProps {
@@ -51,10 +53,12 @@ export function AppLayout({ children }: AppLayoutProps) {
       </div>
 
       <BottomNav />
-      <NewTransactionModal />
-      <TransactionEntryChoice />
-      <MoreMenuModal />
-      <ScanModal isOpen={isScanOpen} onClose={handleCloseScan} />
+      <Suspense fallback={null}>
+        <NewTransactionModal />
+        <TransactionEntryChoice />
+        <MoreMenuModal />
+        <ScanModal isOpen={isScanOpen} onClose={handleCloseScan} />
+      </Suspense>
 
       {/* PWA Components */}
       <InstallPrompt />

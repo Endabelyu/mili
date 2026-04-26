@@ -240,6 +240,7 @@ export function NewTransactionModal() {
               value={displayAmount === '0' && amount === '' ? '' : displayAmount}
               onChange={handleDesktopInput}
               placeholder="0"
+              aria-label={t('txn.amount')}
               className={`text-[56px] font-bold tracking-[-0.04em] tabular-nums bg-transparent outline-none border-none text-center max-w-[400px] ${amountColor} placeholder:opacity-40`}
               style={{ caretColor: type === 'expense' ? '#F04438' : '#12B76A' }}
             />
@@ -303,6 +304,7 @@ export function NewTransactionModal() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t('txn.descriptionPlaceholder')}
+                aria-label={t('txn.description')}
                 className="w-full bg-transparent text-[15px] font-medium text-[var(--text)] focus:outline-none placeholder:text-[var(--text-dim-2)] placeholder:opacity-40"
               />
             </div>

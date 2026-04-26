@@ -38,6 +38,7 @@ export function TransactionEntryChoice() {
           <h2 className="text-[20px] font-bold text-[var(--text)]">Tambah Transaksi</h2>
           <button 
             onClick={handleClose} 
+            aria-label="Tutup"
             className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)]"
           >
             <X className="w-5 h-5" />
