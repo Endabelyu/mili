@@ -8,7 +8,7 @@ interface ScanModalProps {
 
 export function ScanModal({ isOpen, onClose }: ScanModalProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const startCamera = async () => {

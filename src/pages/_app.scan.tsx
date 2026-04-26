@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 export default function ScanReceiptPage() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const startCamera = async () => {
