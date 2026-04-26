@@ -8,11 +8,6 @@ export default function ScanReceiptPage() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, []);
-
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
@@ -30,11 +25,18 @@ export default function ScanReceiptPage() {
   };
 
   const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
+    setStream(currentStream => {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+      return null;
+    });
   };
+
+  useEffect(() => {
+    startCamera();
+    return () => stopCamera();
+  }, []);
 
   return (
     <div className="h-full flex flex-col animate-fade-in overflow-hidden pb-24 lg:pb-0">

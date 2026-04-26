@@ -40,8 +40,11 @@ export default function LoginPage() {
       await login(data.email, data.password);
       navigate('/');
     } catch (err) {
-      const e = err as any;
-      setError(e?.body?.message || err?.message || 'Email atau kata sandi tidak valid');
+      const e = err as Record<string, unknown>;
+      const body = e?.body as Record<string, unknown> | undefined;
+      setError(
+        (body?.message as string) || (e instanceof Error ? e.message : 'Email atau kata sandi tidak valid')
+      );
     } finally {
       setIsLoading(false);
     }

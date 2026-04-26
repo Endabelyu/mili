@@ -50,8 +50,11 @@ export default function RegisterPage() {
       });
       navigate('/auth/login?registered=true');
     } catch (err) {
-      const e = err as any;
-      setError(e?.body?.message || err?.message || 'Gagal mendaftar. Email mungkin sudah digunakan.');
+      const e = err as Record<string, unknown>;
+      const body = e?.body as Record<string, unknown> | undefined;
+      setError(
+        (body?.message as string) || (e instanceof Error ? e.message : 'Gagal mendaftar. Email mungkin sudah digunakan.')
+      );
     } finally {
       setIsLoading(false);
     }

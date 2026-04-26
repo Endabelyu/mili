@@ -35,8 +35,11 @@ export default function ForgotPasswordPage() {
       await forgetPassword(data.email);
       setSuccess(true);
     } catch (err) {
-      const e = err as any;
-      setError(e?.body?.message || err?.message || 'Gagal mengirim email reset kata sandi');
+      const e = err as Record<string, unknown>;
+      const body = e?.body as Record<string, unknown> | undefined;
+      setError(
+        (body?.message as string) || (e instanceof Error ? e.message : 'Gagal mengirim email reset kata sandi')
+      );
     } finally {
       setIsLoading(false);
     }
