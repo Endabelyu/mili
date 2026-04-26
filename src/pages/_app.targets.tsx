@@ -82,7 +82,7 @@ export default function TargetsPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: Omit<Target, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'status'>) =>
-      targetsApi.create(data as any),
+      targetsApi.create(data as Omit<Target, 'id' | 'userId' | 'createdAt' | 'updatedAt'>),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['targets'] });
       setIsModalOpen(false);
@@ -160,9 +160,9 @@ export default function TargetsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse pb-10">
-        <div className="h-24 bg-[var(--muted)] rounded-2xl" />
-        <div className="h-64 bg-[var(--muted)] rounded-2xl" />
+      <div className="space-y-6 pb-10">
+        <div className="h-24 skeleton rounded-2xl" />
+        <div className="h-64 skeleton rounded-2xl" />
       </div>
     );
   }
@@ -184,17 +184,23 @@ export default function TargetsPage() {
         </button>
       </div>
 
-      {/* Hero Card - Green Summary */}
-      <div className="rounded-[32px] bg-gradient-to-br from-[#12B76A] to-[#0E9355] p-8 text-white shadow-xl shadow-[#12B76A]/20">
-        <p className="text-[12px] font-bold opacity-70 uppercase tracking-widest mb-3">Total Progres Target</p>
-        <div className="flex items-baseline gap-2 mb-4">
-          <p className="text-[36px] font-bold tracking-[-0.02em] leading-none">{formatMoney(totalCurrent)}</p>
-          <p className="text-[16px] font-bold opacity-60">/ {formatMoney(totalTarget)}</p>
-        </div>
-        <div className="flex items-center gap-3 pt-4 border-t border-white/10 text-[13px] font-bold">
-          <span>{targets.length} target aktif</span>
-          <span className="opacity-40">·</span>
-          <span>3 disematkan</span>
+      {/* Summary Card - White Style to match Transactions */}
+      <div className="rounded-[24px] bg-[var(--card)] p-6 border border-[var(--border)] shadow-sm">
+        <div className="grid grid-cols-3 gap-6">
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Terkumpul</p>
+            <p className="text-[20px] font-bold text-[var(--income)] tabular-nums">{formatMoney(totalCurrent)}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Total Target</p>
+            <p className="text-[20px] font-bold text-[var(--text)] tabular-nums">{formatMoney(totalTarget)}</p>
+          </div>
+          <div className="space-y-1 border-l border-[var(--border)] pl-6">
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Progres</p>
+            <p className="text-[20px] font-bold text-[var(--income)] tabular-nums">
+              {totalTarget > 0 ? Math.round((totalCurrent / totalTarget) * 100) : 0}%
+            </p>
+          </div>
         </div>
       </div>
 
@@ -304,10 +310,10 @@ export default function TargetsPage() {
 
       {/* ─── Add/Edit Modals ─── */}
       {(isModalOpen || isEditModalOpen) && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in z-[190]" onClick={resetForm} />
+        <>
+          <div className="fixed inset-0 bg-black/40 z-[90] backdrop-blur-sm animate-fade-in" onClick={resetForm} />
           <div 
-            className="relative z-[200] w-full max-w-[500px] bg-[var(--bg)] rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-[var(--border)]"
+            className="fixed inset-x-0 bottom-0 lg:top-[10%] lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
@@ -413,7 +419,7 @@ export default function TargetsPage() {
               </button>
             </div>
           </div>
-        </div>
+        </>
       )}
       {/* ─── Global Alert ─── */}
       <Alert

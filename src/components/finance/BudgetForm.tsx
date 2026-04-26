@@ -7,8 +7,8 @@ import type { Budget, Category } from '@app/types';
 
 interface BudgetWithSpending extends Budget {
   category?: Category;
-  spent?: string;
-  remaining?: string;
+  spent?: string | number;
+  remaining?: string | number;
   percentageUsed?: number;
 }
 

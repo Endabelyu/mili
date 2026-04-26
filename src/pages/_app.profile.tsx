@@ -105,8 +105,8 @@ export default function ProfilePage() {
         setIsEditOpen(false);
         setEditSuccess(false);
       }, 1200);
-    } catch (err: any) {
-      setEditError(err.message || 'Terjadi kesalahan. Coba lagi.');
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : 'Terjadi kesalahan. Coba lagi.');
     } finally {
       setIsEditLoading(false);
     }
@@ -146,8 +146,8 @@ export default function ProfilePage() {
         setIsSecurityOpen(false);
         setSecSuccess(false);
       }, 1500);
-    } catch (err: any) {
-      setSecError(err.message || 'Terjadi kesalahan. Coba lagi.');
+    } catch (err) {
+      setSecError(err instanceof Error ? err.message : 'Terjadi kesalahan. Coba lagi.');
     } finally {
       setIsSecLoading(false);
     }
@@ -357,7 +357,19 @@ export default function ProfilePage() {
               <div className="flex justify-center mb-2">
                 <div className="w-20 h-20 rounded-full p-0.5 flex items-center justify-center relative" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)' }}>
                   <div className="w-full h-full rounded-full bg-orange-100 overflow-hidden border-2 border-[var(--card)] flex items-center justify-center">
-                    {user?.image ? <img src={user.image} className="w-full h-full object-cover" alt="Profile" /> : <User className="w-8 h-8 text-[var(--accent)]" />}
+                    {user?.image ? (
+                      <img 
+                        src={user.image} 
+                        className="w-full h-full object-cover" 
+                        alt="Foto profil Anda" 
+                        width="80" 
+                        height="80" 
+                        loading="lazy" 
+                        decoding="async" 
+                      />
+                    ) : (
+                      <User className="w-8 h-8 text-[var(--accent)]" />
+                    )}
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[var(--card)] shadow-sm flex items-center justify-center border border-[var(--border)]">
                     <Sparkles className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]" />

@@ -39,8 +39,9 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password);
       navigate('/');
-    } catch (err: any) {
-      setError(err?.body?.message || err?.message || 'Email atau kata sandi tidak valid');
+    } catch (err) {
+      const e = err as any;
+      setError(e?.body?.message || err?.message || 'Email atau kata sandi tidak valid');
     } finally {
       setIsLoading(false);
     }

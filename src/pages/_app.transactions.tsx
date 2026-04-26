@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../lib/query-keys';
-import { transactionsApi, reportsApi } from '../api/client';
+import { transactionsApi, reportsApi, type Transaction } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
 import { ArrowLeft, MoreHorizontal, Filter, ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
 
@@ -13,8 +14,8 @@ const CAT_EMOJI: Record<string, string> = {
 };
 
 // ─── Group transactions by date ──────────────────────────────────────────────
-function groupByDate(items: any[]) {
-  const groups: Record<string, any[]> = {};
+function groupByDate(items: Transaction[]) {
+  const groups: Record<string, Transaction[]> = {};
   for (const item of items) {
     const d = new Date(item.date);
     const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
@@ -36,12 +37,14 @@ function groupByDate(items: any[]) {
 
 export default function TransactionsPage() {
   const [view, setView] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('daily');
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search') || undefined;
   const { formatMoney, t } = usePreferences();
 
   // Fetch real transactions
   const { data: txnsData, isLoading: txnsLoading } = useQuery({
-    queryKey: queryKeys.transactions.list({ limit: 50 }),
-    queryFn: () => transactionsApi.list({ limit: 50 }),
+    queryKey: queryKeys.transactions.list({ limit: 50, search }),
+    queryFn: () => transactionsApi.list({ limit: 50, search }),
   });
 
   // Fetch real summary
@@ -71,11 +74,16 @@ export default function TransactionsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 pb-10 animate-pulse">
-        <div className="h-10 w-48 bg-[var(--muted)] rounded-lg" />
-        <div className="h-48 bg-[var(--muted)] rounded-[16px]" />
+      <div className="space-y-6 pb-10">
+        <div className="flex items-center gap-4 pt-4">
+          <div className="w-11 h-11 rounded-2xl skeleton" />
+          <div className="h-10 w-48 rounded-lg skeleton" />
+        </div>
+        <div className="h-48 w-full rounded-[24px] skeleton shadow-sm" />
         <div className="space-y-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-20 bg-[var(--muted)] rounded-[16px]" />)}
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-20 w-full rounded-[20px] skeleton border border-[var(--border)]" />
+          ))}
         </div>
       </div>
     );
@@ -190,7 +198,7 @@ export default function TransactionsPage() {
       )}
 
       {view === 'daily' && (
-        <div className="animate-fade-in space-y-6">
+        <div className="animate-fade-in space-y-6 content-auto">
           {dateGroups.length === 0 ? (
             <div className="flow-card p-12 text-center">
               <p className="text-[48px] mb-4">📭</p>
@@ -208,7 +216,7 @@ export default function TransactionsPage() {
                   </div>
                 </div>
                 <div className="flow-card">
-                  {group.transactions.map((tx: any) => (
+                  {group.transactions.map((tx: Transaction) => (
                     <TransactionRow
                       key={tx.id}
                       emoji={CAT_EMOJI[tx.categoryId] || tx.category?.icon || '📦'}
@@ -235,16 +243,16 @@ function TransactionRow({ emoji, label, category, amount, isIncome, formatMoney 
   formatMoney: (n: number) => string;
 }) {
   return (
-    <div className="flex items-center gap-4 px-6 py-4 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]">
-      <div className="w-12 h-12 rounded-[16px] bg-[var(--muted)] flex items-center justify-center text-[22px] shrink-0 border border-transparent group-hover:border-[var(--border)] transition-all">
+    <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]">
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] sm:rounded-[16px] bg-[var(--muted)] flex items-center justify-center text-[20px] sm:text-[22px] shrink-0 border border-transparent group-hover:border-[var(--border)] transition-all">
         {emoji}
       </div>
-      <div className="flex-1 min-w-0 pr-4">
-        <p className="text-[15px] font-bold text-[var(--text)] truncate">{label}</p>
-        <p className="text-[12px] font-medium text-[var(--text-dim-2)] mt-0.5 opacity-60 uppercase tracking-wider text-[10px]">{category}</p>
+      <div className="flex-1 min-w-0 pr-2 sm:pr-4">
+        <p className="text-[14px] sm:text-[15px] font-bold text-[var(--text)] truncate">{label}</p>
+        <p className="text-[10px] sm:text-[11px] font-medium text-[var(--text-dim-2)] mt-0.5 opacity-60 uppercase tracking-wider">{category}</p>
       </div>
       <div className="text-right shrink-0">
-        <p className={`text-[16px] font-bold tabular-nums ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
+        <p className={`text-[15px] sm:text-[16px] font-bold tabular-nums ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
           {isIncome ? '+' : '−'}{formatMoney(Math.abs(amount))}
         </p>
         <button className="lg:opacity-0 lg:group-hover:opacity-100 mt-1">

@@ -1,5 +1,6 @@
-import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User } from 'lucide-react';
+import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User, LogOut } from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 const MENU_ITEMS = [
   { path: '/targets', icon: Target, title: 'Target', subtitle: 'Target finansial' },
@@ -14,12 +15,19 @@ const MENU_ITEMS = [
 
 export function MoreMenuModal() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [searchParams] = useSearchParams();
   const isOpen = searchParams.get('menu') === 'true';
 
   const handleClose = () => {
     searchParams.delete('menu');
     navigate({ search: searchParams.toString() }, { replace: true });
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    handleClose();
+    navigate('/auth/login');
   };
 
   if (!isOpen) return null;
@@ -45,7 +53,7 @@ export function MoreMenuModal() {
         </div>
 
         {/* Grid */}
-        <div className="px-6 pb-6 overflow-y-auto">
+        <div className="px-6 pb-2 overflow-y-auto max-h-[60vh]">
           <div className="grid grid-cols-2 gap-4">
             {MENU_ITEMS.map((item) => (
               <Link
@@ -64,6 +72,17 @@ export function MoreMenuModal() {
               </Link>
             ))}
           </div>
+        </div>
+
+        {/* Logout Section */}
+        <div className="p-6 pt-2">
+          <button 
+            onClick={handleLogout}
+            className="w-full h-14 rounded-2xl bg-[var(--muted)] text-[15px] font-bold text-[#F04438] flex items-center justify-center gap-3 transition-colors active:bg-[var(--border)] active:scale-[0.98]"
+          >
+            <LogOut className="w-5 h-5" />
+            Keluar dari Aplikasi
+          </button>
         </div>
       </div>
     </>

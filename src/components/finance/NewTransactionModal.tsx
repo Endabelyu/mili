@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Image as ImageIcon, Check, ChevronRight, Home, Delete, Plus } from 'lucide-react';
+import { X, Check, ChevronRight, Home, Delete, Plus } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { categoriesApi, transactionsApi, accountsApi } from '../../api/client';
+import { categoriesApi, transactionsApi, accountsApi, type Transaction } from '../../api/client';
 import { queryKeys } from '../../lib/query-keys';
 import { usePreferences } from '../../hooks/usePreferences';
 
@@ -45,11 +45,11 @@ export function NewTransactionModal() {
   const [showAccountSelect, setShowAccountSelect] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const isOpen = searchParams.get('new') === 'true';
+  const isOpen = searchParams.get('new_transaction') === 'true';
 
   const handleClose = () => {
-    // Remove the ?new=true from URL without going back in history
-    searchParams.delete('new');
+    // Remove the ?new_transaction=true from URL without going back in history
+    searchParams.delete('new_transaction');
     navigate({ search: searchParams.toString() }, { replace: true });
     // Reset state after close animation (approx)
     setTimeout(() => {
@@ -133,7 +133,7 @@ export function NewTransactionModal() {
 
   const saveMutation = useMutation({
     mutationFn: (data: { type: string; amount: string; categoryId: string; accountId?: string; description?: string; date: string }) =>
-      transactionsApi.create(data as any),
+      transactionsApi.create(data as Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>),
     onSuccess: () => {
       // Invalidate all related queries so pages refresh
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -194,10 +194,18 @@ export function NewTransactionModal() {
       />
 
       {/* Modal / Sheet */}
-      <div className="fixed inset-x-0 bottom-0 top-12 lg:inset-auto lg:top-[5%] lg:bottom-[5%] lg:left-1/2 lg:-translate-x-1/2 lg:w-[480px] lg:h-[90vh] lg:rounded-[32px] lg:shadow-2xl bg-[var(--bg)] z-[100] flex flex-col animate-slide-up overflow-hidden rounded-t-[32px]">
+      <form 
+        onSubmit={(e) => { e.preventDefault(); handleSave(); }}
+        className="fixed inset-x-0 bottom-0 top-8 lg:inset-auto lg:top-[5%] lg:bottom-[5%] lg:left-1/2 lg:-translate-x-1/2 lg:w-[480px] lg:h-[90vh] lg:rounded-[32px] lg:shadow-2xl bg-[var(--bg)] z-[100] flex flex-col animate-slide-up overflow-hidden rounded-t-[32px]"
+      >
         {/* ─── Header ─── */}
         <div className="flex items-center justify-between p-4 shrink-0">
-          <button onClick={handleClose} className="relative z-[110] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)] active:scale-95">
+          <button 
+            type="button"
+            onClick={handleClose} 
+            aria-label="Tutup modal"
+            className="relative z-[110] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)] active:scale-95"
+          >
             <X className="w-5 h-5" />
           </button>
 
@@ -205,6 +213,7 @@ export function NewTransactionModal() {
             {(['expense', 'income', 'transfer'] as const).map((tp) => (
               <button
                 key={tp}
+                type="button"
                 onClick={() => { setType(tp); setSelectedCategory(null); }}
                 className={`px-4 py-1.5 text-[13px] font-bold rounded-[11px] transition-all ${
                   type === tp ? 'bg-[var(--card)] text-[var(--text)] shadow-sm' : 'text-[var(--text-dim-2)]'
@@ -215,9 +224,6 @@ export function NewTransactionModal() {
             ))}
           </div>
 
-          <button className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)]">
-            <ImageIcon className="w-5 h-5" />
-          </button>
         </div>
 
         {/* ─── Amount Display ─── */}
@@ -241,15 +247,17 @@ export function NewTransactionModal() {
 
           {/* Mobile/Tablet: display only */}
           <div className="flex lg:hidden items-baseline gap-1.5">
-            <span className={`text-[28px] font-bold ${amountColor}`}>Rp</span>
-            <span className={`text-[48px] font-bold tracking-[-0.04em] tabular-nums ${amountColor}`}>
+            <span className={`text-[20px] font-bold ${amountColor}`}>Rp</span>
+            <span className={`text-[40px] font-bold tracking-[-0.04em] tabular-nums ${amountColor}`}>
               {displayAmount}
             </span>
           </div>
         </div>
 
-        {/* ─── Details Section ─── */}
-        <div className="px-6 space-y-3 shrink-0 relative">
+        {/* ─── Scrollable Content Area ─── */}
+        <div className="flex-1 overflow-y-auto pb-10">
+          {/* Details Section */}
+          <div className="px-6 space-y-3 relative">
           <button 
             onClick={() => setShowAccountSelect(!showAccountSelect)}
             className="w-full flow-card p-4 flex items-center gap-4 text-left relative z-10"
@@ -289,98 +297,101 @@ export function NewTransactionModal() {
             </div>
           )}
 
-          <div className="flow-card p-4 relative z-0">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">{t('txn.description')}</p>
-            <input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('txn.descriptionPlaceholder')}
-              className="w-full bg-transparent text-[15px] font-medium text-[var(--text)] focus:outline-none placeholder:text-[var(--text-dim-2)] placeholder:opacity-40"
-            />
+            <div className="flow-card p-4 relative z-0">
+              <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">{t('txn.description')}</p>
+              <input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={t('txn.descriptionPlaceholder')}
+                className="w-full bg-transparent text-[15px] font-medium text-[var(--text)] focus:outline-none placeholder:text-[var(--text-dim-2)] placeholder:opacity-40"
+              />
+            </div>
+
+            {/* ─── Category Grid (from real BE data) ─── */}
+            <div className="px-6 pt-6 pb-20">
+              <p className="text-[14px] font-bold text-[var(--text)] mb-5">{t('txn.category')}</p>
+              {filteredCategories.length > 0 ? (
+                <div className="grid grid-cols-4 gap-y-8 gap-x-4">
+                  {filteredCategories.map((cat) => {
+                    const emoji = cat.icon || FALLBACK_EMOJI[cat.id] || '📦';
+                    const bg = CAT_BG[cat.id] || 'bg-gray-50';
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className="flex flex-col items-center gap-2.5 group"
+                      >
+                        <div className={`w-14 h-14 rounded-[20px] transition-all flex items-center justify-center text-[24px] shadow-sm ${
+                          selectedCategory === cat.id
+                            ? 'bg-[#12B76A] scale-110 ring-2 ring-[#12B76A] ring-offset-2 ring-offset-[var(--bg)]'
+                            : `${bg} group-hover:scale-105`
+                        }`}>
+                          <span className={selectedCategory === cat.id ? 'grayscale brightness-200' : ''}>{emoji}</span>
+                        </div>
+                        <span className={`text-[12px] font-bold transition-colors text-center leading-tight ${
+                          selectedCategory === cat.id ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'
+                        }`}>
+                          {cat.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                  
+                  {/* Add Category Button */}
+                  <button
+                    onClick={() => setIsAddingCategory(true)}
+                    className="flex flex-col items-center gap-2.5 group"
+                  >
+                    <div className="w-14 h-14 rounded-[20px] bg-[var(--muted)] flex items-center justify-center text-[24px] shadow-sm group-hover:scale-105 transition-all text-[var(--text-dim-2)] border border-dashed border-[var(--border)]">
+                      <Plus className="w-6 h-6" />
+                    </div>
+                    <span className="text-[12px] font-bold text-[var(--text-dim-2)] text-center leading-tight">
+                      Lainnya
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-pulse flex gap-4">
+                    {[1,2,3,4].map(i => <div key={i} className="w-14 h-14 rounded-[20px] bg-[var(--muted)]" />)}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ─── Category Grid (from real BE data) ─── */}
-        <div className="flex-1 px-6 pt-6 overflow-y-auto pb-64 lg:pb-48">
-          <p className="text-[14px] font-bold text-[var(--text)] mb-5">{t('txn.category')}</p>
-          {filteredCategories.length > 0 ? (
-            <div className="grid grid-cols-4 gap-y-8 gap-x-4">
-              {filteredCategories.map((cat) => {
-                const emoji = cat.icon || FALLBACK_EMOJI[cat.id] || '📦';
-                const bg = CAT_BG[cat.id] || 'bg-gray-50';
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.id)}
-                    className="flex flex-col items-center gap-2.5 group"
-                  >
-                    <div className={`w-14 h-14 rounded-[20px] transition-all flex items-center justify-center text-[24px] shadow-sm ${
-                      selectedCategory === cat.id
-                        ? 'bg-[#12B76A] scale-110 ring-2 ring-[#12B76A] ring-offset-2 ring-offset-[var(--bg)]'
-                        : `${bg} group-hover:scale-105`
-                    }`}>
-                      <span className={selectedCategory === cat.id ? 'grayscale brightness-200' : ''}>{emoji}</span>
-                    </div>
-                    <span className={`text-[12px] font-bold transition-colors text-center leading-tight ${
-                      selectedCategory === cat.id ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'
-                    }`}>
-                      {cat.label}
-                    </span>
-                  </button>
-                );
-              })}
-              
-              {/* Add Category Button */}
-              <button
-                onClick={() => setIsAddingCategory(true)}
-                className="flex flex-col items-center gap-2.5 group"
-              >
-                <div className="w-14 h-14 rounded-[20px] bg-[var(--muted)] flex items-center justify-center text-[24px] shadow-sm group-hover:scale-105 transition-all text-[var(--text-dim-2)] border border-dashed border-[var(--border)]">
-                  <Plus className="w-6 h-6" />
-                </div>
-                <span className="text-[12px] font-bold text-[var(--text-dim-2)] text-center leading-tight">
-                  Lainnya
-                </span>
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-pulse flex gap-4">
-                {[1,2,3,4].map(i => <div key={i} className="w-14 h-14 rounded-[20px] bg-[var(--muted)]" />)}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ─── Mobile/Tablet Keypad ─── */}
-        <div className="lg:hidden shrink-0 bg-[var(--bg)] border-t border-[var(--border)] pb-safe">
-          <div className="grid grid-cols-3 gap-px p-2">
-            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'backspace'].map((key) => (
+        {/* ─── Sticky Bottom Section (Keypad + Footer) ─── */}
+        <div className="shrink-0 bg-[var(--bg)] border-t border-[var(--border)] z-[110] shadow-[0_-15px_40px_rgba(0,0,0,0.08)]">
+          <div className="lg:hidden grid grid-cols-3 gap-1.5 p-3 bg-[var(--muted)]/30">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'backspace'].map((key) => (
               <button
                 key={key}
+                type="button"
                 onClick={() => handleKeypad(key)}
-                className="h-14 flex items-center justify-center text-[22px] font-semibold text-[var(--text)] active:bg-[var(--muted)] rounded-xl transition-colors"
+                aria-label={key === 'backspace' ? 'Hapus' : key}
+                className="h-14 flex items-center justify-center text-[24px] font-bold text-[var(--text)] bg-[var(--card)] active:bg-[var(--border)] rounded-2xl shadow-sm border border-[var(--border)]/50 transition-all active:scale-[0.97]"
               >
-                {key === 'backspace' ? <Delete className="w-6 h-6 text-[var(--text-dim)]" /> : key}
+                {key === 'backspace' ? <Delete className="w-6 h-6 text-[#F04438]" /> : key}
               </button>
             ))}
           </div>
-        </div>
-
-        {/* ─── Footer Section (Always Fixed) ─── */}
-        <div className="shrink-0 p-6 bg-gradient-to-t from-[var(--bg)] via-[var(--bg)] to-transparent pt-8 z-[101]">
-          <button
-            onClick={handleSave}
-            disabled={!amount || amount === '0' || !selectedCategory || saving}
-            className="w-full h-15 rounded-[20px] bg-[#12B76A] text-white font-bold text-[16px] shadow-2xl shadow-[#12B76A40] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {saving ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Check className="w-5 h-5" strokeWidth={3} />
-            )}
-            {saving ? t('common.loading') : t('txn.saveTransaction')}
-          </button>
+          
+          {/* Footer Section */}
+          <div className="p-5 bg-[var(--bg)] pb-safe">
+            <button
+              onClick={handleSave}
+              disabled={!amount || amount === '0' || !selectedCategory || saving}
+              className="w-full h-15 rounded-[20px] bg-[#12B76A] text-white font-bold text-[16px] shadow-2xl shadow-[#12B76A40] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {saving ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Check className="w-5 h-5" strokeWidth={3} />
+              )}
+              {saving ? t('common.loading') : t('txn.saveTransaction')}
+            </button>
+          </div>
         </div>
 
         <style dangerouslySetInnerHTML={{ __html: `
@@ -447,7 +458,7 @@ export function NewTransactionModal() {
             </div>
           </div>
         )}
-      </div>
+      </form>
     </>
   );
 }

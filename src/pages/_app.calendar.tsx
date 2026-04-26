@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowUpRight, ArrowDownRight, X } from 'lucide-react';
-import { calendarApi } from '../api/client';
+import { calendarApi, type CalendarDay } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
+import type { Transaction } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
 import dayjs from 'dayjs';
 import 'dayjs/locale/id';
@@ -12,7 +13,7 @@ dayjs.locale('id');
 export default function CalendarPage() {
   const { formatMoney } = usePreferences();
   const [currentDate, setCurrentDate] = useState(dayjs());
-  const [selectedDay, setSelectedDay] = useState<any>(null);
+  const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   
   const monthStr = currentDate.format('YYYY-MM');
@@ -22,8 +23,8 @@ export default function CalendarPage() {
     queryFn: () => calendarApi.get(monthStr),
   });
 
-  const nextMonth = () => setCurrentDate((curr: any) => curr.add(1, 'month'));
-  const prevMonth = () => setCurrentDate((curr: any) => curr.subtract(1, 'month'));
+  const nextMonth = () => setCurrentDate((curr: dayjs.Dayjs) => curr.add(1, 'month'));
+  const prevMonth = () => setCurrentDate((curr: dayjs.Dayjs) => curr.subtract(1, 'month'));
 
   // Calendar Grid Logic
   const startOfMonth = currentDate.startOf('month');
@@ -228,7 +229,7 @@ export default function CalendarPage() {
               </div>
 
               <div className="space-y-3">
-                {selectedDay.items.map((txn: any) => (
+                {selectedDay.items.map((txn: Transaction) => (
                   <div key={txn.id} className="flow-card p-4 flex items-center justify-between hover:bg-[var(--muted)]/50 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center text-[20px] shadow-sm">

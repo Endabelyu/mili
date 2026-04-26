@@ -94,11 +94,11 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse pb-10">
-        <div className="h-8 w-32 bg-[var(--muted)] rounded-lg" />
-        <div className="h-12 bg-[var(--muted)] rounded-[14px]" />
-        <div className="h-[300px] bg-[var(--muted)] rounded-[16px]" />
-        <div className="h-[250px] bg-[var(--muted)] rounded-[16px]" />
+      <div className="space-y-6 pb-10">
+        <div className="h-8 w-32 skeleton rounded-lg" />
+        <div className="h-12 skeleton rounded-[14px]" />
+        <div className="h-[300px] skeleton rounded-[16px]" />
+        <div className="h-[250px] skeleton rounded-[16px]" />
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ─── Doughnut Chart Card ─── */}
-      <div className="flow-card p-8">
+      <section className="flow-card p-8">
         <div className="text-center mb-6">
           <p className="text-[11px] font-bold text-[var(--text-dim)] uppercase tracking-[0.05em] mb-1">
             {activeTab === 'expense' ? t('dashboard.expense').toUpperCase() : t('dashboard.income').toUpperCase()} • {t('analytics.thisMonth')}
@@ -181,10 +181,10 @@ export default function AnalyticsPage() {
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* ─── Daily Activity Bar Chart ─── */}
-      <div className="flow-card p-8">
+      <section className="flow-card p-8">
         <h3 className="text-[14px] font-bold text-[var(--text)] mb-6">{t('analytics.daily')}</h3>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -220,10 +220,10 @@ export default function AnalyticsPage() {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </section>
 
       {/* ─── Category Ranking ─── */}
-      <div>
+      <section>
         <h3 className="text-[14px] font-bold text-[var(--text)] mb-4">{t('analytics.categoryRanking')}</h3>
         <div className="flow-card divide-y divide-[var(--border)]">
           {categories.length === 0 ? (
@@ -261,7 +261,7 @@ export default function AnalyticsPage() {
             })
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

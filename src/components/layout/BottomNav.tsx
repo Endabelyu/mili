@@ -6,7 +6,7 @@ export function BottomNav() {
   const navigate = useNavigate();
   const path = location.pathname;
 
-  const fabRoute = '?new=true';
+  const fabRoute = '?add_options=true';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">

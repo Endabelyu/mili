@@ -337,6 +337,23 @@
     scrollbar-width: none;
   }
 
+  /* ── SKELETONS (MAANG standard) ────────────────────────── */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--muted) 25%,
+      var(--border) 50%,
+      var(--muted) 75%
+    );
+    background-size: 200%;
+    animation: shimmer 1.5s infinite linear;
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
   /* Horizontal scroll container */
   .hscroll {
     display: flex;
@@ -347,6 +364,12 @@
     scrollbar-width: none;
   }
   .hscroll::-webkit-scrollbar { display: none; }
+  
+  /* Optimize rendering for long lists */
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 100px;
+  }
 }
 
 @keyframes fadeIn {

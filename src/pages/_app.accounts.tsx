@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Wallet, CreditCard, Landmark, Coins, TrendingUp, X, Check, Trash2 } from 'lucide-react';
+import { Plus, X, Wallet, CreditCard, Landmark, Coins, TrendingUp, Check, Trash2 } from 'lucide-react';
 import { accountsApi } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
 import { usePreferences } from '../hooks/usePreferences';
@@ -62,21 +62,6 @@ function NetWorthDonut({ value, segments }: { value: string; segments: Segment[]
   );
 }
 
-// ─── Sparkline Component ─────────────────────────────────────────────────────
-function Sparkline({ color = '#12B76A', type = 'up' }: { color?: string; type?: 'up' | 'down' }) {
-  const points = type === 'up' ? "0,15 10,12 20,14 30,8 40,10 50,2" : "0,2 10,8 20,6 30,12 40,10 50,15";
-  return (
-    <svg className="w-[80px] h-[24px]" viewBox="0 0 50 20" fill="none">
-      <path
-        d={`M ${points}`}
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 const ACCOUNT_TYPES = [
   { id: 'bank', label: 'Bank', icon: Landmark },
@@ -104,7 +89,17 @@ export default function AccountsPage() {
     queryFn: () => accountsApi.list(),
   });
 
-  const totalBalance = accounts.reduce((acc, curr) => acc + parseFloat(String(curr.balance)), 0);
+  const assets = accounts.reduce((acc, curr) => {
+    const b = parseFloat(String(curr.balance));
+    return b > 0 ? acc + b : acc;
+  }, 0);
+
+  const liabilities = Math.abs(accounts.reduce((acc, curr) => {
+    const b = parseFloat(String(curr.balance));
+    return b < 0 ? acc + b : acc;
+  }, 0));
+
+  const totalBalance = assets - liabilities;
 
   const createMutation = useMutation({
     mutationFn: (data: Omit<Account, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) =>
@@ -189,9 +184,9 @@ export default function AccountsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse pb-10">
-        <div className="h-24 bg-[var(--muted)] rounded-2xl" />
-        <div className="h-64 bg-[var(--muted)] rounded-2xl" />
+      <div className="space-y-6 pb-10">
+        <div className="h-24 skeleton rounded-2xl" />
+        <div className="h-64 skeleton rounded-2xl" />
       </div>
     );
   }
@@ -262,11 +257,11 @@ export default function AccountsPage() {
         <div className="grid grid-cols-2 gap-8 pt-6 border-t border-[var(--border)] border-dashed">
           <div>
             <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">Aset</p>
-            <p className="text-[22px] font-bold text-[#12B76A]">{formatMoney(totalBalance * 1.5)}</p>
+            <p className="text-[22px] font-bold text-[#12B76A]">{formatMoney(assets)}</p>
           </div>
           <div>
             <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">Kewajiban</p>
-            <p className="text-[22px] font-bold text-[#F04438]">{formatMoney(totalBalance * 0.5)}</p>
+            <p className="text-[22px] font-bold text-[#F04438]">{formatMoney(liabilities)}</p>
           </div>
         </div>
       </div>
@@ -299,7 +294,7 @@ export default function AccountsPage() {
                   <h3 className="text-[16px] font-bold text-[var(--text)]">{label} <span className="opacity-40 ml-1 text-[14px]">({items.length})</span></h3>
                 </div>
                 <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
-                  {items.map((acc, idx) => (
+                  {items.map((acc) => (
                     <div 
                       key={acc.id} 
                       onClick={() => handleEdit(acc)}
@@ -316,18 +311,12 @@ export default function AccountsPage() {
                             <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#12B76A]/10 text-[#12B76A] uppercase tracking-wider">Utama</span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`text-[12px] font-bold ${idx % 2 === 0 ? 'text-[#12B76A]' : 'text-[#F04438]'}`}>
-                            {idx % 2 === 0 ? '+Rp 2.1M' : '-Rp 800K'}
-                          </span>
-                          <span className="text-[11px] font-medium text-[var(--text-dim-2)] opacity-60">· Bulan ini</span>
-                        </div>
+                        <p className="text-[12px] font-medium text-[var(--text-dim-2)] opacity-60 mt-1">
+                          {acc.type === 'bank' ? 'Bank' : acc.type === 'e-wallet' ? 'E-Wallet' : acc.type === 'cash' ? 'Tunai' : acc.type === 'investment' ? 'Investasi' : 'Kartu Kredit'}
+                        </p>
                       </div>
 
-                      <div className="flex items-center gap-8 shrink-0">
-                        <div className="hidden sm:block">
-                          <Sparkline color={idx % 2 === 0 ? '#12B76A' : '#F04438'} type={idx % 2 === 0 ? 'up' : 'down'} />
-                        </div>
+                      <div className="flex items-center gap-4 shrink-0">
                         <div className="text-right">
                           <p className="text-[18px] font-bold text-[var(--text)] tracking-tight tabular-nums">{formatMoney(parseFloat(String(acc.balance)))}</p>
                         </div>

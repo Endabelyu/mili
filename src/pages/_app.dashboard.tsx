@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { transactionsApi, reportsApi, targetsApi, scheduledApi, accountsApi } from '../api/client';
+import { transactionsApi, reportsApi, targetsApi, scheduledApi, accountsApi, type Transaction, type ScheduledTransaction, type Target } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
 import { usePreferences } from '../hooks/usePreferences';
 import { TrendingUp } from 'lucide-react';
@@ -33,7 +33,7 @@ export default function DashboardPage() {
     queryFn: () => reportsApi.summary(),
   });
 
-  const { data: targetsData } = useQuery({
+  const { data: targetsData, isLoading: targetsLoading } = useQuery({
     queryKey: ['targets'],
     queryFn: () => targetsApi.list(),
   });
@@ -43,7 +43,7 @@ export default function DashboardPage() {
     queryFn: () => reportsApi.byCategory(),
   });
 
-  const { data: scheduledData } = useQuery({
+  const { data: scheduledData, isLoading: scheduledLoading } = useQuery({
     queryKey: ['scheduled'],
     queryFn: () => scheduledApi.list(),
   });
@@ -78,7 +78,7 @@ export default function DashboardPage() {
   const currentMonthName = new Date().toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'short', year: 'numeric' });
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
+    <div className="space-y-8 animate-fade-in pb-10 content-auto">
       
       {/* ─── Hero Header ─── */}
       <div className="mb-6">
@@ -90,7 +90,7 @@ export default function DashboardPage() {
         <div className="flex justify-between items-start">
           <div>
             <p className="text-[12px] font-bold opacity-80 tracking-[0.05em] uppercase">{t('dashboard.netWorth')}</p>
-            <p className="text-[34px] font-bold tracking-[-0.02em] mt-1 tabular-nums">{formatMoney(netWorth)}</p>
+            <p className="text-[24px] sm:text-[34px] font-bold tracking-[-0.02em] mt-1 tabular-nums truncate">{formatMoney(netWorth)}</p>
             <div className="flex flex-wrap gap-4 mt-3 text-[12px] font-bold">
               <span className="opacity-90">{t('dashboard.assets')} <span className="opacity-100 tabular-nums">{formatMoney(totalAssets)}</span></span>
               {totalLiabilities > 0 && (
@@ -113,32 +113,32 @@ export default function DashboardPage() {
       {/* ─── Monthly Cash Flow (Real Data) ─── */}
       <div className="flow-card p-6">
         <div className="flex justify-between items-center mb-5">
-          <h3 className="text-[14px] font-bold text-[var(--text)] tracking-[-0.01em]">{t('dashboard.cashFlow')}</h3>
+          <h2 className="text-[14px] font-bold text-[var(--text)] tracking-[-0.01em]">{t('dashboard.cashFlow')}</h2>
           <span className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-70 uppercase tracking-widest">{currentMonthName}</span>
         </div>
         {summaryLoading ? (
-          <div className="space-y-4 animate-pulse">
+          <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
-              <div className="h-12 bg-[var(--muted)] rounded-xl"></div>
-              <div className="h-12 bg-[var(--muted)] rounded-xl"></div>
-              <div className="h-12 bg-[var(--muted)] rounded-xl"></div>
+              <div className="h-12 rounded-xl skeleton"></div>
+              <div className="h-12 rounded-xl skeleton"></div>
+              <div className="h-12 rounded-xl skeleton"></div>
             </div>
-            <div className="h-2 bg-[var(--muted)] rounded-full w-full"></div>
+            <div className="h-2 rounded-full w-full skeleton"></div>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
               <div>
-                <p className="text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.income')}</p>
-                <p className="text-[18px] font-bold text-[var(--income)] tabular-nums">{formatMoney(income)}</p>
+                <p className="text-[10px] sm:text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.income')}</p>
+                <p className="text-[14px] sm:text-[18px] font-bold text-[var(--income)] tabular-nums truncate">{formatMoney(income)}</p>
               </div>
               <div className="text-center">
-                <p className="text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.expense')}</p>
-                <p className="text-[18px] font-bold text-[var(--expense)] tabular-nums">{formatMoney(expenses)}</p>
+                <p className="text-[10px] sm:text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.expense')}</p>
+                <p className="text-[14px] sm:text-[18px] font-bold text-[var(--expense)] tabular-nums truncate">{formatMoney(expenses)}</p>
               </div>
               <div className="text-right">
-                <p className="text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.balance')}</p>
-                <p className={`text-[18px] font-bold tabular-nums ${balance >= 0 ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
+                <p className="text-[10px] sm:text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.balance')}</p>
+                <p className={`text-[14px] sm:text-[18px] font-bold tabular-nums truncate ${balance >= 0 ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
                   {formatMoney(balance)}
                 </p>
               </div>
@@ -164,14 +164,33 @@ export default function DashboardPage() {
           <Link to="/targets" className="text-[12px] font-bold text-[var(--accent)] hover:underline">{t('common.viewAll')}</Link>
         </div>
         
-        {targets.length === 0 ? (
+        {targetsLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flow-card p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl skeleton" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 rounded w-1/3 skeleton" />
+                    <div className="h-2 rounded w-1/4 skeleton" />
+                  </div>
+                </div>
+                <div className="h-1.5 w-full rounded-full skeleton" />
+                <div className="flex justify-between">
+                  <div className="h-3 w-16 rounded skeleton" />
+                  <div className="h-3 w-16 rounded skeleton" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : targets.length === 0 ? (
           <div className="text-center py-8 px-6 bg-[var(--card)] rounded-[20px] border border-[var(--border)]">
             <p className="text-[13px] font-bold text-[var(--text)] mb-1">Belum ada target</p>
             <p className="text-[11px] text-[var(--text-dim-2)]">Mulai tentukan mimpi finansial Anda sekarang.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {targets.slice(0, 3).map((t: any) => {
+            {targets.slice(0, 3).map((t: Target) => {
               const progress = Math.min(Math.round((parseFloat(String(t.currentAmount)) / parseFloat(String(t.targetAmount))) * 100), 100);
               return (
                 <TargetCard 
@@ -193,16 +212,16 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* ─── Top Categories (Real Data) ─── */}
         <section>
-          <h3 className="text-[14px] font-bold text-[var(--text)] mb-4">{t('dashboard.topCategories')}</h3>
+          <h2 className="text-[14px] font-bold text-[var(--text)] mb-4">{t('dashboard.topCategories')}</h2>
           <div className="flow-card p-5 space-y-5">
             {catLoading ? (
-              <div className="space-y-4 animate-pulse">
+              <div className="space-y-4">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[var(--muted)]" />
+                    <div className="w-10 h-10 rounded-xl skeleton" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-[var(--muted)] rounded w-1/3" />
-                      <div className="h-2 bg-[var(--muted)] rounded w-full" />
+                      <div className="h-4 rounded w-1/3 skeleton" />
+                      <div className="h-2 rounded w-full skeleton" />
                     </div>
                   </div>
                 ))}
@@ -213,7 +232,7 @@ export default function DashboardPage() {
                 <p className="text-[11px]">Catat pengeluaran untuk melihat kategori teratas.</p>
               </div>
             ) : (
-              topCategories.map((cat: any) => (
+              topCategories.map((cat: { categoryId: string; label: string; amount: number; percentage: number; color: string; }) => (
                 <div key={cat.categoryId} className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--text)]" style={{ backgroundColor: `${cat.color}15` }}>
                     <span className="text-[18px]">{FALLBACK_EMOJI[cat.categoryId] || '📦'}</span>
@@ -235,15 +254,28 @@ export default function DashboardPage() {
 
         {/* ─── Upcoming Bills (Real Data) ─── */}
         <section>
-          <h3 className="text-[14px] font-bold text-[var(--text)] mb-4">{t('dashboard.upcomingBills')}</h3>
+          <h2 className="text-[14px] font-bold text-[var(--text)] mb-4">{t('dashboard.upcomingBills')}</h2>
           <div className="flow-card divide-y divide-[var(--border)]">
-            {scheduled.length === 0 ? (
+            {scheduledLoading ? (
+              <div className="space-y-4 p-5">
+                {[1, 2].map(i => (
+                  <div key={i} className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl skeleton" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 rounded w-1/4 skeleton" />
+                      <div className="h-2 rounded w-1/2 skeleton" />
+                    </div>
+                    <div className="h-4 w-20 rounded skeleton" />
+                  </div>
+                ))}
+              </div>
+            ) : scheduled.length === 0 ? (
               <div className="text-center py-11 text-[var(--text-dim)]">
                 <p className="text-[13px] font-bold mb-1">Belum ada tagihan mendatang</p>
                 <p className="text-[11px]">Tambahkan transaksi terjadwal.</p>
               </div>
             ) : (
-              scheduled.slice(0, 4).map((item: any) => {
+              scheduled.slice(0, 4).map((item: ScheduledTransaction) => {
                 const diff = new Date(item.nextRunDate).getTime() - new Date().getTime();
                 const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                 const dueStr = days > 0 ? `${days} hari lagi` : days === 0 ? 'Hari ini' : `${Math.abs(days)} hari lalu`;
@@ -267,19 +299,19 @@ export default function DashboardPage() {
 
       {/* ─── Recent Transactions (Real Data) ─── */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[14px] font-bold text-[var(--text)]">{t('dashboard.recentTransactions')}</h3>
+        <div className="flex items-center justify-between mb-4 px-1">
+          <h2 className="text-[14px] font-bold text-[var(--text)]">{t('dashboard.recentTransactions')}</h2>
           <Link to="/transactions" className="text-[12px] font-bold text-[var(--accent)] hover:underline">{t('common.viewAll')}</Link>
         </div>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
           {txnsLoading ? (
-            <div className="space-y-4 p-5 animate-pulse">
+            <div className="space-y-4 p-5">
               {[1, 2, 3].map(i => (
                 <div key={i} className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--muted)]" />
+                  <div className="w-10 h-10 rounded-xl skeleton" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-[var(--muted)] rounded w-1/4" />
-                    <div className="h-3 bg-[var(--muted)] rounded w-1/2" />
+                    <div className="h-4 rounded w-1/4 skeleton" />
+                    <div className="h-3 rounded w-1/2 skeleton" />
                   </div>
                 </div>
               ))}
@@ -290,7 +322,7 @@ export default function DashboardPage() {
               <p className="text-[13px] font-bold mb-1">Belum ada transaksi</p>
             </div>
           ) : (
-            recentTransactions.map((tx: any) => {
+            recentTransactions.map((tx: Transaction) => {
               const isIncome = tx.type === 'income';
               const emoji = tx.category?.icon || FALLBACK_EMOJI[tx.categoryId] || '📦';
               return (
@@ -305,7 +337,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <span className={`text-[15px] font-bold tabular-nums ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
-                    {isIncome ? '+' : '−'}{formatMoney(Math.abs(parseFloat(tx.amount)))}
+                    {isIncome ? '+' : '−'}{formatMoney(Math.abs(parseFloat(String(tx.amount))))}
                   </span>
                 </div>
               );
@@ -318,12 +350,12 @@ export default function DashboardPage() {
 }
 
 // ─── Shared Mockup Components ────────────────────────────────────────────────
-function TargetCard({ icon: Icon, color, iconColor, label, progress, collected, target }: any) {
+function TargetCard({ icon: Icon, color, iconColor, label, progress, collected, target }: { icon: React.ElementType | React.ReactNode; color: string; iconColor: string; label: string; progress: number; collected: string; target: string; }) {
   return (
     <div className="flow-card p-5">
       <div className="flex items-center gap-3 mb-4">
         <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center ${iconColor}`}>
-          <Icon className="w-5 h-5" />
+          {typeof Icon === 'function' ? <Icon className="w-5 h-5" /> : Icon}
         </div>
         <div className="min-w-0">
           <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
@@ -341,11 +373,11 @@ function TargetCard({ icon: Icon, color, iconColor, label, progress, collected, 
   );
 }
 
-function BillItem({ icon: Icon, color, iconColor, label, amount, due }: any) {
+function BillItem({ icon: Icon, color, iconColor, label, amount, due }: { icon: React.ElementType | React.ReactNode; color: string; iconColor: string; label: string; amount: string; due: string; }) {
   return (
     <div className="flex items-center gap-4 px-5 py-4">
       <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center ${iconColor}`}>
-        <Icon className="w-5 h-5" />
+        {typeof Icon === 'function' ? <Icon className="w-5 h-5" /> : Icon}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-bold text-[var(--text)]">{label}</p>

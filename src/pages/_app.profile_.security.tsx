@@ -60,8 +60,9 @@ export default function SecurityPage() {
       setSuccess(true);
       reset();
       setTimeout(() => navigate('/profile'), 1500);
-    } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan. Coba lagi.');
+    } catch (err) {
+      const e = err as any;
+      setError(e.message || 'Terjadi kesalahan. Coba lagi.');
     } finally {
       setIsLoading(false);
     }

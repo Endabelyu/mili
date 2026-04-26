@@ -49,8 +49,9 @@ export default function RegisterPage() {
         password: data.password
       });
       navigate('/auth/login?registered=true');
-    } catch (err: any) {
-      setError(err?.body?.message || err?.message || 'Gagal mendaftar. Email mungkin sudah digunakan.');
+    } catch (err) {
+      const e = err as any;
+      setError(e?.body?.message || err?.message || 'Gagal mendaftar. Email mungkin sudah digunakan.');
     } finally {
       setIsLoading(false);
     }

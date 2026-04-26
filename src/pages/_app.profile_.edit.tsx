@@ -46,8 +46,9 @@ export default function EditProfilePage() {
       await updateUser({ name: data.name });
       setSuccess(true);
       setTimeout(() => navigate('/profile'), 1200);
-    } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan. Coba lagi.');
+    } catch (err) {
+      const e = err as any;
+      setError(e.message || 'Terjadi kesalahan. Coba lagi.');
     } finally {
       setIsLoading(false);
     }

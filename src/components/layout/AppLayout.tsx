@@ -4,7 +4,10 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { InstallPrompt, OfflineIndicator, UpdatePrompt } from '@app/components/pwa';
 import { NewTransactionModal } from '../finance/NewTransactionModal';
+import { TransactionEntryChoice } from '../finance/TransactionEntryChoice';
+import { ScanModal } from '../finance/ScanModal';
 import { MoreMenuModal } from './MoreMenuModal';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 
 interface AppLayoutProps {
@@ -12,6 +15,16 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const isScanOpen = searchParams.get('scan') === 'true';
+
+  const handleCloseScan = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('scan');
+    navigate({ search: newParams.toString() }, { replace: true });
+  };
+
   // Add safe area CSS variable for notched phones
   useEffect(() => {
     const safeAreaTop = getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0px';
@@ -31,7 +44,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         
         {/* Main Content */}
         <main className="flex-1 w-full pt-0 bg-[var(--app-bg)]">
-          <div className="min-h-full w-full max-w-[1280px] mx-auto px-6 py-2 lg:px-10 lg:py-4">
+          <div className="min-h-full w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-2 lg:px-10 lg:py-4">
             {children}
           </div>
         </main>
@@ -39,7 +52,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <BottomNav />
       <NewTransactionModal />
+      <TransactionEntryChoice />
       <MoreMenuModal />
+      <ScanModal isOpen={isScanOpen} onClose={handleCloseScan} />
 
       {/* PWA Components */}
       <InstallPrompt />

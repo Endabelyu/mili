@@ -33,10 +33,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    const method = (fetchOptions.method || 'GET').toUpperCase();
+    const needsContentType = ['POST', 'PUT', 'PATCH'].includes(method);
+
     const response = await fetch(url, {
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
+        ...(needsContentType ? { 'Content-Type': 'application/json' } : {}),
         ...(fetchOptions.headers || {}),
       },
       ...fetchOptions,
@@ -81,7 +84,8 @@ export class ApiError extends Error {
 }
 
 
-import { type Transaction, type Budget, type Category, type Account } from '../types';
+import type { Transaction, Budget, Category, Account } from '../types';
+export type { Transaction, Budget, Category, Account };
 
 export const accountsApi = {
   list: () => request<{ items: Account[] }>('/api/accounts').then(res => res.items),

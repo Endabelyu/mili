@@ -44,9 +44,27 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { useToastContext } from './components/ui/ToastProvider';
+
+function GlobalToastListener() {
+  const { showError } = useToastContext();
+
+  React.useEffect(() => {
+    const handleAppError = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      showError(customEvent.detail?.message || 'Terjadi kesalahan pada sistem');
+    };
+    window.addEventListener('app-error', handleAppError);
+    return () => window.removeEventListener('app-error', handleAppError);
+  }, [showError]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <React.Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+      <GlobalToastListener />
       <Sentry.ErrorBoundary
         fallback={({ error, resetError }) => (
           <div className="flex flex-col items-center justify-center min-h-screen bg-[#FAF7F2] text-[var(--text)] p-4">

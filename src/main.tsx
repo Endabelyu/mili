@@ -6,10 +6,22 @@ import { PreferencesProvider } from './hooks/usePreferences';
 import App from './App';
 import './index.css';
 import { initSentry } from './lib/sentry';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
 import { ApiError } from './api/client';
 
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      const message = error instanceof ApiError ? error.message : 'Terjadi kesalahan pada sistem';
+      window.dispatchEvent(new CustomEvent('app-error', { detail: { message } }));
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      const message = error instanceof ApiError ? error.message : 'Terjadi kesalahan pada sistem';
+      window.dispatchEvent(new CustomEvent('app-error', { detail: { message } }));
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 60_000,
@@ -28,20 +40,32 @@ initSentry();
 // PostHog analytics will be initialized by ConsentBanner after user consent
 // import { initAnalytics } from './lib/analytics';
 
+// Only load devtools in development — saves ~70KB in prod bundle
+const ReactQueryDevtools = import.meta.env.DEV
+  ? React.lazy(() =>
+      import('@tanstack/react-query-devtools').then((mod) => ({
+        default: mod.ReactQueryDevtools,
+      }))
+    )
+  : () => null;
 
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { ToastProvider } from './components/ui/ToastProvider';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <PreferencesProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </PreferencesProvider>
-      </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ToastProvider>
+        <BrowserRouter>
+          <PreferencesProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </PreferencesProvider>
+        </BrowserRouter>
+      </ToastProvider>
+      <React.Suspense fallback={null}>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </React.Suspense>
     </QueryClientProvider>
   </React.StrictMode>
 );

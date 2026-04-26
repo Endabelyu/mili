@@ -57,7 +57,19 @@ export function Sidebar() {
         
         <div className="flex items-center gap-3 px-4 py-3 mt-2">
           <div className="w-9 h-9 rounded-full bg-[var(--muted)] overflow-hidden flex items-center justify-center border border-[var(--border)]">
-             {user?.image ? <img src={user.image} className="w-full h-full object-cover" alt="Profile" /> : <User className="w-5 h-5 text-[var(--text-dim-2)]" />}
+             {user?.image ? (
+               <img 
+                 src={user.image} 
+                 className="w-full h-full object-cover" 
+                 alt="Foto profil pengguna" 
+                 width="36" 
+                 height="36" 
+                 loading="lazy" 
+                 decoding="async" 
+               />
+             ) : (
+               <User className="w-5 h-5 text-[var(--text-dim-2)]" />
+             )}
           </div>
           <div className="flex-1 min-w-0">
              <p className="text-[13px] font-bold text-[var(--text)] truncate">{formatName(user?.name)}</p>
@@ -69,7 +81,7 @@ export function Sidebar() {
   );
 }
 
-function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: any; label: string; active: boolean }) {
+function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: React.ElementType; label: string; active: boolean }) {
   return (
     <NavLink
       to={to}

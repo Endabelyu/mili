@@ -16,8 +16,8 @@ interface AuthState {
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   updateUser: (data: { name?: string; image?: string }) => Promise<void>;
-  changePassword: (data: any) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  changePassword: (data: { currentPassword: string; newPassword: string; revokeOtherSessions?: boolean }) => Promise<void>;
+  register: (data: { email: string; password: string; name: string }) => Promise<void>;
   forgetPassword: (email: string) => Promise<void>;
 }
 
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await refetch();
   };
 
-  const register = async (data: any) => {
+  const register = async (data: { email: string; password: string; name: string }) => {
     const { error } = await authClient.signUp.email(data);
     if (error) throw new Error(error.message || 'Failed to register');
     await refetch();
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await refetch();
   };
 
-  const changePassword = async (data: any) => {
+  const changePassword = async (data: { currentPassword: string; newPassword: string; revokeOtherSessions?: boolean }) => {
     const { error } = await authClient.changePassword(data);
     if (error) throw new Error(error.message || 'Failed to change password');
   };

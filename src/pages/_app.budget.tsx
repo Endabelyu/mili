@@ -1,41 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../lib/query-keys';
-import { budgetsApi, categoriesApi } from '../api/client';
-import { Plus, X, ArrowLeft, Target, Wallet, TrendingUp } from 'lucide-react';
+import { budgetsApi, categoriesApi, type Budget } from '../api/client';
+import { Plus, X, ArrowLeft, Target } from 'lucide-react';
 import { usePreferences } from '../hooks/usePreferences';
 import { BudgetForm } from '../components/finance/BudgetForm';
 
-// ─── Circular Usage Gauge ───────────────────────────────────────────────────
-function UsageGauge({ percentage }: { percentage: number }) {
-  const radius = 60;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (Math.min(percentage, 100) / 100) * circumference;
-
-  return (
-    <div className="relative w-[150px] h-[150px] flex items-center justify-center shrink-0">
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
-        <circle cx="80" cy="80" r={radius} fill="transparent" stroke="rgba(255,255,255,0.15)" strokeWidth="12" />
-        <circle
-          cx="80"
-          cy="80"
-          r={radius}
-          fill="transparent"
-          stroke="white"
-          strokeWidth="12"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-        <p className="text-[32px] font-bold tracking-tight leading-none">{percentage}%</p>
-        <p className="text-[10px] font-bold uppercase tracking-widest mt-1 opacity-60">Digunakan</p>
-      </div>
-    </div>
-  );
-}
 
 // ─── Fallback emoji map (keyed by BE category.id) ───────────────────────────
 const FALLBACK_EMOJI: Record<string, string> = {
@@ -64,7 +34,7 @@ export default function BudgetPage() {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedBudget, setSelectedBudget] = useState<any>(null);
+  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
 
   const budgets = budgetsData || [];
   const categories = categoriesData || [];
@@ -91,11 +61,11 @@ export default function BudgetPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse pb-10">
-        <div className="h-8 w-40 bg-[var(--muted)] rounded-lg" />
-        <div className="h-[200px] bg-[var(--muted)] rounded-[16px]" />
+      <div className="space-y-6 pb-10">
+        <div className="h-8 w-40 skeleton rounded-lg" />
+        <div className="h-[200px] skeleton rounded-[16px]" />
         <div className="space-y-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-24 bg-[var(--muted)] rounded-[16px]" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-24 skeleton rounded-[16px]" />)}
         </div>
       </div>
     );
@@ -125,30 +95,42 @@ export default function BudgetPage() {
         </button>
       </div>
 
-      {/* Hero Card - Green Summary with Gauge */}
-      <div className="rounded-[32px] bg-gradient-to-br from-[#12B76A] to-[#0E9355] p-8 text-white shadow-xl shadow-[#12B76A]/20 flex flex-col md:flex-row items-center gap-10">
-        <UsageGauge percentage={totals.percentage} />
+      {/* Summary Card - White Style to match Transactions */}
+      <div className="rounded-[24px] bg-[var(--card)] p-6 border border-[var(--border)] shadow-sm flex items-center gap-8">
+        <div className="relative w-[100px] h-[100px] flex items-center justify-center shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="transparent" stroke="var(--muted)" strokeWidth="10" />
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              fill="transparent"
+              stroke="#12B76A"
+              strokeWidth="10"
+              strokeDasharray={2 * Math.PI * 42}
+              strokeDashoffset={2 * Math.PI * 42 - (Math.min(totals.percentage, 100) / 100) * (2 * Math.PI * 42)}
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-out"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <p className="text-[20px] font-bold text-[var(--text)] leading-none">{totals.percentage}%</p>
+            <p className="text-[9px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mt-1">Sisa</p>
+          </div>
+        </div>
 
-        <div className="flex-1 grid grid-cols-2 gap-y-6 gap-x-8 w-full border-t md:border-t-0 md:border-l border-white/10 pt-8 md:pt-0 md:pl-10">
+        <div className="flex-1 grid grid-cols-2 gap-x-8 gap-y-4 border-l border-[var(--border)] pl-8">
           <div className="space-y-1">
-            <p className="text-[11px] font-bold opacity-60 uppercase tracking-widest flex items-center gap-2">
-              <Wallet className="w-3.5 h-3.5" />
-              {t('budget.budget')}
-            </p>
-            <p className="text-[22px] font-bold tracking-tight">{formatMoney(totals.totalLimit)}</p>
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Total Anggaran</p>
+            <p className="text-[18px] font-bold text-[var(--text)] tabular-nums">{formatMoney(totals.totalLimit)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[11px] font-bold opacity-60 uppercase tracking-widest flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5" />
-              Sisa
-            </p>
-            <p className="text-[22px] font-bold tracking-tight">{formatMoney(totals.remaining)}</p>
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Terpakai</p>
+            <p className="text-[18px] font-bold text-[var(--expense)] tabular-nums">{formatMoney(totals.totalSpent)}</p>
           </div>
-          <div className="col-span-2 pt-4 border-t border-white/5">
-            <p className="text-[11px] font-bold opacity-60 uppercase tracking-widest mb-1">Rata-rata harian</p>
-            <p className="text-[15px] font-bold">
-              {formatMoney(Math.round(totals.totalSpent / Math.max(1, new Date().getDate())))} <span className="text-[12px] opacity-60 font-medium">/ hari</span>
-            </p>
+          <div className="space-y-1 col-span-2 pt-2 border-t border-[var(--border)]">
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Sisa Saldo</p>
+            <p className="text-[18px] font-bold text-[var(--income)] tabular-nums">{formatMoney(totals.remaining)}</p>
           </div>
         </div>
       </div>
@@ -172,10 +154,10 @@ export default function BudgetPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {budgets.map((budget: any) => {
-              const spent = parseFloat(budget.spent);
-              const limit = parseFloat(budget.limitAmount);
-              const pct = budget.percentageUsed;
+            {budgets.map((budget: Budget) => {
+              const spent = parseFloat(String(budget.spent || 0));
+              const limit = parseFloat(String(budget.limitAmount || 0));
+              const pct = budget.percentageUsed || 0;
               const cat = budget.category;
               const emoji = cat?.icon || FALLBACK_EMOJI[budget.categoryId] || '📦';
               const color = cat?.color || '#12B76A';
@@ -218,10 +200,10 @@ export default function BudgetPage() {
 
       {/* ─── Add/Edit Budget Modal ─── */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in z-[190]" onClick={() => setIsModalOpen(false)} />
+        <>
+          <div className="fixed inset-0 bg-black/40 z-[90] backdrop-blur-sm animate-fade-in" onClick={() => setIsModalOpen(false)} />
           <div 
-            className="relative z-[200] w-full max-w-[500px] bg-[var(--bg)] rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-[var(--border)]"
+            className="fixed inset-x-0 bottom-0 lg:top-[15%] lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
@@ -248,7 +230,7 @@ export default function BudgetPage() {
               />
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

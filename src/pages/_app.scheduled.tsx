@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, RefreshCw, X, ArrowLeft, MoreVertical, Trash2 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
-import { scheduledApi, categoriesApi, accountsApi, type ScheduledTransaction } from '../api/client';
+import { scheduledApi, categoriesApi, accountsApi, type ScheduledTransaction, type Category } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
 
 // ─── Status Toggle Component ──────────────────────────────────────────────────
@@ -75,7 +75,7 @@ export default function ScheduledPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: Omit<ScheduledTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'status'>) =>
-      scheduledApi.create(data as any),
+      scheduledApi.create(data as Omit<ScheduledTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled'] });
       setIsModalOpen(false);
@@ -86,7 +86,7 @@ export default function ScheduledPage() {
 
   const updateMutation = useMutation({
     mutationFn: (data: Partial<ScheduledTransaction>) =>
-      scheduledApi.update(selectedScheduled!.id, data as any),
+      scheduledApi.update(selectedScheduled!.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled'] });
       setIsModalOpen(false);
@@ -139,12 +139,12 @@ export default function ScheduledPage() {
 
   const handleEdit = (item: ScheduledTransaction) => {
     setSelectedScheduled(item);
-    setType(item.type as any);
+    setType(item.type as 'income' | 'expense');
     setAmount(String(item.amount));
     setCategoryId(item.categoryId);
     setAccountId(item.accountId || '');
     setDescription(item.description || '');
-    setFrequency(item.frequency as any);
+    setFrequency(item.frequency as 'daily' | 'weekly' | 'monthly' | 'yearly');
     setNextRunDate(new Date(item.nextRunDate).toISOString().split('T')[0]);
     setIsModalOpen(true);
   };
@@ -337,7 +337,7 @@ export default function ScheduledPage() {
                   className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                 >
                   <option value="">Pilih Kategori...</option>
-                  {filteredCategories.map((c: any) => (
+                  {filteredCategories.map((c: Category) => (
                     <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
                   ))}
                 </select>
@@ -363,7 +363,7 @@ export default function ScheduledPage() {
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Frekuensi</label>
                 <select
                   value={frequency}
-                  onChange={(e) => setFrequency(e.target.value as any)}
+                  onChange={(e) => setFrequency(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
                   className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                 >
                   {FREQUENCIES.map(f => (
