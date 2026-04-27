@@ -10,6 +10,7 @@ const NewTransactionModal = lazy(() => import('../finance/NewTransactionModal').
 const TransactionEntryChoice = lazy(() => import('../finance/TransactionEntryChoice').then(module => ({ default: module.TransactionEntryChoice })));
 const ScanModal = lazy(() => import('../finance/ScanModal').then(module => ({ default: module.ScanModal })));
 const MoreMenuModal = lazy(() => import('./MoreMenuModal').then(module => ({ default: module.MoreMenuModal })));
+const CommandPalette = lazy(() => import('../ui/CommandPalette').then(module => ({ default: module.CommandPalette })));
 import type { ReactNode } from 'react';
 
 interface AppLayoutProps {
@@ -57,6 +58,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <NewTransactionModal />
         <TransactionEntryChoice />
         <MoreMenuModal />
+        <CommandPalette />
         <ScanModal isOpen={isScanOpen} onClose={handleCloseScan} />
       </Suspense>
 

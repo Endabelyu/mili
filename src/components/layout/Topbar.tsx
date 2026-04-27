@@ -75,6 +75,12 @@ export function Topbar() {
       ctrl: true,
       meta: true,
       handler: () => searchInputRef.current?.focus(),
+    },
+    {
+      key: 'p',
+      ctrl: true,
+      meta: true,
+      handler: () => navigate('?new_transaction=true'),
     }
   ]);
 
@@ -103,8 +109,8 @@ export function Topbar() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={modKey + 'K'}
-          className="block w-full rounded-[10px] border border-[var(--border)] bg-[var(--muted)] py-2.5 pl-10 pr-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-dim-2)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] sm:placeholder:content-['Cari_transaksi...']"
+          placeholder={isMac ? '⌘K Cari...' : 'Ctrl+K Cari...'}
+          className="block w-full rounded-[10px] border border-[var(--border)] bg-[var(--muted)] py-2.5 pl-10 pr-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-dim-2)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
       </div>
 
@@ -176,10 +182,13 @@ export function Topbar() {
           </div>
         </div>
         
-        <Link to="?add_options=true">
+        <Link to="?add_options=true" title={isMac ? '⌘P' : 'Ctrl+P'}>
           <Button variant="primary" className="gap-2 px-3 md:px-5 font-bold bg-[#12B76A] hover:bg-[#0f9d5b]">
             <Plus className="h-5 w-5" />
             <span className="hidden md:inline">Tambah</span>
+            <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border border-white/20 bg-white/10 px-1.5 font-mono text-[10px] font-medium text-white/80">
+              {isMac ? '⌘P' : 'P'}
+            </kbd>
           </Button>
         </Link>
       </div>
