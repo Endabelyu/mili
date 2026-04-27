@@ -3,11 +3,7 @@
  * All requests include credentials (cookies) by default for session auth.
  */
 
-const _rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3005';
-// Guard: ensure BASE_URL always has a protocol and exactly one https:// prefix
-const BASE_URL = _rawApiUrl.includes('://localhost') 
-  ? _rawApiUrl 
-  : _rawApiUrl.replace(/^(?:https?:\/*)?/, 'https://').replace(/\/+$/, '');
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;
@@ -206,4 +202,10 @@ export const categoriesApi = {
   list: () => request<{ items: Category[] }>('/api/categories').then(res => res.items),
   create: (data: { label: string; color: string; icon: string; type: string }) => 
     request<Category>('/api/categories', { method: 'POST', body: JSON.stringify(data) }),
+};
+
+// ─── Consent ──────────────────────────────────────────────────────────────────
+export const consentApi = {
+  record: (data: { consentVersion: string }) => 
+    request<void>('/api/v1/consent', { method: 'POST', body: JSON.stringify(data) }),
 };

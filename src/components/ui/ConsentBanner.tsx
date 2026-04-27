@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { consentApi } from '../../api/client';
 import { initAnalytics } from '../../lib/analytics';
 
 const CONSENT_KEY = 'finance_tracker_consent';
@@ -37,11 +38,7 @@ export function ConsentBanner() {
     initAnalytics();
 
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/v1/consent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ consentVersion: '1.0' }),
-      });
+      await consentApi.record({ consentVersion: '1.0' });
     } catch (e) {
       console.error('Failed to record consent on server', e);
     }
