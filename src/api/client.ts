@@ -5,6 +5,12 @@
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
+// Debug log for production configuration tracking
+console.log('[API] Base URL:', BASE_URL);
+if (!BASE_URL) {
+  console.warn('[API] WARNING: VITE_API_URL is undefined! This will cause mangled relative URLs.');
+}
+
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;
   /** Request timeout in milliseconds. Defaults to 10 000 ms. */
@@ -23,6 +29,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     );
     if (search.toString()) url += `?${search}`;
   }
+
+  // Debug log for each request
+  console.debug(`[API] Fetching: ${url}`);
 
   // Abort the request automatically after `timeoutMs` milliseconds
   const controller = new AbortController();
