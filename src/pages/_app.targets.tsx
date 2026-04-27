@@ -265,22 +265,28 @@ export default function TargetsPage() {
                     
                     <div className="flex-1 min-w-0">
                       <h4 className="text-[15px] sm:text-[18px] font-bold text-[var(--text)] leading-tight">{target.name}</h4>
-                      <p className="text-[13px] font-medium text-[var(--text-dim-2)] mt-1 flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 opacity-60" />
-                        <span>
-                          {target.deadline ? (() => {
-                            const now = new Date();
-                            const dl = new Date(target.deadline);
-                            const diffTime = dl.getTime() - now.getTime();
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                            if (diffDays <= 0) return 'Tenggat lewat';
-                            const diffMonths = (dl.getFullYear() - now.getFullYear()) * 12 + (dl.getMonth() - now.getMonth());
-                            if (diffMonths <= 0) return `${diffDays} hari lagi`;
-                            return `${diffMonths} bulan lagi`;
-                          })() : 'Selamanya'}
-                          {target.deadline && ` · ${new Date(target.deadline).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}`}
-                        </span>
-                      </p>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-[var(--text-dim-2)] opacity-60 flex-shrink-0" />
+                        <div className="flex flex-col text-[12px] font-medium text-[var(--text-dim-2)] leading-tight">
+                          <span>
+                            {target.deadline ? (() => {
+                              const now = new Date();
+                              const dl = new Date(target.deadline);
+                              const diffTime = dl.getTime() - now.getTime();
+                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                              if (diffDays <= 0) return 'Tenggat lewat';
+                              const diffMonths = (dl.getFullYear() - now.getFullYear()) * 12 + (dl.getMonth() - now.getMonth());
+                              if (diffMonths <= 0) return `${diffDays} hari lagi`;
+                              return `${diffMonths} bulan lagi`;
+                            })() : 'Selamanya'}
+                          </span>
+                          {target.deadline && (
+                            <span className="opacity-70 mt-0.5">
+                              {new Date(target.deadline).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="text-right shrink-0">
