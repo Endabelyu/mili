@@ -92,7 +92,7 @@ export default defineConfig(({ mode }: { mode: string }) => {
         },
       }),
     ],
-  server: {
+    server: {
     port: 4016,
     strictPort: true,
   },
@@ -122,6 +122,6 @@ export default defineConfig(({ mode }: { mode: string }) => {
         entryFileNames: 'assets/[name]-[hash].js',
       },
     },
-  };
+  },
 });
 
