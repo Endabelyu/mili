@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['vite.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Saku — Financial Tracker',
-        short_name: 'Saku',
+        name: 'Mili — Financial Tracker',
+        short_name: 'Mili',
         description: 'Kelola keuangan pribadi Anda dengan mudah dan cerdas.',
         theme_color: '#12B76A',
         background_color: '#FAF7F2',

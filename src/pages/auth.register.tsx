@@ -177,7 +177,7 @@ export default function RegisterPage() {
           </div>
 
           <Button type="submit" className="w-full mt-2" disabled={isLoading}>
-            {isLoading ? 'Mendaftar...' : 'Buat Akun Saku'}
+            {isLoading ? 'Mendaftar...' : 'Buat Akun Mili'}
           </Button>
         </form>
       </div>

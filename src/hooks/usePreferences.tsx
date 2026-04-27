@@ -140,7 +140,7 @@ const translations: Record<Language, Record<string, string>> = {
     'settings.privacy': 'Privasi & Ketentuan',
     'settings.privacyDesc': 'Baca kebijakan kami',
     'settings.rate': 'Beri Rating',
-    'settings.aboutApp': 'Tentang Saku',
+    'settings.aboutApp': 'Tentang Mili',
     'settings.appVersion': 'Versi Aplikasi',
     'settings.alwaysUpdated': 'Selalu diperbarui',
 
@@ -274,7 +274,7 @@ const translations: Record<Language, Record<string, string>> = {
     'settings.privacy': 'Privacy & Terms',
     'settings.privacyDesc': 'Read our policies',
     'settings.rate': 'Rate App',
-    'settings.aboutApp': 'About Saku',
+    'settings.aboutApp': 'About Mili',
     'settings.appVersion': 'App Version',
     'settings.alwaysUpdated': 'Always up to date',
 
@@ -315,9 +315,9 @@ export const CURRENCY_OPTIONS: { value: Currency; label: string }[] = [
 ];
 
 // ─── Storage keys ────────────────────────────────────────────────────────────
-const LANG_KEY = 'saku-language';
-const CURRENCY_KEY = 'saku-currency';
-const DARK_KEY = 'saku-dark-mode';
+const LANG_KEY = 'mili-language';
+const CURRENCY_KEY = 'mili-currency';
+const DARK_KEY = 'mili-dark-mode';
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 const PreferencesContext = createContext<PreferencesContextType | null>(null);

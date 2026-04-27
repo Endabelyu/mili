@@ -30,7 +30,7 @@ export function Sidebar() {
              <Wallet className="w-6 h-6" />
            </div>
            <div>
-             <h1 className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text)] leading-tight">Saku</h1>
+             <h1 className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text)] leading-tight">Mili</h1>
              <p className="text-[10px] font-bold text-[var(--text-dim-2)] tracking-[0.1em] uppercase">Financial Tracker</p>
            </div>
         </div>
