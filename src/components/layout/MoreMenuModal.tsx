@@ -1,4 +1,4 @@
-import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User, LogOut } from 'lucide-react';
+import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User, Settings, LogOut } from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -9,8 +9,9 @@ const MENU_ITEMS = [
   { path: '/budget', icon: DollarSign, title: 'Anggaran', subtitle: 'Anggaran per kategori' },
   { path: '/scheduled', icon: Bell, title: 'Pengeluaran Terjadwal', subtitle: 'Tagihan berulang' },
   { path: '/scan', icon: Scan, title: 'Scan Struk', subtitle: 'Pindai struk' },
-  { path: '/notifications', icon: Bell, title: 'Notifikasi', subtitle: 'Pemberitahuan terkini' },
-  { path: '/profile', icon: User, title: 'Profil', subtitle: 'Akun & pengaturan' },
+  { path: '/notifications', icon: Bell, title: 'Notifikasi', subtitle: 'Pemberitahuan' },
+  { path: '/profile', icon: User, title: 'Akun', subtitle: 'Kelola Akun' },
+  { path: '/settings', icon: Settings, title: 'Pengaturan', subtitle: 'Preferensi Aplikasi' },
 ];
 
 export function MoreMenuModal() {
@@ -60,9 +61,9 @@ export function MoreMenuModal() {
                 key={item.path}
                 to={item.path}
                 onClick={handleClose}
-                className="bg-[#F6F5F2] dark:bg-[var(--card)] p-4 rounded-2xl flex flex-col gap-3 active:scale-95 transition-transform"
+                className="bg-[#F6F5F2] dark:bg-[var(--card)] p-4 rounded-2xl flex flex-col items-center text-center gap-3 active:scale-95 transition-transform"
               >
-                <div className="w-10 h-10 rounded-[12px] bg-[rgba(99,196,136,0.15)] text-[#63C488] flex items-center justify-center">
+                <div className="w-11 h-11 rounded-[14px] bg-[var(--accent-tint)] text-[var(--accent)] flex items-center justify-center flex-shrink-0">
                   <item.icon className="w-5 h-5" strokeWidth={2} />
                 </div>
                 <div>

@@ -236,7 +236,7 @@ export default function AccountsPage() {
         <div className="flex flex-col md:flex-row items-center gap-10">
           <NetWorthDonut value={formatMoney(totalBalance)} segments={chartSegments} />
           
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-4">
+          <div className="w-full flex-1 grid grid-cols-2 gap-x-6 gap-y-3 mt-4 md:mt-0">
             {chartSegments.length > 0 ? (
               chartSegments.map((s, i) => (
                 <LegendItem 
@@ -423,7 +423,7 @@ export default function AccountsPage() {
               <button
                 onClick={handleSave}
                 disabled={!name || saving}
-                className="w-full py-4 rounded-[16px] bg-[#12B76A] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
+                className="w-full py-4 rounded-[16px] bg-[var(--accent)] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50 transition-all active:scale-95"
               >
                 {saving ? 'Menyimpan...' : editingAccount ? 'Simpan Perubahan' : 'Simpan Akun'}
               </button>

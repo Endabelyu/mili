@@ -117,6 +117,8 @@ export default function TargetsPage() {
     setIcon('🎯');
     setSelectedTarget(null);
     setSaving(false);
+    setIsModalOpen(false);
+    setIsEditModalOpen(false);
   };
 
   const handleSave = () => {
@@ -331,7 +333,7 @@ export default function TargetsPage() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[90] backdrop-blur-sm animate-fade-in" onClick={resetForm} />
           <div 
-            className="fixed inset-x-0 bottom-0 lg:top-[10%] lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] overflow-hidden"
+            className="fixed inset-x-0 bottom-0 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:max-h-[85vh] lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
@@ -431,7 +433,7 @@ export default function TargetsPage() {
               <button
                 onClick={isEditModalOpen ? handleUpdate : handleSave}
                 disabled={!name || !targetAmount || saving}
-                className="w-full py-4 rounded-[16px] bg-[#12B76A] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
+                className="w-full py-4 rounded-[16px] bg-[var(--accent)] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50 transition-all active:scale-98 cursor-pointer"
               >
                 {saving ? 'Menyimpan...' : 'Simpan Target'}
               </button>

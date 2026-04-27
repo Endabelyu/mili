@@ -97,7 +97,7 @@ export function Topbar() {
   const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 
   return (
-    <header className="sticky top-0 z-30 flex h-[72px] w-full items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-4 md:px-8">
+    <header className="sticky top-0 z-30 flex h-[72px] w-full items-center justify-between border-b border-[var(--border)] bg-[var(--bg)] sm:bg-[var(--card)] px-4 md:px-8">
       {/* Search Bar */}
       <div className="relative w-full max-w-[140px] sm:max-w-[480px]">
         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
@@ -115,9 +115,9 @@ export function Topbar() {
 
       {/* Actions */}
       <div className="flex items-center gap-2 md:gap-4">
-        <div className="flex items-center gap-0.5 md:gap-1">
-          <Link to="/calendar" aria-label="Kalender"><TopbarButton icon={Calendar} label="Kalender" /></Link>
-          <Link to="?scan=true" aria-label="Scan Struk">
+        <div className="flex items-center gap-1">
+          <Link to="/calendar" aria-label="Kalender" className="hidden sm:block"><TopbarButton icon={Calendar} label="Kalender" /></Link>
+          <Link to="?scan=true" aria-label="Scan Struk" className="hidden sm:block">
             <TopbarButton icon={Scan} label="Scan Struk" />
           </Link>
           
@@ -127,7 +127,7 @@ export function Topbar() {
             </div>
 
             {notifOpen && (
-              <div className="absolute right-0 mt-2 w-[340px] md:w-[380px] bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
+              <div className="absolute -right-1 sm:right-0 mt-2 w-[calc(100vw-32px)] sm:w-[380px] max-w-[380px] bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
                 <div className="p-4 border-b border-[var(--border)] flex justify-between items-center">
                   <span className="text-[14px] font-bold text-[var(--text)]">Notifikasi</span>
                   <span 
@@ -181,15 +181,17 @@ export function Topbar() {
           </div>
         </div>
         
-        <Link to="?add_options=true" title={isMac ? '⌘P' : 'Ctrl+P'}>
-          <Button variant="primary" className="gap-2 px-3 md:px-5 font-bold bg-[#12B76A] hover:bg-[#0f9d5b]">
-            <Plus className="h-5 w-5" />
-            <span className="hidden md:inline">Tambah</span>
-            <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border border-white/20 bg-white/10 px-1.5 font-mono text-[10px] font-medium text-white/80">
-              {isMac ? '⌘P' : 'P'}
-            </kbd>
-          </Button>
-        </Link>
+        <div className="hidden sm:block">
+          <Link to="?add_options=true" title={isMac ? '⌘P' : 'Ctrl+P'}>
+            <Button variant="primary" className="gap-2 px-3 md:px-5 font-bold bg-[var(--accent)] hover:bg-[var(--accent)]/90">
+              <Plus className="h-5 w-5" />
+              <span className="hidden md:inline">Tambah</span>
+              <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border border-white/20 bg-white/10 px-1.5 font-mono text-[10px] font-medium text-white/80">
+                {isMac ? '⌘P' : 'P'}
+              </kbd>
+            </Button>
+          </Link>
+        </div>
       </div>
     </header>
   );
