@@ -196,8 +196,7 @@ export default function DashboardPage() {
                 <TargetCard 
                   key={t.id}
                   icon={() => <span className="text-[18px]">{t.icon || '🎯'}</span>} 
-                  color="bg-[rgba(18,183,106,0.1)]" 
-                  iconColor="text-[#12B76A]" 
+                  color={t.color} 
                   label={t.name} 
                   progress={progress} 
                   collected={formatMoney(parseFloat(String(t.currentAmount)))} 
@@ -350,20 +349,20 @@ export default function DashboardPage() {
 }
 
 // ─── Shared Mockup Components ────────────────────────────────────────────────
-function TargetCard({ icon: Icon, color, iconColor, label, progress, collected, target }: { icon: React.ElementType | React.ReactNode; color: string; iconColor: string; label: string; progress: number; collected: string; target: string; }) {
+function TargetCard({ icon: Icon, color, label, progress, collected, target }: { icon: React.ElementType | React.ReactNode; color: string; label: string; progress: number; collected: string; target: string; }) {
   return (
     <div className="flow-card p-5">
       <div className="flex items-center gap-3 mb-4">
-        <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center ${iconColor}`}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15`, color: color }}>
           {typeof Icon === 'function' ? <Icon className="w-5 h-5" /> : Icon}
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
-          <p className="text-[11px] font-bold text-[var(--text-dim-2)] opacity-70">{progress}%</p>
+          <p className="text-[12px] font-bold mt-0.5" style={{ color: color }}>{progress}%</p>
         </div>
       </div>
       <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden mb-3">
-        <div className={`h-full ${iconColor.replace('text', 'bg')}`} style={{ width: `${progress}%` }} />
+        <div className="h-full rounded-full" style={{ width: `${progress}%`, backgroundColor: color }} />
       </div>
       <div className="flex justify-between items-center text-[11px] font-bold">
         <span className="text-[var(--text-dim)]">{collected}</span>
