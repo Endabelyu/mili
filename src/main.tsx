@@ -70,3 +70,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>
 );
 
+// Auto-update PWA every hour
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then((registration) => {
+    setInterval(() => {
+      registration.update();
+      console.log('[PWA] Checking for updates...');
+    }, 60 * 60 * 1000); // 1 jam
+  });
+}
+
