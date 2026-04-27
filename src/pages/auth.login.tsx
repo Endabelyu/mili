@@ -55,11 +55,7 @@ export default function LoginPage() {
       <div className="w-full max-w-[420px] space-y-8 flow-card p-8 sm:p-10 animate-fade-in">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)', color: '#fff' }}>
-              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 18V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10" /><path d="M4 18l4-6 4 3 4-7 4 10" />
-              </svg>
-            </div>
+            <img src="/logo-icon.png" className="w-16 h-16 object-contain" alt="Logo Mili" />
           </div>
           <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--text)]">Selamat Datang</h1>
           <p className="mt-2 text-[13px] text-[var(--text-dim)]">

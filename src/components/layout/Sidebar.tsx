@@ -26,9 +26,9 @@ export function Sidebar() {
       {/* Brand */}
       <div className="p-8 pb-4">
         <div className="flex items-center gap-3">
-           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg, #12B76A 0%, #0E9355 100%)' }}>
-             <Wallet className="w-6 h-6" />
-           </div>
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img src="/logo-icon.png" className="w-9 h-9 object-contain" alt="Logo Mili" />
+            </div>
            <div>
              <h1 className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text)] leading-tight">Mili</h1>
              <p className="text-[10px] font-bold text-[var(--text-dim-2)] tracking-[0.1em] uppercase">Financial Tracker</p>

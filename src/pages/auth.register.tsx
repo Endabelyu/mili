@@ -66,9 +66,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-[420px] space-y-8 flow-card p-8 sm:p-10 animate-fade-in">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-tint)', color: 'var(--accent)' }}>
-              <User className="w-7 h-7" />
-            </div>
+            <img src="/logo-icon.png" className="w-16 h-16 object-contain" alt="Logo Mili" />
           </div>
           <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--text)]">Buat Akun Baru</h1>
           <p className="mt-2 text-[13px] text-[var(--text-dim)]">
