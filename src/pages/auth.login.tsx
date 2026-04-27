@@ -54,8 +54,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: 'var(--bg)' }}>
       <div className="w-full max-w-[420px] space-y-8 flow-card p-8 sm:p-10 animate-fade-in">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <img src="/icon-192.png" className="w-16 h-16 object-contain" alt="Logo Mili" />
+          <div className="flex justify-center mb-0">
+            <img src="/icon-192.png" className="w-40 h-40 object-contain -my-10" alt="Logo Mili" />
           </div>
           <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--text)]">Selamat Datang</h1>
           <p className="mt-2 text-[13px] text-[var(--text-dim)]">
