@@ -3,14 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=https://finance-api.endabelyu.com
     container_name: finance-tracker-web
     ports:
       - "4016:4016"
-    env_file:
-      - .env
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:4016 || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
