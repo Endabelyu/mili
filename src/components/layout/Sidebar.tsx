@@ -24,14 +24,14 @@ export function Sidebar() {
   return (
     <aside className="hidden lg:flex flex-col w-[260px] border-r border-[var(--border)] bg-[var(--card)] h-screen fixed top-0 left-0 z-50">
       {/* Brand */}
-      <div className="p-8 pb-4">
+      <div className="px-4 pt-8 ">
         <div className="flex items-center justify-start">
-          <img src="/Gemini_Generated_Image_pkgxflpkgxflpkgx-removebg-preview.png" className="h-28 w-auto object-contain -ml-4 -mt-4" alt="Mili Logo" />
+          <img src="/Gemini_Generated_Image_pkgxflpkgxflpkgx-removebg-preview.png" className="h-30 w-auto object-contain -ml-4 -mt-6" alt="Mili Logo" />
         </div>
       </div>
 
       {/* Nav Links */}
-      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-4 pb-6 space-y-1 overflow-y-auto custom-scrollbar">
         <SidebarLink to="/" icon={LayoutGrid} label="Dasbor" active={path === '/'} />
         <SidebarLink to="/transactions" icon={Activity} label="Transaksi" active={path.startsWith('/transactions')} />
         <SidebarLink to="/calendar" icon={Calendar} label="Kalender" active={path.startsWith('/calendar')} />
