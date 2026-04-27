@@ -1,9 +1,9 @@
 {
-  "name": "Saku — Financial Tracker",
-  "short_name": "Saku",
-  "description": "Kelola keuangan pribadi Anda dengan mudah dan cerdas.",
-  "start_url": "/",
-  "display": "standalone",
+  "name": "Mili — Financial Tracker",
+  "short_name": "Mili",
+    "description": "Kelola keuangan pribadi Anda dengan mudah dan cerdas.",
+    "start_url": "/",
+    "display": "standalone",
   "background_color": "#FAF7F2",
   "theme_color": "#12B76A",
   "icons": [

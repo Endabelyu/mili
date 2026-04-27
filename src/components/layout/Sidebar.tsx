@@ -25,14 +25,8 @@ export function Sidebar() {
     <aside className="hidden lg:flex flex-col w-[260px] border-r border-[var(--border)] bg-[var(--card)] h-screen fixed top-0 left-0 z-50">
       {/* Brand */}
       <div className="p-8 pb-4">
-        <div className="flex items-center gap-3">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <img src="/logo-icon.png" className="w-9 h-9 object-contain" alt="Logo Mili" />
-            </div>
-           <div>
-             <h1 className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text)] leading-tight">Mili</h1>
-             <p className="text-[10px] font-bold text-[var(--text-dim-2)] tracking-[0.1em] uppercase">Financial Tracker</p>
-           </div>
+        <div className="flex items-center justify-start">
+          <img src="/Gemini_Generated_Image_cbonnwcbonnwcbon-removebg-preview.png" className="h-20 w-auto object-contain -ml-2" alt="Mili Logo" />
         </div>
       </div>
 
