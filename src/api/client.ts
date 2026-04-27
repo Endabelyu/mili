@@ -4,10 +4,10 @@
  */
 
 const _rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3005';
-// Guard: ensure BASE_URL always has a protocol so it's never treated as a relative path
-const BASE_URL = _rawApiUrl.startsWith('http://') || _rawApiUrl.startsWith('https://')
-  ? _rawApiUrl
-  : `https://${_rawApiUrl}`;
+// Guard: ensure BASE_URL always has a protocol and exactly one https:// prefix
+const BASE_URL = _rawApiUrl.includes('://localhost') 
+  ? _rawApiUrl 
+  : _rawApiUrl.replace(/^(?:https?:\/*)?/, 'https://').replace(/\/+$/, '');
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;

@@ -8,7 +8,9 @@ import posthog from 'posthog-js';
 export function initAnalytics() {
   const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
   const _posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
-  const posthogHost = _posthogHost.startsWith('http') ? _posthogHost : `https://${_posthogHost}`;
+  const posthogHost = _posthogHost.includes('://localhost') 
+    ? _posthogHost 
+    : _posthogHost.replace(/^(?:https?:\/*)?/, 'https://').replace(/\/+$/, '');
 
   if (!posthogKey) {
     if (import.meta.env.DEV) {
