@@ -3,13 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=${VITE_API_URL}
     container_name: finance-tracker-web
     ports:
       - "4016:4016"
-    environment:
-      - VITE_API_URL=${VITE_API_URL}
+    env_file:
+      - .env
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:4016 || exit 1"]
