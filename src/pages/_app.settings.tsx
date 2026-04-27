@@ -227,7 +227,17 @@ export default function SettingsPage() {
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
           <SettingRow icon={Shield} color="bg-slate-50" iconColor="text-slate-500" label={t('settings.privacy')} subtext={t('settings.privacyDesc')} />
           <SettingRow icon={Star} color="bg-amber-50" iconColor="text-amber-500" label={t('settings.rate')} />
-          <SettingRow icon={Info} color="bg-blue-50" iconColor="text-blue-500" label={t('settings.aboutApp')} />
+          <SettingRow 
+            icon={Info} 
+            color="bg-blue-50" 
+            iconColor="text-blue-500" 
+            label={t('settings.aboutApp')} 
+            onClick={() => showAlert(
+              'Tentang Mili', 
+              'Mili berasal dari bahasa Jawa yang artinya "mengalir" (seperti frasa "banyu mili"). Ini adalah filosofi rezeki yang terus mengalir tanpa henti, bergerak alami membawa kelancaran dan ketenangan hidup. Di Mili, kami mengalirkan keteraturan pada pemasukan dan pengeluaran Anda.', 
+              'info'
+            )}
+          />
         </div>
       </div>
 
