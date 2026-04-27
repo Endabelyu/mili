@@ -7,7 +7,8 @@ import posthog from 'posthog-js';
  */
 export function initAnalytics() {
   const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
-  const posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
+  const _posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
+  const posthogHost = _posthogHost.startsWith('http') ? _posthogHost : `https://${_posthogHost}`;
 
   if (!posthogKey) {
     if (import.meta.env.DEV) {
