@@ -24,7 +24,7 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { register: authRegister } = useAuth();
+  const { register: authRegister, logout } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +48,7 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password
       });
+      await logout();
       navigate('/auth/login?registered=true');
     } catch (err) {
       const e = err as Record<string, unknown>;
