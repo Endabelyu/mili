@@ -95,7 +95,6 @@ export function Topbar() {
   }, []);
 
   const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
-  const modKey = isMac ? '⌘' : 'Ctrl+';
 
   return (
     <header className="sticky top-0 z-30 flex h-[72px] w-full items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-4 md:px-8">
