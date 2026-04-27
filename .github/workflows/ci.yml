@@ -77,7 +77,8 @@ jobs:
           script: |
             cd ${{ secrets.VPS_TARGET_DIR }}/web
             cp ../.env . 2>/dev/null || true
-            docker compose up -d --build --force-recreate
+            docker compose build --no-cache
+            docker compose up -d --force-recreate
             docker image prune -f
             echo "Waiting 5 seconds for healthcheck..."
             sleep 5
