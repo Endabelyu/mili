@@ -3,10 +3,9 @@
  * All requests include credentials (cookies) by default for session auth.
  */
 
-const _rawApiUrl = import.meta.env.VITE_API_URL || '';
-const BASE_URL = _rawApiUrl.startsWith('http') 
-  ? _rawApiUrl 
-  : `https://${_rawApiUrl}`;
+const BASE_URL = import.meta.env.VITE_API_URL?.startsWith('http') 
+  ? import.meta.env.VITE_API_URL 
+  : `https://${import.meta.env.VITE_API_URL}`;
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;
