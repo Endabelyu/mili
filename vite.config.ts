@@ -41,13 +41,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        skipWaiting: true,
-        clientsClaim: true,
-        cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        // Prevent SW from intercepting /api/ paths (would return index.html via SPA fallback)
         navigateFallbackDenylist: [/\/api\//],
-        // No runtimeCaching — React Query handles API caching on the client side
+        // No runtimeCaching — React Query handles API caching
       },
       devOptions: {
         enabled: false,
