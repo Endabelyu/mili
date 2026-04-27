@@ -186,18 +186,18 @@ export default function TargetsPage() {
 
       {/* Summary Card - White Style to match Transactions */}
       <div className="rounded-[24px] bg-[var(--card)] p-6 border border-[var(--border)] shadow-sm">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6">
-          <div className="space-y-1">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
+          <div className="space-y-1 flex-1">
             <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Terkumpul</p>
-            <p className="text-[18px] sm:text-[20px] font-bold text-[var(--income)] tabular-nums truncate">{formatMoney(totalCurrent)}</p>
+            <p className="text-[22px] font-bold text-[var(--income)] tabular-nums">{formatMoney(totalCurrent)}</p>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 flex-1 pt-4 sm:pt-0 sm:pl-6">
             <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Total Target</p>
-            <p className="text-[18px] sm:text-[20px] font-bold text-[var(--text)] tabular-nums truncate">{formatMoney(totalTarget)}</p>
+            <p className="text-[22px] font-bold text-[var(--text)] tabular-nums">{formatMoney(totalTarget)}</p>
           </div>
-          <div className="space-y-1 col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-[var(--border)] pt-3 sm:pt-0 sm:pl-6">
+          <div className="space-y-1 flex-1 pt-4 sm:pt-0 sm:pl-6">
             <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Progres</p>
-            <p className="text-[18px] sm:text-[20px] font-bold text-[var(--income)] tabular-nums">
+            <p className="text-[22px] font-bold text-[var(--income)] tabular-nums">
               {totalTarget > 0 ? Math.round((totalCurrent / totalTarget) * 100) : 0}%
             </p>
           </div>
