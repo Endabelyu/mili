@@ -26,7 +26,7 @@ export function Sidebar() {
       {/* Brand */}
       <div className="p-8 pb-4">
         <div className="flex items-center justify-start">
-          <img src="/Gemini_Generated_Image_cbonnwcbonnwcbon-removebg-preview.png" className="h-28 w-auto object-contain -ml-4 -mt-4" alt="Mili Logo" />
+          <img src="/Gemini_Generated_Image_pkgxflpkgxflpkgx-removebg-preview.png" className="h-28 w-auto object-contain -ml-4 -mt-4" alt="Mili Logo" />
         </div>
       </div>
 
