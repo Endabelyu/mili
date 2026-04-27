@@ -201,9 +201,9 @@ export const reportsApi = {
   summary: (params?: { month?: string }) =>
     request<{ income: number, expenses: number, balance: number, savingsRate: number, transactionCount: number }>('/api/reports/summary', { params }),
   byCategory: (params?: { month?: string }) =>
-    request<Array<{ categoryId: string, label: string, color: string, amount: number, percentage: number }>>('/api/reports/by-category', { params }),
+    request<{ items: Array<{ categoryId: string, label: string, color: string, amount: number, percentage: number }> }>('/api/reports/by-category', { params }).then(res => res.items),
   monthly: (params?: { months?: number }) =>
-    request<Array<{ month: string, income: number, expenses: number, balance: number }>>('/api/reports/monthly', { params }),
+    request<{ items: Array<{ month: string, income: number, expenses: number, balance: number }> }>('/api/reports/monthly', { params }).then(res => res.items),
 };
 
 // ─── Categories ───────────────────────────────────────────────────────────────
