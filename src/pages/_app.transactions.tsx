@@ -119,14 +119,14 @@ export default function TransactionsPage() {
           >
             {v === 'daily' ? 'Harian' : v === 'weekly' ? 'Mingguan' : v === 'monthly' ? 'Bulanan' : 'Total'}
             {view === v && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#12B76A] rounded-t-full" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--accent)] rounded-t-full" />
             )}
           </button>
         ))}
       </div>
 
       {/* Hero Card - Summary */}
-      <div className="rounded-[32px] bg-gradient-to-br from-[#12B76A] to-[#0E9355] p-8 text-white shadow-xl shadow-[#12B76A]/20">
+      <div className="rounded-[32px] bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] p-8 text-white shadow-xl shadow-[var(--accent)]/20">
         <div className="grid grid-cols-3 gap-8">
           <div className="space-y-1.5">
             <p className="text-[11px] font-bold opacity-70 uppercase tracking-widest flex items-center gap-2">

@@ -82,7 +82,7 @@ export default function AccountsPage() {
   const [name, setName] = useState('');
   const [type, setType] = useState<Account['type']>('bank');
   const [balance, setBalance] = useState('');
-  const [color, setColor] = useState('#12B76A');
+  const [color, setColor] = useState('#15803D');
 
   const { data: accounts = [], isLoading } = useQuery({
     queryKey: queryKeys.accounts.all,
@@ -173,7 +173,7 @@ export default function AccountsPage() {
     setName('');
     setBalance('');
     setType('bank');
-    setColor('#12B76A');
+    setColor('#15803D');
     setSaving(false);
   };
 
@@ -213,7 +213,7 @@ export default function AccountsPage() {
       return {
         label: typeMap[type]?.label || type,
         value: balance,
-        color: typeMap[type]?.color || '#12B76A'
+        color: typeMap[type]?.color || '#15803D'
       };
     })
     .filter(s => s.value > 0)
@@ -257,7 +257,7 @@ export default function AccountsPage() {
         <div className="grid grid-cols-2 gap-8 pt-6 border-t border-[var(--border)] border-dashed">
           <div>
             <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">Aset</p>
-            <p className="text-[22px] font-bold text-[#12B76A]">{formatMoney(assets)}</p>
+            <p className="text-[22px] font-bold text-[#15803D]">{formatMoney(assets)}</p>
           </div>
           <div>
             <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">Kewajiban</p>
@@ -269,7 +269,7 @@ export default function AccountsPage() {
       {/* Accounts List */}
       {accounts.length === 0 ? (
         <div className="text-center py-20 px-6 bg-[var(--card)] rounded-[32px] border border-[var(--border)]">
-          <div className="w-20 h-20 rounded-3xl bg-[#12B76A]/10 text-[#12B76A] flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 rounded-3xl bg-[#15803D]/10 text-[#15803D] flex items-center justify-center mx-auto mb-6">
             <Wallet className="w-10 h-10" />
           </div>
           <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada akun</h3>
@@ -308,7 +308,7 @@ export default function AccountsPage() {
                         <div className="flex items-center gap-2">
                           <p className="text-[16px] font-bold text-[var(--text)] truncate">{acc.name}</p>
                           {acc.isDefault && (
-                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#12B76A]/10 text-[#12B76A] uppercase tracking-wider">Utama</span>
+                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#15803D]/10 text-[#15803D] uppercase tracking-wider">Utama</span>
                           )}
                         </div>
                         <p className="text-[12px] font-medium text-[var(--text-dim-2)] opacity-60 mt-1">
@@ -364,12 +364,12 @@ export default function AccountsPage() {
                       onClick={() => setType(id as Account['type'])}
                       className={`flex items-center gap-3 p-3 rounded-[16px] border transition-all ${
                         type === id 
-                          ? 'border-[#12B76A] bg-[#12B76A]/5' 
+                          ? 'border-[#15803D] bg-[#15803D]/5' 
                           : 'border-[var(--border)] hover:bg-[var(--muted)]'
                       }`}
                     >
-                      <Icon className={`w-5 h-5 ${type === id ? 'text-[#12B76A]' : 'text-[var(--text-dim)]'}`} />
-                      <span className={`text-[13px] font-bold ${type === id ? 'text-[#12B76A]' : 'text-[var(--text)]'}`}>{label}</span>
+                      <Icon className={`w-5 h-5 ${type === id ? 'text-[#15803D]' : 'text-[var(--text-dim)]'}`} />
+                      <span className={`text-[13px] font-bold ${type === id ? 'text-[#15803D]' : 'text-[var(--text)]'}`}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -382,7 +382,7 @@ export default function AccountsPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Contoh: BCA Tahapan, OVO, Dompet"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
                 />
               </div>
 
@@ -396,7 +396,7 @@ export default function AccountsPage() {
                     onChange={handleBalanceInput}
                     placeholder="0"
                     inputMode="numeric"
-                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] pl-12 pr-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
+                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] pl-12 pr-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
                   />
                 </div>
               </div>
@@ -405,7 +405,7 @@ export default function AccountsPage() {
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Warna</label>
                 <div className="flex gap-3 flex-wrap">
-                  {['#12B76A', '#0BA5EC', '#7F56D9', '#F04438', '#F79009', '#EE46BC', '#334155'].map((c) => (
+                  {['#15803D', '#0BA5EC', '#7F56D9', '#F04438', '#F79009', '#EE46BC', '#334155'].map((c) => (
                     <button
                       key={c}
                       onClick={() => setColor(c)}

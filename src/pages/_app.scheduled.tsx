@@ -10,7 +10,7 @@ function StatusToggle({ active, onToggle }: { active: boolean; onToggle: () => v
   return (
     <button 
       onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${active ? 'bg-[#12B76A]' : 'bg-[var(--muted)]'}`}
+      className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${active ? 'bg-[var(--accent)]' : 'bg-[var(--muted)]'}`}
     >
       <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${active ? 'translate-x-5' : 'translate-x-0 shadow-sm'}`} />
     </button>
@@ -216,7 +216,7 @@ export default function ScheduledPage() {
       <div className="space-y-4">
         {scheduled.length === 0 ? (
           <div className="text-center py-20 px-6 bg-[var(--card)] rounded-[32px] border border-[var(--border)]">
-            <div className="w-20 h-20 rounded-3xl bg-[#12B76A]/10 text-[#12B76A] flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 rounded-3xl bg-[var(--accent-tint)] text-[var(--accent)] flex items-center justify-center mx-auto mb-6">
               <RefreshCw className="w-10 h-10" />
             </div>
             <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada jadwal</h3>
@@ -242,7 +242,7 @@ export default function ScheduledPage() {
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2">
                     <p className="text-[17px] font-bold text-[var(--text)] truncate">{item.description || item.category?.label}</p>
-                    <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#12B76A15] text-[#12B76A] uppercase tracking-wider">
+                    <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[var(--accent-tint)] text-[var(--accent)] uppercase tracking-wider">
                       {FREQUENCIES.find(f => f.id === item.frequency)?.label}
                     </span>
                   </div>
@@ -324,7 +324,7 @@ export default function ScheduledPage() {
                   onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="0"
                   inputMode="numeric"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
                 />
               </div>
 
@@ -334,7 +334,7 @@ export default function ScheduledPage() {
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                 >
                   <option value="">Pilih Kategori...</option>
                   {filteredCategories.map((c: Category) => (
@@ -349,7 +349,7 @@ export default function ScheduledPage() {
                 <select
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                 >
                   <option value="">Pilih Rekening...</option>
                   {accounts.map(a => (
@@ -364,7 +364,7 @@ export default function ScheduledPage() {
                 <select
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                 >
                   {FREQUENCIES.map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
@@ -379,7 +379,7 @@ export default function ScheduledPage() {
                   type="date"
                   value={nextRunDate}
                   onChange={(e) => setNextRunDate(e.target.value)}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
                 />
               </div>
 
@@ -390,7 +390,7 @@ export default function ScheduledPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Contoh: Pembayaran Listrik Token"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
                 />
               </div>
             </div>
@@ -399,7 +399,7 @@ export default function ScheduledPage() {
               <button
                 onClick={handleSave}
                 disabled={!amount || !categoryId || !accountId || !nextRunDate || saving}
-                className="w-full py-4 rounded-[16px] bg-[#12B76A] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
+                className="w-full py-4 rounded-[16px] bg-[#15803D] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
               >
                 {saving ? 'Menyimpan...' : selectedScheduled ? 'Simpan Perubahan' : 'Jadwalkan Transaksi'}
               </button>

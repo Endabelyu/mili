@@ -105,7 +105,7 @@ export default function BudgetPage() {
               cy="50"
               r="42"
               fill="transparent"
-              stroke="#12B76A"
+              stroke="#15803D"
               strokeWidth="10"
               strokeDasharray={2 * Math.PI * 42}
               strokeDashoffset={2 * Math.PI * 42 - (Math.min(totals.percentage, 100) / 100) * (2 * Math.PI * 42)}
@@ -140,7 +140,7 @@ export default function BudgetPage() {
         <h3 className="text-[16px] font-bold text-[var(--text)] px-1">{t('budget.perCategory')}</h3>
         {budgets.length === 0 ? (
           <div className="text-center py-20 px-6 bg-[var(--card)] rounded-[32px] border border-[var(--border)]">
-            <div className="w-20 h-20 rounded-3xl bg-[#12B76A]/10 text-[#12B76A] flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 rounded-3xl bg-[#15803D]/10 text-[#15803D] flex items-center justify-center mx-auto mb-6">
               <Target className="w-10 h-10" />
             </div>
             <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada anggaran</h3>
@@ -160,7 +160,7 @@ export default function BudgetPage() {
               const pct = budget.percentageUsed || 0;
               const cat = budget.category;
               const emoji = cat?.icon || FALLBACK_EMOJI[budget.categoryId] || '📦';
-              const color = cat?.color || '#12B76A';
+              const color = cat?.color || '#15803D';
               const label = cat?.label || budget.categoryId;
 
               return (

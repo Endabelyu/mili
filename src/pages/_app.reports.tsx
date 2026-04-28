@@ -51,7 +51,7 @@ export default function AnalyticsPage() {
   // Aggregate by category
   const categories = useMemo(() => {
     const catMap = new Map<string, { label: string; amount: number; emoji: string; color: string }>();
-    const colors = ['#F79009', '#7F56D9', '#12B76A', '#0BA5EC', '#F04438', '#EE46BC', '#334155', '#15B79E', '#A16207', '#4F46E5'];
+    const colors = ['#F79009', '#7F56D9', '#15803D', '#0BA5EC', '#F04438', '#EE46BC', '#334155', '#15B79E', '#A16207', '#4F46E5'];
 
     let colorIndex = 0;
     filteredTransactions.forEach(tx => {
@@ -213,7 +213,7 @@ export default function AnalyticsPage() {
               />
               <Bar
                 dataKey="amount"
-                fill={activeTab === 'expense' ? '#F04438' : '#12B76A'}
+                fill={activeTab === 'expense' ? '#F04438' : '#15803D'}
                 radius={[4, 4, 0, 0]}
                 barSize={12}
               />

@@ -63,7 +63,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
 
         {/* ─── Camera Preview / Scan Frame ─── */}
         <div className="flex-1 relative flex flex-col items-center justify-center p-6">
-          <div className="relative w-full h-fit max-h-[50vh] aspect-[3/4] border-2 border-[#12B76A]/40 rounded-[20px] overflow-hidden shadow-2xl bg-[#111]">
+          <div className="relative w-full h-fit max-h-[50vh] aspect-[3/4] border-2 border-[#15803D]/40 rounded-[20px] overflow-hidden shadow-2xl bg-[#111]">
             {/* Live Camera Feed */}
             {error ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
@@ -83,7 +83,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
             )}
 
             {/* Scan Line Animation */}
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-[#12B76A] shadow-[0_0_15px_#12B76A] animate-scan-line z-10" />
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-[#15803D] shadow-[0_0_15px_#15803D] animate-scan-line z-10" />
           </div>
           <p className="mt-4 text-white/70 text-[13px] font-medium tracking-wide">Posisikan struk di dalam bingkai</p>
         </div>
@@ -94,7 +94,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
             <ImageIcon className="w-4 h-4 text-white/40" />
             Galeri
           </button>
-          <button className="flex-2 h-12 rounded-xl bg-[#12B76A] flex items-center justify-center gap-2 text-[14px] font-bold text-white transition-all active:scale-[0.98] shadow-lg shadow-[#12B76A30] hover:bg-[#0f9d5b]">
+          <button className="flex-2 h-12 rounded-xl bg-[#15803D] flex items-center justify-center gap-2 text-[14px] font-bold text-white transition-all active:scale-[0.98] shadow-lg shadow-[#15803D30] hover:bg-[#0f9d5b]">
             <Camera className="w-4 h-4" />
             Ambil Foto
           </button>

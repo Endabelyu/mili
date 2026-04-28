@@ -72,13 +72,13 @@ export default function ScanReceiptPage() {
           )}
 
           {/* Scan Line Animation */}
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-[#12B76A] shadow-[0_0_20px_#12B76A] animate-scan-line z-10" />
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-[#15803D] shadow-[0_0_20px_#15803D] animate-scan-line z-10" />
           
           {/* Corner Decorations */}
-          <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-[#12B76A] rounded-tl-lg" />
-          <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-[#12B76A] rounded-tr-lg" />
-          <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-[#12B76A] rounded-bl-lg" />
-          <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-[#12B76A] rounded-br-lg" />
+          <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-[#15803D] rounded-tl-lg" />
+          <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-[#15803D] rounded-tr-lg" />
+          <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-[#15803D] rounded-bl-lg" />
+          <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-[#15803D] rounded-br-lg" />
         </div>
         <p className="mt-10 text-white/50 text-[14px] font-bold tracking-[0.1em] uppercase">Posisikan struk di dalam bingkai</p>
       </div>
@@ -89,7 +89,7 @@ export default function ScanReceiptPage() {
           <ImageIcon className="w-6 h-6 text-[var(--text-dim-2)]" />
           Unggah Foto
         </button>
-        <button className="flex-1 h-16 rounded-[24px] bg-[#12B76A] flex items-center justify-center gap-3 text-[16px] font-bold text-white transition-all active:scale-[0.96] shadow-xl shadow-[#12B76A25] hover:bg-[#0E9355]">
+        <button className="flex-1 h-16 rounded-[24px] bg-[#15803D] flex items-center justify-center gap-3 text-[16px] font-bold text-white transition-all active:scale-[0.96] shadow-xl shadow-[#15803D25] hover:bg-[#0E9355]">
           <Camera className="w-6 h-6" />
           Ambil Foto
         </button>

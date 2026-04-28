@@ -50,7 +50,7 @@ export default function TargetsPage() {
   const [targetAmount, setTargetAmount] = useState('');
   const [currentAmount, setCurrentAmount] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [color, setColor] = useState('#12B76A');
+  const [color, setColor] = useState('#15803D');
   const [icon, setIcon] = useState('🎯');
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
 
@@ -113,7 +113,7 @@ export default function TargetsPage() {
     setTargetAmount('');
     setCurrentAmount('');
     setDeadline('');
-    setColor('#12B76A');
+    setColor('#15803D');
     setIcon('🎯');
     setSelectedTarget(null);
     setSaving(false);
@@ -213,7 +213,7 @@ export default function TargetsPage() {
           className={`py-4 text-[15px] font-bold transition-all relative ${activeTab === 'active' ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)] opacity-50'}`}
         >
           Aktif
-          {activeTab === 'active' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#12B76A] rounded-t-full" />}
+          {activeTab === 'active' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--accent)] rounded-t-full" />}
         </button>
         <button 
           onClick={() => setActiveTab('completed')}
@@ -234,7 +234,7 @@ export default function TargetsPage() {
 
         {targets.length === 0 ? (
           <div className="text-center py-20 px-6 bg-[var(--card)] rounded-[32px] border border-[var(--border)]">
-            <div className="w-20 h-20 rounded-3xl bg-[#12B76A]/10 text-[#12B76A] flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 rounded-3xl bg-[var(--accent-tint)] text-[var(--accent)] flex items-center justify-center mx-auto mb-6">
               <TargetIcon className="w-10 h-10" />
             </div>
             <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada target</h3>
@@ -261,7 +261,7 @@ export default function TargetsPage() {
                 const progress = Math.min((current / total) * 100, 100);
 
               return (
-                <div key={target.id} className="flow-card p-6 flex flex-col gap-6 relative group transition-all hover:shadow-xl hover:shadow-[#12B76A05] border-transparent hover:border-[var(--income)]/20">
+                <div key={target.id} className="flow-card p-6 flex flex-col gap-6 relative group transition-all hover:shadow-xl hover:shadow-[#15803D05] border-transparent hover:border-[var(--income)]/20">
                   <div className="flex items-center gap-5">
                     <CircularProgress percentage={progress} color={target.color} icon={target.icon} />
                     
@@ -356,7 +356,7 @@ export default function TargetsPage() {
                       key={e}
                       onClick={() => setIcon(e)}
                       className={`text-[24px] w-12 h-12 rounded-[14px] flex items-center justify-center border transition-all ${
-                        icon === e ? 'border-[#12B76A] bg-[#12B76A]/5 scale-110' : 'border-[var(--border)] hover:bg-[var(--muted)]'
+                        icon === e ? 'border-[#15803D] bg-[#15803D]/5 scale-110' : 'border-[var(--border)] hover:bg-[var(--muted)]'
                       }`}
                     >
                       {e}
@@ -372,7 +372,7 @@ export default function TargetsPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Contoh: Liburan ke Bali, Beli iPhone"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[var(--accent)] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
                 />
               </div>
 
@@ -384,7 +384,7 @@ export default function TargetsPage() {
                   onChange={(e) => setTargetAmount(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="0"
                   inputMode="numeric"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[var(--accent)] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
                 />
               </div>
 
@@ -396,7 +396,7 @@ export default function TargetsPage() {
                   onChange={(e) => setCurrentAmount(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="0"
                   inputMode="numeric"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[var(--accent)] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
                 />
               </div>
 
@@ -407,7 +407,7 @@ export default function TargetsPage() {
                   type="date"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[var(--accent)] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
                 />
               </div>
 
@@ -415,7 +415,7 @@ export default function TargetsPage() {
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Warna</label>
                 <div className="flex gap-3 flex-wrap">
-                  {['#12B76A', '#0BA5EC', '#7F56D9', '#F04438', '#F79009', '#EE46BC'].map((c) => (
+                  {['#15803D', '#0BA5EC', '#7F56D9', '#F04438', '#F79009', '#EE46BC'].map((c) => (
                     <button
                       key={c}
                       onClick={() => setColor(c)}

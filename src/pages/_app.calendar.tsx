@@ -91,7 +91,7 @@ export default function CalendarPage() {
         <div className="grid grid-cols-7 auto-rows-[80px] lg:auto-rows-[100px] relative">
           {isLoading && (
             <div className="absolute inset-0 bg-[var(--card)]/80 backdrop-blur-sm z-10 flex items-center justify-center">
-              <div className="w-8 h-8 border-4 border-[#12B76A]/30 border-t-[#12B76A] rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
             </div>
           )}
           
@@ -116,14 +116,14 @@ export default function CalendarPage() {
                 className="border-r border-b border-[var(--border)] p-1.5 flex flex-col hover:bg-[var(--muted)]/30 transition-colors relative group cursor-pointer active:scale-95"
               >
                 <span className={`text-[13px] font-bold w-6 h-6 flex items-center justify-center rounded-full mb-1
-                  ${isToday ? 'bg-[#12B76A] text-white shadow-md' : 'text-[var(--text)]'}`}>
+                  ${isToday ? 'bg-[var(--accent)] text-white shadow-md' : 'text-[var(--text)]'}`}>
                   {day}
                 </span>
 
                 {dayData && (
                   <div className="flex flex-col gap-0.5 mt-auto">
                     {dayData.income > 0 && (
-                      <div className="text-[9px] font-bold text-[#12B76A] bg-[#12B76A]/10 px-1 rounded truncate flex items-center">
+                      <div className="text-[9px] font-bold text-[#15803D] bg-[#15803D]/10 px-1 rounded truncate flex items-center">
                         <ArrowUpRight className="w-3 h-3 mr-0.5" />
                         {formatMoney(dayData.income).replace('Rp', '')}
                       </div>
@@ -155,7 +155,7 @@ export default function CalendarPage() {
                     {dayjs(dayData.date).format('dddd, D MMMM')}
                   </span>
                   <div className="flex gap-3">
-                    {dayData.income > 0 && <span className="text-[13px] font-bold text-[#12B76A]">+{formatMoney(dayData.income)}</span>}
+                    {dayData.income > 0 && <span className="text-[13px] font-bold text-[#15803D]">+{formatMoney(dayData.income)}</span>}
                     {dayData.expense > 0 && <span className="text-[13px] font-bold text-[#F04438]">-{formatMoney(dayData.expense)}</span>}
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export default function CalendarPage() {
                           {txn.description && <p className="text-[11px] font-medium text-[var(--text-dim-2)]">{txn.description}</p>}
                         </div>
                       </div>
-                      <span className={`text-[14px] font-bold ${txn.type === 'expense' ? 'text-[#F04438]' : 'text-[#12B76A]'}`}>
+                      <span className={`text-[14px] font-bold ${txn.type === 'expense' ? 'text-[#F04438]' : 'text-[#15803D]'}`}>
                         {txn.type === 'expense' ? '-' : '+'}{formatMoney(parseFloat(String(txn.amount)))}
                       </span>
                     </div>
@@ -219,7 +219,7 @@ export default function CalendarPage() {
               <div className="flex gap-4 p-4 rounded-2xl bg-[var(--muted)]/50">
                 <div className="flex-1">
                   <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase mb-1">Total Pemasukan</p>
-                  <p className="text-[16px] font-bold text-[#12B76A]">{formatMoney(selectedDay.income)}</p>
+                  <p className="text-[16px] font-bold text-[#15803D]">{formatMoney(selectedDay.income)}</p>
                 </div>
                 <div className="w-px bg-[var(--border)]" />
                 <div className="flex-1">
@@ -242,7 +242,7 @@ export default function CalendarPage() {
                         </p>
                       </div>
                     </div>
-                    <span className={`text-[15px] font-bold ${txn.type === 'expense' ? 'text-[#F04438]' : 'text-[#12B76A]'}`}>
+                    <span className={`text-[15px] font-bold ${txn.type === 'expense' ? 'text-[#F04438]' : 'text-[#15803D]'}`}>
                       {txn.type === 'expense' ? '-' : '+'}{formatMoney(parseFloat(String(txn.amount)))}
                     </span>
                   </div>

@@ -27,7 +27,7 @@ export function Alert({
 
   const icons = {
     info: <Info className="w-10 h-10 text-blue-500" />,
-    success: <CheckCircle2 className="w-10 h-10 text-[#12B76A]" />,
+    success: <CheckCircle2 className="w-10 h-10 text-[#15803D]" />,
     warning: <AlertCircle className="w-10 h-10 text-amber-500" />,
     error: <X className="w-10 h-10 text-rose-500" />,
   };
@@ -79,9 +79,9 @@ export function Alert({
                   onClose();
                 }
               }}
-              className={`h-14 rounded-2xl text-white font-bold text-[15px] transition-all active:scale-95 shadow-lg shadow-[#12B76A20] ${
+              className={`h-14 rounded-2xl text-white font-bold text-[15px] transition-all active:scale-95 shadow-lg shadow-[#15803D20] ${
                 isConfirm ? 'flex-[1.5]' : 'w-full'
-              } ${type === 'error' ? 'bg-rose-500 shadow-rose-500/20' : 'bg-[#12B76A] shadow-[#12B76A/20]'}`}
+              } ${type === 'error' ? 'bg-rose-500 shadow-rose-500/20' : 'bg-[#15803D] shadow-[#15803D/20]'}`}
             >
               {confirmLabel}
             </button>

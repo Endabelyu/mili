@@ -79,7 +79,7 @@ export default function App() {
             </div>
             <button
               onClick={() => resetError()}
-              className="px-6 py-2 bg-[#12B76A] text-white rounded-xl font-bold transition-colors"
+              className="px-6 py-2 bg-[#15803D] text-white rounded-xl font-bold transition-colors"
             >
               Try Again
             </button>

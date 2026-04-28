@@ -123,7 +123,7 @@ export default function EditProfilePage() {
            <Button
              type="submit"
              disabled={isLoading}
-             className={`w-full ${success ? 'bg-[var(--income)] hover:bg-[#12B76A]' : ''}`}
+             className={`w-full ${success ? 'bg-[var(--income)] hover:bg-[#15803D]' : ''}`}
            >
              {isLoading ? 'Menyimpan...' : success ? (
                <span className="flex items-center justify-center">

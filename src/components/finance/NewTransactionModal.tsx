@@ -125,7 +125,7 @@ export function NewTransactionModal() {
     if (!newCatLabel) return;
     addCategoryMutation.mutate({
       label: newCatLabel,
-      color: '#12B76A', // default green
+      color: '#15803D', // default green
       icon: newCatEmoji,
       type: type === 'transfer' ? 'expense' : type,
     });
@@ -182,7 +182,7 @@ export function NewTransactionModal() {
 
   if (!isOpen) return null;
 
-  const amountColor = type === 'expense' ? 'text-[#F04438]' : 'text-[#12B76A]';
+  const amountColor = type === 'expense' ? 'text-[#F04438]' : 'text-[#15803D]';
   const displayAmount = formatDisplay(amount);
 
   return (
@@ -242,7 +242,7 @@ export function NewTransactionModal() {
               placeholder="0"
               aria-label={t('txn.amount')}
               className={`text-[56px] font-bold tracking-[-0.04em] tabular-nums bg-transparent outline-none border-none text-center max-w-[400px] ${amountColor} placeholder:opacity-40`}
-              style={{ caretColor: type === 'expense' ? '#F04438' : '#12B76A' }}
+              style={{ caretColor: type === 'expense' ? '#F04438' : '#15803D' }}
             />
           </div>
 
@@ -264,7 +264,7 @@ export function NewTransactionModal() {
             className="w-full flow-card p-4 flex items-center gap-4 text-left relative z-10"
           >
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: accounts?.find(a => a.id === selectedAccount)?.color ? `${accounts.find(a => a.id === selectedAccount)?.color}15` : 'rgba(18,183,106,0.08)' }}>
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: accounts?.find(a => a.id === selectedAccount)?.color || '#12B76A' }}>
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: accounts?.find(a => a.id === selectedAccount)?.color || '#15803D' }}>
                 <Home className="w-4 h-4 text-white" />
               </div>
             </div>
@@ -291,7 +291,7 @@ export function NewTransactionModal() {
                       <Home className="w-4 h-4 text-white" />
                     </div>
                     <span className="text-[14px] font-bold text-[var(--text)] truncate">{acc.name}</span>
-                    {selectedAccount === acc.id && <Check className="w-4 h-4 text-[#12B76A] ml-auto" strokeWidth={3} />}
+                    {selectedAccount === acc.id && <Check className="w-4 h-4 text-[#15803D] ml-auto" strokeWidth={3} />}
                   </button>
                 ))}
               </div>
@@ -325,7 +325,7 @@ export function NewTransactionModal() {
                       >
                         <div className={`w-14 h-14 rounded-[20px] transition-all flex items-center justify-center text-[24px] shadow-sm ${
                           selectedCategory === cat.id
-                            ? 'bg-[#12B76A] scale-110 ring-2 ring-[#12B76A] ring-offset-2 ring-offset-[var(--bg)]'
+                            ? 'bg-[#15803D] scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--bg)]'
                             : `${bg} group-hover:scale-105`
                         }`}>
                           <span className={selectedCategory === cat.id ? 'grayscale brightness-200' : ''}>{emoji}</span>
@@ -384,7 +384,7 @@ export function NewTransactionModal() {
             <button
               onClick={handleSave}
               disabled={!amount || amount === '0' || !selectedCategory || saving}
-              className="w-full h-15 rounded-[20px] bg-[#12B76A] text-white font-bold text-[16px] shadow-2xl shadow-[#12B76A40] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full h-15 rounded-[20px] bg-[#15803D] text-white font-bold text-[16px] shadow-2xl shadow-[#15803D40] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -424,7 +424,7 @@ export function NewTransactionModal() {
                     value={newCatLabel}
                     onChange={(e) => setNewCatLabel(e.target.value)}
                     placeholder="Misal: Langganan, Pulsa..."
-                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#12B76A] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
                   />
                 </div>
                 <div>
@@ -434,7 +434,7 @@ export function NewTransactionModal() {
                       <button 
                         key={e}
                         onClick={() => setNewCatEmoji(e)}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center text-[20px] transition-all ${newCatEmoji === e ? 'bg-[#12B76A] scale-110' : 'bg-[var(--muted)] hover:bg-[var(--border)]'}`}
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center text-[20px] transition-all ${newCatEmoji === e ? 'bg-[#15803D] scale-110' : 'bg-[var(--muted)] hover:bg-[var(--border)]'}`}
                       >
                         {e}
                       </button>
@@ -451,7 +451,7 @@ export function NewTransactionModal() {
                   <button 
                     onClick={handleAddCategory}
                     disabled={!newCatLabel || addCategoryMutation.isPending}
-                    className="flex-2 py-3 px-6 rounded-xl bg-[#12B76A] text-white font-bold text-[14px] disabled:opacity-50"
+                    className="flex-2 py-3 px-6 rounded-xl bg-[#15803D] text-white font-bold text-[14px] disabled:opacity-50"
                   >
                     {addCategoryMutation.isPending ? '...' : 'Tambah'}
                   </button>

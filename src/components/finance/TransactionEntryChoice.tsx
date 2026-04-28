@@ -48,9 +48,9 @@ export function TransactionEntryChoice() {
         <div className="p-6 space-y-4">
           <button
             onClick={() => handleChoice('manual')}
-            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:border-[#12B76A] hover:bg-[#12B76A05] transition-all group active:scale-[0.98]"
+            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:border-[#15803D] hover:bg-[#15803D05] transition-all group active:scale-[0.98]"
           >
-            <div className="w-12 h-12 rounded-xl bg-[rgba(18,183,106,0.1)] text-[#12B76A] flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-[rgba(18,183,106,0.1)] text-[#15803D] flex items-center justify-center shrink-0">
               <Edit3 className="w-6 h-6" />
             </div>
             <div className="flex-1 text-left">
@@ -62,9 +62,9 @@ export function TransactionEntryChoice() {
 
           <button
             onClick={() => handleChoice('scan')}
-            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:border-[#12B76A] hover:bg-[#12B76A05] transition-all group active:scale-[0.98]"
+            className="w-full flex items-center gap-4 p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:border-[#15803D] hover:bg-[#15803D05] transition-all group active:scale-[0.98]"
           >
-            <div className="w-12 h-12 rounded-xl bg-[rgba(18,183,106,0.1)] text-[#12B76A] flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-[rgba(18,183,106,0.1)] text-[#15803D] flex items-center justify-center shrink-0">
               <Scan className="w-6 h-6" />
             </div>
             <div className="flex-1 text-left">

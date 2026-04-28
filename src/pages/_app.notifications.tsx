@@ -50,7 +50,7 @@ export default function NotificationsPage() {
         </div>
         <button 
           onClick={() => markAllReadMutation.mutate()}
-          className="text-[13px] font-bold text-[#12B76A] hover:underline"
+          className="text-[13px] font-bold text-[#15803D] hover:underline"
         >
           Tandai semua
         </button>
@@ -77,7 +77,7 @@ export default function NotificationsPage() {
                 <p className="text-[11px] font-bold text-[var(--text-dim-2)] opacity-50 mt-1 uppercase tracking-wider">{notif.time}</p>
               </div>
               {notif.unread && (
-                <div className="w-2 h-2 rounded-full bg-[#12B76A] mt-2 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-[#15803D] mt-2 shrink-0" />
               )}
             </div>
           ))}

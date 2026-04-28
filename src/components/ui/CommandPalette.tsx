@@ -205,7 +205,7 @@ export function CommandPalette() {
                   onClick={() => { cmd.handler(); setIsOpen(false); }}
                   onMouseEnter={() => setSelectedIndex(index)}
                   className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all text-left group ${
-                    isActive ? 'bg-[#12B76A] text-white shadow-lg' : 'hover:bg-[var(--muted)]'
+                    isActive ? 'bg-[#15803D] text-white shadow-lg' : 'hover:bg-[var(--muted)]'
                   }`}
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${

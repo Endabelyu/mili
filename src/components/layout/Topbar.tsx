@@ -132,7 +132,7 @@ export function Topbar() {
                   <span className="text-[14px] font-bold text-[var(--text)]">Notifikasi</span>
                   <span 
                     onClick={() => markAllReadMutation.mutate()}
-                    className="text-[11px] font-bold text-[#12B76A] cursor-pointer hover:underline"
+                    className="text-[11px] font-bold text-[#15803D] cursor-pointer hover:underline"
                   >
                     Tandai semua
                   </span>
@@ -161,7 +161,7 @@ export function Topbar() {
                         <p className="text-[10px] font-bold text-[var(--text-dim-2)] opacity-60 mt-1 uppercase tracking-wider">{notif.time}</p>
                       </div>
                       {notif.unread && (
-                        <div className="w-2 h-2 rounded-full bg-[#12B76A] mt-2 shrink-0" />
+                        <div className="w-2 h-2 rounded-full bg-[#15803D] mt-2 shrink-0" />
                       )}
                     </div>
                   ))}
@@ -171,7 +171,7 @@ export function Topbar() {
                   <Link 
                     to="/notifications" 
                     onClick={() => setNotifOpen(false)}
-                    className="text-[12px] font-bold text-[#12B76A] hover:underline"
+                    className="text-[12px] font-bold text-[#15803D] hover:underline"
                   >
                     Liat semua notifikasi
                   </Link>

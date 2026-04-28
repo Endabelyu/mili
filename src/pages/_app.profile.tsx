@@ -207,7 +207,7 @@ export default function ProfilePage() {
       <div className="flow-card p-6">
         <div className="flex items-center gap-5">
           <div className="relative group">
-            <div className="w-[72px] h-[72px] rounded-[22px] bg-[#12B76A] flex items-center justify-center text-white text-[28px] font-bold shadow-lg shadow-[#12B76A20]">
+            <div className="w-[72px] h-[72px] rounded-[22px] bg-[var(--accent)] flex items-center justify-center text-white text-[28px] font-bold shadow-lg shadow-[var(--accent)]/20">
               {formatName(user?.name)[0]}
             </div>
             <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border border-[var(--border)] flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
@@ -219,7 +219,7 @@ export default function ProfilePage() {
             <p className="text-[14px] font-medium text-[var(--text-dim-2)] opacity-70">{user?.email || 'arya@example.com'}</p>
             <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-50 mt-1">Bergabung sejak Januari 2026</p>
           </div>
-          <button onClick={() => setIsEditOpen(true)} className="text-[14px] font-bold text-[#12B76A] hover:underline">Edit</button>
+          <button onClick={() => setIsEditOpen(true)} className="text-[14px] font-bold text-[var(--accent)] hover:underline">Edit</button>
         </div>
       </div>
 
@@ -414,7 +414,7 @@ export default function ProfilePage() {
                   <Button
                     type="submit"
                     disabled={isEditLoading}
-                    className={`w-full ${editSuccess ? 'bg-[var(--income)] hover:bg-[#12B76A]' : ''}`}
+                    className={`w-full ${editSuccess ? 'bg-[var(--income)] hover:bg-[#15803D]' : ''}`}
                   >
                     {isEditLoading ? 'Menyimpan...' : editSuccess ? (
                       <span className="flex items-center justify-center">

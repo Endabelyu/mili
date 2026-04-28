@@ -124,7 +124,7 @@ export default function SettingsPage() {
               onClick={() => { if (isDark) toggleDark(); }}
               className={`flex flex-col items-center gap-2.5 p-4 rounded-[16px] border-2 transition-all ${
                 !isDark
-                  ? 'border-[#12B76A] bg-[rgba(18,183,106,0.08)] text-[#12B76A]'
+                  ? 'border-[var(--accent)] bg-[var(--accent-tint)] text-[var(--accent)]'
                   : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--muted)]'
               }`}
             >
@@ -136,7 +136,7 @@ export default function SettingsPage() {
               onClick={() => { if (!isDark) toggleDark(); }}
               className={`flex flex-col items-center gap-2.5 p-4 rounded-[16px] border-2 transition-all ${
                 isDark
-                  ? 'border-[#12B76A] bg-[rgba(18,183,106,0.08)] text-[#12B76A]'
+                  ? 'border-[var(--accent)] bg-[var(--accent-tint)] text-[var(--accent)]'
                   : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--muted)]'
               }`}
             >
@@ -189,7 +189,7 @@ export default function SettingsPage() {
             </div>
             <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
               <input type="checkbox" checked={isDark} onChange={toggleDark} className="sr-only peer" />
-              <div className="w-11 h-6 bg-[var(--muted)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#12B76A]"></div>
+              <div className="w-11 h-6 bg-[var(--muted)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
             </label>
           </div>
         </div>
@@ -332,7 +332,7 @@ function SettingToggleRow({ icon: Icon, color, iconColor, label, subtext, defaul
       </div>
       <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
         <input type="checkbox" checked={checked} onChange={() => setChecked(!checked)} className="sr-only peer" />
-        <div className="w-11 h-6 bg-[var(--muted)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#12B76A]"></div>
+        <div className="w-11 h-6 bg-[var(--muted)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
       </label>
     </div>
   );
@@ -370,12 +370,12 @@ function PickerSheet({ title, onClose, options, selected, onSelect }: {
               onClick={() => onSelect(opt.value)}
               className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all text-left ${
                 selected === opt.value
-                  ? 'bg-[rgba(18,183,106,0.08)]'
+                  ? 'bg-[var(--accent-tint)]'
                   : 'hover:bg-[var(--muted)]'
               }`}
             >
               <div className="flex-1 min-w-0">
-                <p className={`text-[15px] font-bold ${selected === opt.value ? 'text-[#12B76A]' : 'text-[var(--text)]'}`}>
+                <p className={`text-[15px] font-bold ${selected === opt.value ? 'text-[var(--accent)]' : 'text-[var(--text)]'}`}>
                   {opt.label}
                 </p>
                 {opt.sublabel && (
@@ -383,7 +383,7 @@ function PickerSheet({ title, onClose, options, selected, onSelect }: {
                 )}
               </div>
               {selected === opt.value && (
-                <div className="w-6 h-6 rounded-full bg-[#12B76A] flex items-center justify-center shrink-0">
+                <div className="w-6 h-6 rounded-full bg-[var(--accent)] flex items-center justify-center shrink-0">
                   <Check className="w-4 h-4 text-white" strokeWidth={3} />
                 </div>
               )}

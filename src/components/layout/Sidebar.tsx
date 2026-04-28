@@ -82,7 +82,7 @@ function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: Reac
       className={`
         flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-bold transition-all duration-200
         ${active 
-          ? 'bg-[#12B76A15] text-[#12B76A]' 
+          ? 'bg-[var(--accent-tint)] text-[var(--accent)]' 
           : 'text-[var(--text-dim)] hover:bg-[var(--muted)] hover:text-[var(--text)]'}
       `}
     >
