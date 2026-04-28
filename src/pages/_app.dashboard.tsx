@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { transactionsApi, reportsApi, targetsApi, scheduledApi, accountsApi, type Transaction, type ScheduledTransaction, type Target } from '../api/client';
+import { transactionsApi, reportsApi, targetsApi, scheduledApi, accountsApi, budgetsApi, type Transaction, type ScheduledTransaction, type Target, type Budget } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
 import { usePreferences } from '../hooks/usePreferences';
 import { TrendingUp } from 'lucide-react';
@@ -26,37 +26,50 @@ export default function DashboardPage() {
   const { data: txnsData, isLoading: txnsLoading } = useQuery({
     queryKey: queryKeys.transactions.list({ limit: 5 }),
     queryFn: () => transactionsApi.list({ limit: 5 }),
+    enabled: !!user,
   });
 
   const { data: summaryData, isLoading: summaryLoading } = useQuery({
     queryKey: queryKeys.reports.summary(),
     queryFn: () => reportsApi.summary(),
+    enabled: !!user,
   });
 
   const { data: targetsData, isLoading: targetsLoading } = useQuery({
     queryKey: ['targets'],
     queryFn: () => targetsApi.list(),
+    enabled: !!user,
   });
 
   const { data: catData, isLoading: catLoading } = useQuery({
     queryKey: queryKeys.reports.byCategory(),
     queryFn: () => reportsApi.byCategory(),
+    enabled: !!user,
+  });
+  
+  const { data: budgetsData, isLoading: budgetsLoading } = useQuery({
+    queryKey: ['budgets'],
+    queryFn: () => budgetsApi.list(),
+    enabled: !!user,
   });
 
   const { data: scheduledData, isLoading: scheduledLoading } = useQuery({
     queryKey: ['scheduled'],
     queryFn: () => scheduledApi.list(),
+    enabled: !!user,
   });
 
   const { data: accountsData } = useQuery({
     queryKey: ['accounts'],
     queryFn: () => accountsApi.list(),
+    enabled: !!user,
   });
 
   const recentTransactions = txnsData?.items || [];
   const targets = targetsData || [];
+  const budgets = budgetsData || [];
   const scheduled = scheduledData || [];
-  const topCategories = catData?.slice(0, 5) || [];
+  const topCategories = catData?.slice(0, 3) || [];
   const accounts = accountsData || [];
   
   const income = summaryData?.income ?? 0;
@@ -86,7 +99,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── Net Worth Hero Card (Real Data) ─── */}
-      <div className="relative rounded-[20px] p-6 text-white overflow-hidden shadow-lg shadow-[#12B76A20]" style={{ background: 'linear-gradient(135deg, #66C68F 0%, #12B76A 100%)', border: 'none' }}>
+      <div className="relative rounded-[20px] p-6 text-white overflow-hidden shadow-lg shadow-[var(--accent)]/20" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)', border: 'none' }}>
         <div className="flex justify-between items-start">
           <div>
             <p className="text-[12px] font-bold opacity-80 tracking-[0.05em] uppercase">{t('dashboard.netWorth')}</p>
@@ -157,56 +170,119 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ─── Pinned Targets (Real Data) ─── */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[14px] font-bold text-[var(--text)]">{t('dashboard.pinnedTargets')}</h3>
-          <Link to="/targets" className="text-[12px] font-bold text-[var(--accent)] hover:underline">{t('common.viewAll')}</Link>
-        </div>
-        
-        {targetsLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="flow-card p-5 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl skeleton" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 rounded w-1/3 skeleton" />
-                    <div className="h-2 rounded w-1/4 skeleton" />
+      {/* ─── Pinned Targets & Budgets (Real Data) ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left Column: Targets */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[14px] font-bold text-[var(--text)]">{t('dashboard.pinnedTargets')}</h3>
+            <Link to="/targets" className="text-[12px] font-bold text-[var(--accent)] hover:underline">{t('common.viewAll')}</Link>
+          </div>
+          
+          {targetsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flow-card p-5 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl skeleton" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 rounded w-1/3 skeleton" />
+                      <div className="h-2 rounded w-1/4 skeleton" />
+                    </div>
                   </div>
+                  <div className="h-1.5 w-full rounded-full skeleton" />
                 </div>
-                <div className="h-1.5 w-full rounded-full skeleton" />
-                <div className="flex justify-between">
-                  <div className="h-3 w-16 rounded skeleton" />
-                  <div className="h-3 w-16 rounded skeleton" />
+              ))}
+            </div>
+          ) : targets.length === 0 ? (
+            <div className="text-center py-10 px-6 bg-[var(--card)] rounded-[20px] border border-[var(--border)]">
+              <p className="text-[13px] font-bold text-[var(--text)] mb-1">Belum ada target</p>
+              <p className="text-[11px] text-[var(--text-dim-2)]">Mulai tentukan mimpi finansial Anda sekarang.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {targets.slice(0, 3).map((t: Target) => {
+                const progress = Math.min(Math.round((parseFloat(String(t.currentAmount)) / parseFloat(String(t.targetAmount))) * 100), 100);
+                return (
+                  <TargetCard 
+                    key={t.id}
+                    icon={() => <span className="text-[18px]">{t.icon || '🎯'}</span>} 
+                    color={t.color} 
+                    label={t.name} 
+                    progress={progress} 
+                    collected={formatMoney(parseFloat(String(t.currentAmount)))} 
+                    target={formatMoney(parseFloat(String(t.targetAmount)))} 
+                  />
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Right Column: Budgets */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[14px] font-bold text-[var(--text)]">{t('budget.title')}</h3>
+            <Link to="/budget" className="text-[12px] font-bold text-[var(--accent)] hover:underline">{t('common.viewAll')}</Link>
+          </div>
+
+          {budgetsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flow-card p-5 space-y-4">
+                  <div className="h-4 rounded w-1/3 skeleton" />
+                  <div className="h-2 rounded w-full skeleton" />
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : targets.length === 0 ? (
-          <div className="text-center py-8 px-6 bg-[var(--card)] rounded-[20px] border border-[var(--border)]">
-            <p className="text-[13px] font-bold text-[var(--text)] mb-1">Belum ada target</p>
-            <p className="text-[11px] text-[var(--text-dim-2)]">Mulai tentukan mimpi finansial Anda sekarang.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {targets.slice(0, 3).map((t: Target) => {
-              const progress = Math.min(Math.round((parseFloat(String(t.currentAmount)) / parseFloat(String(t.targetAmount))) * 100), 100);
-              return (
-                <TargetCard 
-                  key={t.id}
-                  icon={() => <span className="text-[18px]">{t.icon || '🎯'}</span>} 
-                  color={t.color} 
-                  label={t.name} 
-                  progress={progress} 
-                  collected={formatMoney(parseFloat(String(t.currentAmount)))} 
-                  target={formatMoney(parseFloat(String(t.targetAmount)))} 
-                />
-              );
-            })}
-          </div>
-        )}
-      </section>
+              ))}
+            </div>
+          ) : budgets.length === 0 ? (
+            <div className="text-center py-10 px-6 bg-[var(--card)] rounded-[20px] border border-[var(--border)]">
+              <p className="text-[13px] font-bold text-[var(--text)] mb-1">Belum ada anggaran</p>
+              <p className="text-[11px] text-[var(--text-dim-2)]">Buat anggaran per kategori untuk mengontrol belanja.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {budgets.slice(0, 3).map((b: Budget) => {
+                const spent = parseFloat(String(b.spent || 0));
+                const limit = parseFloat(String(b.limitAmount || 0));
+                const pct = b.percentageUsed || 0;
+                const cat = b.category;
+                const emoji = cat?.icon || FALLBACK_EMOJI[b.categoryId] || '📦';
+                const color = cat?.color || 'var(--accent)';
+                const label = cat?.label || b.categoryId;
+
+                return (
+                  <div 
+                    key={b.id} 
+                    className="flow-card p-5 cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]"
+                    onClick={() => window.location.href = '/budget'}
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15`, color: color }}>
+                        <span className="text-[18px]">{emoji}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
+                        <p className="text-[12px] font-bold mt-0.5" style={{ color: color }}>{pct}%</p>
+                      </div>
+                    </div>
+                    <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden mb-3">
+                      <div 
+                        className="h-full rounded-full transition-all duration-700 ease-out" 
+                        style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }} 
+                      />
+                    </div>
+                    <div className="flex justify-between items-center text-[11px] font-bold">
+                      <span className="text-[var(--text-dim)]">{formatMoney(spent)}</span>
+                      <span className="text-[var(--text-dim-2)] opacity-60">{formatMoney(limit)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* ─── Top Categories (Real Data) ─── */}
@@ -274,7 +350,7 @@ export default function DashboardPage() {
                 <p className="text-[11px]">Tambahkan transaksi terjadwal.</p>
               </div>
             ) : (
-              scheduled.slice(0, 4).map((item: ScheduledTransaction) => {
+              scheduled.slice(0, 3).map((item: ScheduledTransaction) => {
                 const diff = new Date(item.nextRunDate).getTime() - new Date().getTime();
                 const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                 const dueStr = days > 0 ? `${days} hari lagi` : days === 0 ? 'Hari ini' : `${Math.abs(days)} hari lalu`;
@@ -284,7 +360,7 @@ export default function DashboardPage() {
                     key={item.id}
                     icon={() => <span className="text-[18px]">{emoji}</span>} 
                     color="bg-[rgba(18,183,106,0.1)]" 
-                    iconColor="text-[#12B76A]" 
+                    iconColor="text-[#15803D]" 
                     label={item.description || item.category?.label || 'Tagihan'} 
                     amount={formatMoney(parseFloat(String(item.amount)))} 
                     due={dueStr} 
