@@ -65,21 +65,11 @@ export function InstallPrompt() {
       <div className="flex items-start gap-4">
         {/* App Icon */}
         <div className="flex-shrink-0">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
-            <svg
-              className="w-8 h-8 text-white"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="2" y="5" width="20" height="14" rx="2" />
-              <line x1="2" y1="10" x2="22" y2="10" />
-              <text x="12" y="17" textAnchor="middle" fill="currentColor" fontSize="8" fontWeight="bold">$</text>
-            </svg>
-          </div>
+          <img 
+            src="/icon-192.png" 
+            alt="Mili Logo" 
+            className="w-14 h-14 rounded-xl shadow-md object-cover"
+          />
         </div>
 
         {/* Content */}
@@ -87,7 +77,7 @@ export function InstallPrompt() {
           <div className="flex items-start justify-between gap-2">
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-base">
-                Install Finance Tracker
+                Install Mili
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                 Add to your home screen for quick access
