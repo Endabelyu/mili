@@ -6,6 +6,7 @@ import LoginPage from './pages/auth.login';
 import DashboardPage from './pages/_app.dashboard';
 import { AppLayout } from './components/layout/AppLayout';
 import { ConsentBanner } from './components/ui/ConsentBanner';
+import OnboardingOverlay from './components/OnboardingOverlay';
 
 // Lazy-loaded pages
 const TransactionsPage = React.lazy(() => import('./pages/_app.transactions'));
@@ -86,6 +87,7 @@ export default function App() {
           </div>
         )}
       >
+        <OnboardingOverlay />
         <ConsentBanner />
         <Routes>
           {/* Auth routes — guests only */}
