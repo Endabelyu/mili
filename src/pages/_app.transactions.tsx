@@ -250,8 +250,7 @@ function TransactionRow({ categoryLabel, categoryIcon, label, amount, isIncome, 
       <CategoryIcon 
         category={categoryLabel} 
         icon={categoryIcon} 
-        size="md" 
-        className="sm:w-12 sm:h-12"
+        size="lg" 
       />
       <div className="flex-1 min-w-0 pr-2 sm:pr-4">
         <p className="text-[14px] sm:text-[15px] font-bold text-[var(--text)] truncate">{label}</p>

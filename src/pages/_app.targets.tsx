@@ -40,7 +40,16 @@ function CircularProgress({ percentage, color, icon }: { percentage: number; col
   );
 }
 
-const EMOJI_LIST = ['🎯', '🏠', '🚗', '✈️', '💻', '🎓', '💍', '💼', '🏖️', '📈'];
+const EMOJI_LIST = [
+  'category_savings', 
+  'category_travel', 
+  'category_wedding', 
+  'category_investment', 
+  'category_education', 
+  'category_shopping', 
+  'category_transport', 
+  'category_general'
+];
 
 export default function TargetsPage() {
   const { formatMoney } = usePreferences();
@@ -56,7 +65,7 @@ export default function TargetsPage() {
   const [currentAmount, setCurrentAmount] = useState('');
   const [deadline, setDeadline] = useState('');
   const [color, setColor] = useState('#15803D');
-  const [icon, setIcon] = useState('🎯');
+  const [icon, setIcon] = useState('category_savings');
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
 
   // Alert Modal state
@@ -119,7 +128,7 @@ export default function TargetsPage() {
     setCurrentAmount('');
     setDeadline('');
     setColor('#15803D');
-    setIcon('🎯');
+    setIcon('category_savings');
     setSelectedTarget(null);
     setSaving(false);
     setIsModalOpen(false);

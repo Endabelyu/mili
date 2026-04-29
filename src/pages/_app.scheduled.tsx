@@ -239,7 +239,6 @@ export default function ScheduledPage() {
               >
                 <CategoryIcon 
                   category={item.category?.label || item.categoryId} 
-                  icon={item.category?.icon} 
                   size="lg" 
                 />
                 <div className="flex-1 min-w-0 pr-4">
@@ -341,7 +340,7 @@ export default function ScheduledPage() {
                 >
                   <option value="">Pilih Kategori...</option>
                   {filteredCategories.map((c: Category) => (
-                    <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
+                    <option key={c.id} value={c.id}>{c.label}</option>
                   ))}
                 </select>
               </div>

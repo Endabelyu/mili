@@ -308,7 +308,7 @@ export default function DashboardPage() {
                 <div key={cat.categoryId} className="flex items-center gap-4">
                   <CategoryIcon 
                     category={cat.label} 
-                    size="md" 
+                    size="lg" 
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1.5">
@@ -404,7 +404,7 @@ export default function DashboardPage() {
                   <CategoryIcon 
                     category={tx.category?.label || tx.categoryId} 
                     icon={tx.category?.icon} 
-                    size="md" 
+                    size="lg" 
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-bold text-[var(--text)] truncate">{tx.description || tx.category?.label}</p>
