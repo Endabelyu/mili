@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { BottomNav } from './BottomNav';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { InstallPrompt, OfflineIndicator, UpdatePrompt } from '@app/components/pwa';
+import { InstallPrompt, OfflineIndicator, UpdatePrompt, IOSInstallPrompt } from '@app/components/pwa';
 import { lazy, Suspense } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
@@ -64,6 +64,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* PWA Components */}
       <InstallPrompt />
+      <IOSInstallPrompt />
       <OfflineIndicator />
       <UpdatePrompt />
     </div>
