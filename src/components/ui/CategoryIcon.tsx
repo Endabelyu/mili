@@ -54,31 +54,32 @@ export const getCategoryStyles = (categoryName: string) => {
   return colors.category.default;
 };
 
-// Map generic names to fun emojis per the FlowState design
-export const getCategoryEmoji = (categoryName: string) => {
+// Map generic names to specific 3D icon files
+export const getCategory3DIcon = (categoryName: string) => {
   const name = categoryName.toLowerCase();
-  if (name.includes('makan')) return '🍽️';
-  if (name.includes('kopi')) return '☕';
-  if (name.includes('belanja')) return '🛒';
-  if (name.includes('transport')) return '🛵';
-  if (name.includes('sehat')) return '🩺';
-  if (name.includes('sekolah')) return '🎒';
-  if (name.includes('tagihan')) return '📄';
-  if (name.includes('hiburan')) return '🎬';
-  if (name.includes('gaji')) return '💼';
-  if (name.includes('invest')) return '💹';
-  if (name.includes('rumah')) return '🏠';
-  if (name.includes('mobil')) return '🚗';
-  if (name.includes('anak') || name.includes('bayi')) return '👶';
-  if (name.includes('hutang')) return '⛓️';
   
-  return '✨'; // default fun emoji
+  if (name.includes('makan') || name.includes('minum') || name.includes('kopi') || name.includes('food')) return 'category_food';
+  if (name.includes('belanja') || name.includes('shop') || name.includes('pakaian')) return 'category_shopping';
+  if (name.includes('transport') || name.includes('car') || name.includes('bensin') || name.includes('parkir') || name.includes('otomotif')) return 'category_transport';
+  if (name.includes('sehat') || name.includes('med') || name.includes('gym') || name.includes('health')) return 'category_health';
+  if (name.includes('edu') || name.includes('sekolah') || name.includes('belajar') || name.includes('book')) return 'category_education';
+  if (name.includes('bill') || name.includes('util') || name.includes('tagihan') || name.includes('listrik') || name.includes('internet')) return 'category_bills';
+  if (name.includes('fun') || name.includes('hiburan') || name.includes('hobby') || name.includes('hobby')) return 'category_entertainment';
+  if (name.includes('travel') || name.includes('liburan') || name.includes('jalan')) return 'category_travel';
+  if (name.includes('salary') || name.includes('gaji') || name.includes('bonus') || name.includes('profit')) return 'category_salary';
+  if (name.includes('invest') || name.includes('saham')) return 'category_investment';
+  if (name.includes('goal') || name.includes('tabungan') || name.includes('savings')) return 'category_savings';
+  if (name.includes('fam') || name.includes('keluarga') || name.includes('anak') || name.includes('bayi')) return 'category_family';
+  if (name.includes('debt') || name.includes('hutang') || name.includes('cicilan') || name.includes('loan')) return 'category_debt';
+  if (name.includes('wedding') || name.includes('nikah')) return 'category_wedding';
+  
+  return 'category_general'; // generic 3D icon fallback
 };
 
 export function CategoryIcon({ category, icon, size = 'md', className = '' }: CategoryIconProps) {
   const [imgError, setImgError] = useState(false);
   const styles = getCategoryStyles(category);
-  const emoji = getCategoryEmoji(category);
+  const threeDIcon = icon?.startsWith('category_') ? icon : getCategory3DIcon(category);
   
   const sizeClasses = {
     xs: 'w-8 h-8 text-[14px] rounded-[10px]',
@@ -88,23 +89,21 @@ export function CategoryIcon({ category, icon, size = 'md', className = '' }: Ca
     xl: 'w-14 h-14 text-[26px] rounded-[18px]',
   };
 
-  const isCustomIcon = icon && icon.startsWith('category_') && !imgError;
-
   return (
     <div
       className={`flex items-center justify-center flex-shrink-0 ${sizeClasses[size]} ${className} overflow-hidden`}
       style={{ backgroundColor: styles.bg, color: styles.text }}
       title={category}
     >
-      {isCustomIcon ? (
+      {!imgError ? (
         <img 
-          src={`/categories/${icon}.png`} 
+          src={`/categories/${threeDIcon}.png`} 
           alt={category} 
           className="w-full h-full object-cover"
           onError={() => setImgError(true)}
         />
       ) : (
-        <span>{icon || emoji}</span>
+        <span className="text-[1.2em]">✨</span> // ultimate fallback if image fails
       )}
     </div>
   );
