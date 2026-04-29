@@ -50,7 +50,7 @@ export function NewTransactionModal() {
     }, 300);
   };
 
-  const [editingTxn, setEditingTxn] = useState<any>(null);
+  const [editingTxn, setEditingTxn] = useState<Transaction | null>(null);
 
   // Fetch transaction if editing
   const { data: txnData } = useQuery({
@@ -62,7 +62,7 @@ export function NewTransactionModal() {
   // Populate state when editing
   useEffect(() => {
     if (txnData && editId) {
-      setType(txnData.type as any);
+      setType(txnData.type as 'expense' | 'income' | 'transfer');
       setAmount(String(Math.abs(parseFloat(String(txnData.amount))).toFixed(0)));
       setSelectedCategory(txnData.categoryId ?? null);
       setSelectedAccount(txnData.accountId ?? null);
@@ -164,7 +164,7 @@ export function NewTransactionModal() {
   };
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => transactionsApi.create(data),
+    mutationFn: (data: Partial<Transaction>) => transactionsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['reports'] });

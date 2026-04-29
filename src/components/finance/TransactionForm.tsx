@@ -16,7 +16,7 @@ export function TransactionForm({ transaction, categories, accounts = [], onSucc
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!transaction;
 
-  const [type, setType] = useState<'income' | 'expense' | 'transfer'>((transaction?.type as any) || 'expense');
+  const [type, setType] = useState<'income' | 'expense' | 'transfer'>((transaction?.type as 'income' | 'expense' | 'transfer') || 'expense');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Filter categories by selected type
@@ -75,9 +75,9 @@ export function TransactionForm({ transaction, categories, accounts = [], onSucc
       const payload = { type, amount, categoryId, accountId, toAccountId, description, date };
 
       if (isEditing && transaction?.id) {
-        await transactionsApi.update(transaction.id, payload as any);
+        await transactionsApi.update(transaction.id, payload as Partial<Transaction>);
       } else {
-        await transactionsApi.create(payload as any);
+        await transactionsApi.create(payload as Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>);
       }
 
       onSuccess();
