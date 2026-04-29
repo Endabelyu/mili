@@ -164,7 +164,7 @@ export function NewTransactionModal() {
   };
 
   const saveMutation = useMutation({
-    mutationFn: (data: Partial<Transaction>) => transactionsApi.create(data),
+    mutationFn: (data: Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => transactionsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['reports'] });
@@ -212,9 +212,9 @@ export function NewTransactionModal() {
       type: type,
       amount: amount, 
       categoryId: selectedCategory,
-      accountId: selectedAccount || undefined,
-      toAccountId: toAccountId || undefined,
-      description: description || undefined,
+      accountId: selectedAccount || null,
+      toAccountId: toAccountId || null,
+      description: description || null,
       date: editingTxn?.date ? new Date(editingTxn.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
     };
 
