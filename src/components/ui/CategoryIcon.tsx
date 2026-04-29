@@ -4,7 +4,7 @@ import { colors } from '../../styles/design-tokens';
 interface CategoryIconProps {
   category: string;
   icon?: string | null;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
@@ -81,9 +81,11 @@ export function CategoryIcon({ category, icon, size = 'md', className = '' }: Ca
   const emoji = getCategoryEmoji(category);
   
   const sizeClasses = {
-    sm: 'w-8 h-8 text-[14px] rounded-[10px]',
-    md: 'w-[44px] h-[44px] text-[20px] rounded-[14px]',
-    lg: 'w-14 h-14 text-[26px] rounded-[18px]',
+    xs: 'w-8 h-8 text-[14px] rounded-[10px]',
+    sm: 'w-9 h-9 text-[16px] rounded-[12px]',
+    md: 'w-10 h-10 text-[18px] rounded-[14px]',
+    lg: 'w-12 h-12 text-[22px] rounded-[16px]',
+    xl: 'w-14 h-14 text-[26px] rounded-[18px]',
   };
 
   const isCustomIcon = icon && icon.startsWith('category_') && !imgError;

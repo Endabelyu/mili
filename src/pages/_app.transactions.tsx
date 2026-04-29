@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../lib/query-keys';
 import { transactionsApi, reportsApi, type Transaction } from '../api/client';
@@ -34,6 +34,7 @@ function groupByDate(items: Transaction[]) {
 export default function TransactionsPage() {
   const [view, setView] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('daily');
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const search = searchParams.get('search') || undefined;
   const { formatMoney, t } = usePreferences();
 
@@ -222,6 +223,7 @@ export default function TransactionsPage() {
                       amount={parseFloat(String(tx.amount))}
                       isIncome={tx.type === 'income'}
                       formatMoney={formatMoney}
+                      onClick={() => navigate(`?edit_transaction_id=${tx.id}`)}
                     />
                   ))}
                 </div>
@@ -235,16 +237,21 @@ export default function TransactionsPage() {
 }
 
 // ─── Transaction Row Component ───────────────────────────────────────────────
-function TransactionRow({ categoryLabel, categoryIcon, label, amount, isIncome, formatMoney }: {
+function TransactionRow({ categoryLabel, categoryIcon, label, amount, isIncome, formatMoney, onClick }: {
   categoryLabel: string; categoryIcon?: string | null; label: string; amount: number; isIncome?: boolean;
   formatMoney: (n: number) => string;
+  onClick: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]">
+    <div 
+      onClick={onClick}
+      className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]"
+    >
       <CategoryIcon 
         category={categoryLabel} 
         icon={categoryIcon} 
         size="md" 
+        className="sm:w-12 sm:h-12"
       />
       <div className="flex-1 min-w-0 pr-2 sm:pr-4">
         <p className="text-[14px] sm:text-[15px] font-bold text-[var(--text)] truncate">{label}</p>

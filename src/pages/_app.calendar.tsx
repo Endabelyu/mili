@@ -7,6 +7,7 @@ import type { Transaction } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
 import dayjs from 'dayjs';
 import 'dayjs/locale/id';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 dayjs.locale('id');
 
@@ -164,9 +165,11 @@ export default function CalendarPage() {
                   {dayData.items.map(txn => (
                     <div key={txn.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[12px] bg-[var(--muted)] flex items-center justify-center text-[18px]">
-                          {txn.category?.icon || '📦'}
-                        </div>
+                        <CategoryIcon 
+                          category={txn.category?.label || 'Other'} 
+                          icon={txn.category?.icon} 
+                          size="md" 
+                        />
                         <div>
                           <p className="text-[14px] font-bold text-[var(--text)]">{txn.category?.label || 'Other'}</p>
                           {txn.description && <p className="text-[11px] font-medium text-[var(--text-dim-2)]">{txn.description}</p>}
@@ -232,9 +235,11 @@ export default function CalendarPage() {
                 {selectedDay.items.map((txn: Transaction) => (
                   <div key={txn.id} className="flow-card p-4 flex items-center justify-between hover:bg-[var(--muted)]/50 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center text-[20px] shadow-sm">
-                        {txn.category?.icon || '📦'}
-                      </div>
+                      <CategoryIcon 
+                        category={txn.category?.label || 'Other'} 
+                        icon={txn.category?.icon} 
+                        size="md" 
+                      />
                       <div>
                         <p className="text-[14px] font-bold text-[var(--text)]">{txn.category?.label || 'Other'}</p>
                         <p className="text-[11px] font-medium text-[var(--text-dim-2)]">

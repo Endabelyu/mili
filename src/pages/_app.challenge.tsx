@@ -1,5 +1,6 @@
 import { ArrowLeft, Share2, CheckCircle2, Circle, Flame, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 export default function ChallengeDetailPage() {
   const navigate = useNavigate();
@@ -21,9 +22,12 @@ export default function ChallengeDetailPage() {
       {/* Hero Banner */}
       <div className="rounded-[24px] p-6 text-white relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #ff914d 0%, #f97316 100%)', border: 'none' }}>
          <div className="relative z-10">
-           <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl mb-4 border border-white/30">
-             🚫
-           </div>
+            <CategoryIcon 
+              category="challenge" 
+              icon="🚫" 
+              size="xl" 
+              className="mb-4 bg-white/20 border border-white/30 backdrop-blur-sm"
+            />
            <h2 className="text-[26px] font-bold tracking-[-0.02em] leading-none mb-1.5">
              No Spend Weekend
            </h2>
@@ -80,7 +84,11 @@ export default function ChallengeDetailPage() {
         <div className="flow-card p-5 flex items-center justify-between border-[1.5px]" style={{ borderColor: 'var(--accent)', background: 'var(--accent-tint)' }}>
            <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-inner" style={{ background: 'var(--accent)' }}>
-                <span className="text-xl">💰</span>
+              <CategoryIcon 
+                category="salary" 
+                icon="💰" 
+                size="md" 
+              />
               </div>
               <div>
                 <p className="text-[17px] font-bold text-[var(--text)] tracking-[-0.01em] tabular-nums">500 Duit Coins</p>
@@ -98,7 +106,11 @@ export default function ChallengeDetailPage() {
         </div>
         <div className="flow-card p-5 flex items-start gap-4">
            <div className="w-10 h-10 rounded-full bg-[var(--muted)] flex items-center justify-center shrink-0 text-xl">
-             🧘‍♂️
+            <CategoryIcon 
+              category="fun" 
+              icon="🧘‍♂️" 
+              size="md" 
+            />
            </div>
            <div>
              <p className="text-[14px] font-bold text-[var(--text)]">Zero spent!</p>

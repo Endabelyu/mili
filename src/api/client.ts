@@ -176,6 +176,8 @@ export const scheduledApi = {
 export const transactionsApi = {
   list: (params?: { limit?: number; page?: number; type?: string; category?: string; search?: string; month?: string }) =>
     request<{ items: Transaction[], pagination: { page: number; limit: number; total: number; totalPages: number } }>('/api/transactions', { params }),
+  get: (id: string) =>
+    request<Transaction>(`/api/transactions/${id}`),
   create: (data: Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) =>
     request<Transaction>('/api/transactions', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Transaction>) =>

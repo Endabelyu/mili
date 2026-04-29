@@ -15,13 +15,8 @@ import {
 } from 'recharts';
 import { transactionsApi } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
-// ─── Fallback emoji map ──────────────────────────────────────────────────────
-const FALLBACK_EMOJI: Record<string, string> = {
-  salary: '💰', freelance: '💻', investments: '📈', gifts: '🎁', 'other-income': '💵',
-  food: '🍜', transport: '🚗', housing: '🏠', utilities: '💡', entertainment: '🎬',
-  shopping: '🛍️', healthcare: '💊', education: '📚', travel: '✈️', 'other-expense': '📦',
-};
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
@@ -50,7 +45,7 @@ export default function AnalyticsPage() {
 
   // Aggregate by category
   const categories = useMemo(() => {
-    const catMap = new Map<string, { label: string; amount: number; emoji: string; color: string }>();
+    const catMap = new Map<string, { label: string; amount: number; icon: string | null | undefined; color: string }>();
     const colors = ['#F79009', '#7F56D9', '#15803D', '#0BA5EC', '#F04438', '#EE46BC', '#334155', '#15B79E', '#A16207', '#4F46E5'];
 
     let colorIndex = 0;
@@ -58,13 +53,13 @@ export default function AnalyticsPage() {
       const amount = parseFloat(String(tx.amount));
       const catId = tx.categoryId;
       const label = tx.category?.label || catId;
-      const emoji = tx.category?.icon || FALLBACK_EMOJI[catId] || '📦';
+      const icon = tx.category?.icon;
       const catColor = tx.category?.color || colors[colorIndex % colors.length];
 
       if (catMap.has(catId)) {
         catMap.get(catId)!.amount += amount;
       } else {
-        catMap.set(catId, { label, amount, emoji, color: catColor });
+        catMap.set(catId, { label, amount, icon, color: catColor });
         if (!tx.category?.color) colorIndex++;
       }
     });
@@ -237,9 +232,11 @@ export default function AnalyticsPage() {
               return (
                 <div key={cat.label} className="flex items-center gap-4 px-6 py-5">
                   <span className="text-[13px] font-bold text-[var(--text-dim-2)] w-5 text-center tabular-nums">{i + 1}</span>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[22px] shrink-0" style={{ backgroundColor: `${cat.color}15` }}>
-                    {cat.emoji}
-                  </div>
+                  <CategoryIcon 
+                    category={cat.label} 
+                    icon={cat.icon} 
+                    size="md" 
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-2">
                       <p className="text-[14px] font-bold text-[var(--text)]">{cat.label}</p>

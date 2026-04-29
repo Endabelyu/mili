@@ -4,6 +4,7 @@ import { budgetsApi } from '@app/api/client';
 import { usePreferences } from '@app/hooks/usePreferences';
 import { Tag, Calendar, Target, Loader2 } from 'lucide-react';
 import type { Budget, Category } from '@app/types';
+import { CategoryIcon } from '../ui/CategoryIcon';
 
 interface BudgetWithSpending extends Budget {
   category?: Category;
@@ -129,8 +130,16 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
             `}
           >
             <div className="flex items-center gap-3">
-              <div className="w-5 h-5 flex items-center justify-center text-[18px]">
-                {selectedCategory ? selectedCategory.icon || '📦' : <Tag className="w-4 h-4 text-gray-400" />}
+              <div className="shrink-0">
+                {selectedCategory ? (
+                  <CategoryIcon 
+                    category={selectedCategory.label} 
+                    icon={selectedCategory.icon} 
+                    size="md" 
+                  />
+                ) : (
+                  <Tag className="w-4 h-4 text-gray-400" />
+                )}
               </div>
               <span className={selectedCategory ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'}>
                 {selectedCategory ? selectedCategory.label : 'Select a category'}
@@ -159,7 +168,11 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
                       ${selectedCategoryId === category.id ? 'bg-[var(--accent-tint)] text-[var(--accent)]' : 'text-[var(--text)] hover:bg-[var(--muted)]'}
                     `}
                   >
-                    <span className="text-[18px] w-6 flex justify-center">{category.icon || '📦'}</span>
+                    <CategoryIcon 
+                      category={category.label} 
+                      icon={category.icon} 
+                      size="md" 
+                    />
                     <span>{category.label}</span>
                   </button>
                 ))}

@@ -5,14 +5,10 @@ import { budgetsApi, categoriesApi, type Budget } from '../api/client';
 import { Plus, X, ArrowLeft, Target } from 'lucide-react';
 import { usePreferences } from '../hooks/usePreferences';
 import { BudgetForm } from '../components/finance/BudgetForm';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 
-// ─── Fallback emoji map (keyed by BE category.id) ───────────────────────────
-const FALLBACK_EMOJI: Record<string, string> = {
-  salary: '💰', freelance: '💻', investments: '📈', gifts: '🎁', 'other-income': '💵',
-  food: '🍜', transport: '🚗', housing: '🏠', utilities: '💡', entertainment: '🎬',
-  shopping: '🛍️', healthcare: '💊', education: '📚', travel: '✈️', 'other-expense': '📦',
-};
+
 
 export default function BudgetPage() {
   const { formatMoney, t } = usePreferences();
@@ -159,7 +155,6 @@ export default function BudgetPage() {
               const limit = parseFloat(String(budget.limitAmount || 0));
               const pct = budget.percentageUsed || 0;
               const cat = budget.category;
-              const emoji = cat?.icon || FALLBACK_EMOJI[budget.categoryId] || '📦';
               const color = cat?.color || '#15803D';
               const label = cat?.label || budget.categoryId;
 
@@ -170,9 +165,11 @@ export default function BudgetPage() {
                   onClick={() => { setSelectedBudget(budget); setIsModalOpen(true); }}
                 >
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-[20px] flex items-center justify-center text-[28px] shrink-0 bg-[var(--muted)] border border-[var(--border)]">
-                      {emoji}
-                    </div>
+                    <CategoryIcon 
+                      category={label} 
+                      icon={cat?.icon} 
+                      size="lg" 
+                    />
                     <div className="flex-1 min-w-0 pr-4">
                       <div className="flex justify-between items-center mb-1">
                         <p className="text-[17px] font-bold text-[var(--text)] truncate">{label}</p>

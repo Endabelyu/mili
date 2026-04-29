@@ -5,6 +5,7 @@ import { accountsApi } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
 import { usePreferences } from '../hooks/usePreferences';
 import type { Account } from '../types';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 // ─── Donut Chart Component ───────────────────────────────────────────────────
 interface Segment {
@@ -300,9 +301,11 @@ export default function AccountsPage() {
                       onClick={() => handleEdit(acc)}
                       className="flex items-center gap-5 p-5 hover:bg-[var(--muted)] transition-colors cursor-pointer group"
                     >
-                      <div className="w-14 h-14 rounded-[20px] flex items-center justify-center shrink-0 shadow-sm" style={{ backgroundColor: `${acc.color}15` }}>
-                        <Icon className="w-7 h-7" style={{ color: acc.color }} strokeWidth={2} />
-                      </div>
+                      <CategoryIcon 
+                        category={acc.name} 
+                        icon={acc.type} // Using type as icon key for consistency
+                        size="lg" 
+                      />
                       
                       <div className="flex-1 min-w-0 pr-4">
                         <div className="flex items-center gap-2">

@@ -28,11 +28,13 @@ export function NewTransactionModal() {
   const [toAccountId, setToAccountId] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showAccountSelect, setShowAccountSelect] = useState(false);
   const [showToAccountSelect, setShowToAccountSelect] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const isOpen = searchParams.get('new_transaction') === 'true';
+  const isOpen = searchParams.get('new_transaction') === 'true' || searchParams.get('edit_transaction_id') !== null;
+  const editId = searchParams.get('edit_transaction_id');
 
   const handleClose = () => {
     // Remove the ?new_transaction=true from URL without going back in history
@@ -44,8 +46,31 @@ export function NewTransactionModal() {
       setDescription('');
       setSelectedCategory(null);
       setToAccountId(null);
+      setEditingTxn(null);
     }, 300);
   };
+
+  const [editingTxn, setEditingTxn] = useState<any>(null);
+
+  // Fetch transaction if editing
+  const { data: txnData } = useQuery({
+    queryKey: ['transactions', editId],
+    queryFn: () => transactionsApi.get(editId!),
+    enabled: !!editId,
+  });
+
+  // Populate state when editing
+  useEffect(() => {
+    if (txnData && editId) {
+      setType(txnData.type as any);
+      setAmount(String(Math.abs(parseFloat(String(txnData.amount))).toFixed(0)));
+      setSelectedCategory(txnData.categoryId);
+      setSelectedAccount(txnData.accountId);
+      setToAccountId(txnData.toAccountId);
+      setDescription(txnData.description || '');
+      setEditingTxn(txnData);
+    }
+  }, [txnData, editId]);
 
   // Fetch real categories from BE
   const { data: categories } = useQuery({
@@ -139,28 +164,42 @@ export function NewTransactionModal() {
   };
 
   const saveMutation = useMutation({
-    mutationFn: (data: { 
-      type: string; 
-      amount: string; 
-      categoryId: string; 
-      accountId?: string; 
-      toAccountId?: string;
-      description?: string; 
-      date: string 
-    }) => transactionsApi.create(data as any),
+    mutationFn: (data: any) => transactionsApi.create(data),
     onSuccess: () => {
-      // Invalidate all related queries so pages refresh
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['reports'] });
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
-      queryClient.invalidateQueries({ queryKey: ['accounts'] }); // Balance changed
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
       handleClose();
       setSaving(false);
     },
-    onError: (err) => {
-      console.error('Failed to save transaction:', err);
+    onError: () => setSaving(false),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: Partial<Transaction>) => transactionsApi.update(editId!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      handleClose();
       setSaving(false);
     },
+    onError: () => setSaving(false),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => transactionsApi.delete(editId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      handleClose();
+      setDeleting(false);
+    },
+    onError: () => setDeleting(false),
   });
 
   const handleSave = () => {
@@ -169,15 +208,28 @@ export function NewTransactionModal() {
     
     setSaving(true);
 
-    saveMutation.mutate({
-      type: type, // Now sending 'transfer', 'income', or 'expense'
+    const payload = {
+      type: type,
       amount: amount, 
       categoryId: selectedCategory,
       accountId: selectedAccount || undefined,
       toAccountId: toAccountId || undefined,
       description: description || undefined,
-      date: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
-    });
+      date: editingTxn?.date ? new Date(editingTxn.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+    };
+
+    if (editId) {
+      updateMutation.mutate(payload);
+    } else {
+      saveMutation.mutate(payload);
+    }
+  };
+
+  const handleDelete = () => {
+    if (window.confirm(t('common.confirmDelete') || 'Yakin ingin menghapus transaksi ini?')) {
+      setDeleting(true);
+      deleteMutation.mutate();
+    }
   };
 
   // ── Keypad handler (mobile/tablet only) ──
@@ -227,19 +279,38 @@ export function NewTransactionModal() {
           </button>
 
           <div className="flex p-1 bg-[var(--muted)] rounded-[14px]">
-            {(['expense', 'income', 'transfer'] as const).map((tp) => (
-              <button
-                key={tp}
-                type="button"
-                onClick={() => { setType(tp); setSelectedCategory(null); }}
-                className={`px-4 py-1.5 text-[13px] font-bold rounded-[11px] transition-all ${
-                  type === tp ? 'bg-[var(--card)] text-[var(--text)] shadow-sm' : 'text-[var(--text-dim-2)]'
-                }`}
-              >
-                {tp === 'expense' ? t('txn.newExpense') : tp === 'income' ? t('txn.newIncome') : t('txn.transfer')}
-              </button>
-            ))}
+            {editId ? (
+              <span className="px-6 py-1.5 text-[14px] font-bold text-[var(--text)]">
+                {t('txn.editTransaction') || 'Ubah Transaksi'}
+              </span>
+            ) : (
+              (['expense', 'income', 'transfer'] as const).map((tp) => (
+                <button
+                  key={tp}
+                  type="button"
+                  onClick={() => { setType(tp); setSelectedCategory(null); }}
+                  className={`px-4 py-1.5 text-[13px] font-bold rounded-[11px] transition-all ${
+                    type === tp ? 'bg-[var(--card)] text-[var(--text)] shadow-sm' : 'text-[var(--text-dim-2)]'
+                  }`}
+                >
+                  {tp === 'expense' ? t('txn.newExpense') : tp === 'income' ? t('txn.newIncome') : t('txn.transfer')}
+                </button>
+              ))
+            )}
           </div>
+
+          {editId ? (
+            <button 
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center transition-all active:scale-95"
+            >
+              {deleting ? <div className="w-4 h-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" /> : <Delete className="w-5 h-5" />}
+            </button>
+          ) : (
+            <div className="w-10" />
+          )}
 
         </div>
 
@@ -380,23 +451,23 @@ export function NewTransactionModal() {
             <div className="px-6 pt-6 pb-20">
               <p className="text-[14px] font-bold text-[var(--text)] mb-5">{t('txn.category')}</p>
               {filteredCategories.length > 0 ? (
-                <div className="grid grid-cols-4 gap-y-8 gap-x-4">
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-y-6 gap-x-2 sm:gap-x-4">
                   {filteredCategories.map((cat) => (
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className="flex flex-col items-center gap-2.5 group"
+                      className="flex flex-col items-center gap-2 group w-full"
                     >
                       <div className={`transition-all ${
-                        selectedCategory === cat.id ? 'scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--bg)] rounded-[14px]' : 'group-hover:scale-105'
+                        selectedCategory === cat.id ? 'scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--bg)] rounded-[16px]' : 'group-hover:scale-105'
                       }`}>
                         <CategoryIcon 
                           category={cat.label} 
                           icon={cat.icon} 
-                          size="md" 
+                          size="lg" 
                         />
                       </div>
-                      <span className={`text-[12px] font-bold transition-colors text-center leading-tight ${
+                      <span className={`text-[11px] font-bold transition-colors text-center leading-[1.2] line-clamp-2 h-7 flex items-start justify-center max-w-[64px] ${
                         selectedCategory === cat.id ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'
                       }`}>
                         {cat.label}
@@ -407,21 +478,24 @@ export function NewTransactionModal() {
                   {/* Add Category Button */}
                   <button
                     onClick={() => setIsAddingCategory(true)}
-                    className="flex flex-col items-center gap-2.5 group"
+                    className="flex flex-col items-center gap-2 group w-full"
                   >
-                    <div className="w-[44px] h-[44px] rounded-[14px] bg-[var(--muted)] flex items-center justify-center text-[24px] shadow-sm group-hover:scale-105 transition-all text-[var(--text-dim-2)] border border-dashed border-[var(--border)]">
+                    <div className="w-12 h-12 rounded-[16px] bg-[var(--muted)] flex items-center justify-center text-[24px] shadow-sm group-hover:scale-105 transition-all text-[var(--text-dim-2)] border border-dashed border-[var(--border)]">
                       <Plus className="w-5 h-5" />
                     </div>
-                    <span className="text-[12px] font-bold text-[var(--text-dim-2)] text-center leading-tight">
+                    <span className="text-[11px] font-bold text-[var(--text-dim-2)] text-center leading-[1.2] h-7 flex items-start justify-center max-w-[64px]">
                       Lainnya
                     </span>
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-pulse flex gap-4">
-                    {[1,2,3,4].map(i => <div key={i} className="w-14 h-14 rounded-[20px] bg-[var(--muted)]" />)}
-                  </div>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-y-6 gap-x-2 sm:gap-x-4">
+                  {[1,2,3,4,5,6,7,8].map(i => (
+                    <div key={i} className="flex flex-col items-center gap-2 animate-pulse">
+                      <div className="w-12 h-12 rounded-[16px] bg-[var(--muted)]" />
+                      <div className="w-10 h-2.5 rounded-full bg-[var(--muted)]" />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -456,7 +530,7 @@ export function NewTransactionModal() {
               ) : (
                 <Check className="w-5 h-5" strokeWidth={3} />
               )}
-              {saving ? t('common.loading') : t('txn.saveTransaction')}
+              {saving ? t('common.loading') : editId ? (t('txn.updateTransaction') || 'Simpan Perubahan') : t('txn.saveTransaction')}
             </button>
           </div>
         </div>
@@ -494,14 +568,19 @@ export function NewTransactionModal() {
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2 block">Emoji</label>
-                  <div className="flex gap-2">
-                    {['📦', '🎁', '🎮', '💡', '🏠', '🛒'].map(e => (
+                  <div className="flex gap-3 flex-wrap">
+                    {['📦', '🎁', '🎮', '💡', '🏠', '🛒', '🍜', '🚗', '💊', '📚'].map(e => (
                       <button 
                         key={e}
+                        type="button"
                         onClick={() => setNewCatEmoji(e)}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center text-[20px] transition-all ${newCatEmoji === e ? 'bg-[#15803D] scale-110' : 'bg-[var(--muted)] hover:bg-[var(--border)]'}`}
+                        className={`transition-all ${newCatEmoji === e ? 'scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--card)] rounded-[14px]' : 'opacity-60 hover:opacity-100'}`}
                       >
-                        {e}
+                        <CategoryIcon 
+                          category="new" 
+                          icon={e} 
+                          size="lg" 
+                        />
                       </button>
                     ))}
                   </div>

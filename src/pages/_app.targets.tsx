@@ -4,6 +4,7 @@ import { Plus, Target as TargetIcon, X, Check, Edit2, Trash2, Pin, Clock } from 
 import { Alert } from '../components/ui/Alert';
 import { targetsApi, type Target } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 // ─── Circular Progress Component ──────────────────────────────────────────────
 function CircularProgress({ percentage, color, icon }: { percentage: number; color: string; icon: string }) {
@@ -28,8 +29,12 @@ function CircularProgress({ percentage, color, icon }: { percentage: number; col
           className="transition-all duration-700 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center text-[28px]">
-        {icon}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <CategoryIcon 
+          category="target" 
+          icon={icon} 
+          size="md" 
+        />
       </div>
     </div>
   );
@@ -355,11 +360,15 @@ export default function TargetsPage() {
                     <button
                       key={e}
                       onClick={() => setIcon(e)}
-                      className={`text-[24px] w-12 h-12 rounded-[14px] flex items-center justify-center border transition-all ${
+                      className={`text-[24px] w-12 h-12 rounded-[16px] flex items-center justify-center border transition-all ${
                         icon === e ? 'border-[#15803D] bg-[#15803D]/5 scale-110' : 'border-[var(--border)] hover:bg-[var(--muted)]'
                       }`}
                     >
-                      {e}
+                      <CategoryIcon 
+                        category="target" 
+                        icon={e} 
+                        size="lg" 
+                      />
                     </button>
                   ))}
                 </div>

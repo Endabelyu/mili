@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { transactionsApi, reportsApi, targetsApi, scheduledApi, accountsApi, budgetsApi, type Transaction, type ScheduledTransaction, type Target, type Budget } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
@@ -15,6 +15,7 @@ import { CategoryIcon } from '../components/ui/CategoryIcon';
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { t, formatMoney, language } = usePreferences();
 
   const { data: txnsData, isLoading: txnsLoading } = useQuery({
@@ -200,7 +201,8 @@ export default function DashboardPage() {
                 return (
                   <TargetCard 
                     key={t.id}
-                    icon={() => <span className="text-[18px]">{t.icon || '🎯'}</span>} 
+                    categoryLabel={t.name}
+                    categoryIcon={t.icon}
                     color={t.color} 
                     label={t.name} 
                     progress={progress} 
@@ -254,7 +256,7 @@ export default function DashboardPage() {
                       <CategoryIcon 
                         category={label} 
                         icon={cat?.icon}
-                        size="md" 
+                        size="sm" 
                       />
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
@@ -394,7 +396,11 @@ export default function DashboardPage() {
             recentTransactions.map((tx: Transaction) => {
               const isIncome = tx.type === 'income';
               return (
-                <div key={tx.id} className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer group">
+                <div 
+                  key={tx.id} 
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer group"
+                  onClick={() => navigate(`?edit_transaction_id=${tx.id}`)}
+                >
                   <CategoryIcon 
                     category={tx.category?.label || tx.categoryId} 
                     icon={tx.category?.icon} 
@@ -420,13 +426,15 @@ export default function DashboardPage() {
 }
 
 // ─── Shared Mockup Components ────────────────────────────────────────────────
-function TargetCard({ icon: Icon, color, label, progress, collected, target }: { icon: React.ElementType | React.ReactNode; color: string; label: string; progress: number; collected: string; target: string; }) {
+function TargetCard({ categoryLabel, categoryIcon, color, label, progress, collected, target }: { categoryLabel: string; categoryIcon?: string | null; color: string; label: string; progress: number; collected: string; target: string; }) {
   return (
     <div className="flow-card p-5">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15`, color: color }}>
-          {typeof Icon === 'function' ? <Icon className="w-5 h-5" /> : Icon}
-        </div>
+        <CategoryIcon 
+          category={categoryLabel} 
+          icon={categoryIcon} 
+          size="sm" 
+        />
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
           <p className="text-[12px] font-bold mt-0.5" style={{ color: color }}>{progress}%</p>

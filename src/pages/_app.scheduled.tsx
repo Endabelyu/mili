@@ -4,6 +4,7 @@ import { Plus, RefreshCw, X, ArrowLeft, MoreVertical, Trash2 } from 'lucide-reac
 import { Alert } from '../components/ui/Alert';
 import { scheduledApi, categoriesApi, accountsApi, type ScheduledTransaction, type Category } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 // ─── Status Toggle Component ──────────────────────────────────────────────────
 function StatusToggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
@@ -236,9 +237,11 @@ export default function ScheduledPage() {
                 onClick={() => handleEdit(item)}
                 className="flex items-center gap-4 px-6 py-5 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]"
               >
-                <div className="w-14 h-14 rounded-[20px] bg-[var(--muted)] flex items-center justify-center text-[28px] shrink-0 border border-transparent group-hover:border-[var(--border)] transition-all">
-                  {item.category?.icon || '📦'}
-                </div>
+                <CategoryIcon 
+                  category={item.category?.label || item.categoryId} 
+                  icon={item.category?.icon} 
+                  size="lg" 
+                />
                 <div className="flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2">
                     <p className="text-[17px] font-bold text-[var(--text)] truncate">{item.description || item.category?.label}</p>
