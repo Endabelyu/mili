@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { X, Check, Home, Delete, Plus } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { categoriesApi, transactionsApi, accountsApi } from '../../api/client';
+import { categoriesApi, transactionsApi, accountsApi, type Transaction } from '../../api/client';
 import { queryKeys } from '../../lib/query-keys';
 import { usePreferences } from '../../hooks/usePreferences';
 import { CategoryIcon } from '../ui/CategoryIcon';
@@ -64,9 +64,9 @@ export function NewTransactionModal() {
     if (txnData && editId) {
       setType(txnData.type as any);
       setAmount(String(Math.abs(parseFloat(String(txnData.amount))).toFixed(0)));
-      setSelectedCategory(txnData.categoryId);
-      setSelectedAccount(txnData.accountId);
-      setToAccountId(txnData.toAccountId);
+      setSelectedCategory(txnData.categoryId ?? null);
+      setSelectedAccount(txnData.accountId ?? null);
+      setToAccountId(txnData.toAccountId ?? null);
       setDescription(txnData.description || '');
       setEditingTxn(txnData);
     }
