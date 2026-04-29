@@ -18,6 +18,7 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
   const [showConfirm, setShowConfirm] = useState(false);
 
   const isIncome = transaction.type === 'income';
+  const isTransfer = transaction.type === 'transfer';
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,7 +53,11 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
       style={style}
     >
       <div className="flex items-center gap-3 min-w-0 pr-4">
-        <CategoryIcon category={transaction.categoryId} size="md" />
+        <CategoryIcon 
+          category={category?.label || transaction.categoryId} 
+          icon={category?.icon} 
+          size="md" 
+        />
 
         <div className="min-w-0">
           <p className="font-bold text-[var(--text)] text-[14px] tracking-[-0.01em] truncate mb-0.5" title={transaction.description || category?.label}>
@@ -61,7 +66,11 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
           <div className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--text-dim)] truncate">
             {timeString && <span className="tabular-nums">{timeString}</span>}
             {timeString && <span className="opacity-50">•</span>}
-            <span className="capitalize">{category?.label || transaction.categoryId}</span>
+            <span className="capitalize">
+              {isTransfer 
+                ? `${transaction.account?.name || 'Akun'} ➔ ${transaction.toAccount?.name || 'Tujuan'}` 
+                : (category?.label || transaction.categoryId)}
+            </span>
           </div>
         </div>
       </div>
@@ -71,11 +80,12 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
         <span
           className={`
             font-bold text-[15px] tracking-[-0.01em] whitespace-nowrap tabular-nums
-            ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}
+            ${isIncome ? 'text-[var(--income)]' : isTransfer ? 'text-blue-500' : 'text-[var(--text)]'}
           `}
         >
-          {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
+          {isIncome ? '+' : isTransfer ? '' : '-'}{formatCurrency(transaction.amount)}
         </span>
+
 
         {/* Desktop Hover Actions */}
         <div className="hidden lg:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

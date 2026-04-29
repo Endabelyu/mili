@@ -77,6 +77,8 @@ export const colors = {
     salary: { bg: '#ecfccb', text: '#4d7c0f', border: '#bef264' },    // lime
     freelance: { bg: '#ccfbf1', text: '#0f766e', border: '#5eead4' }, // teal
     investment: { bg: '#fef3c7', text: '#b45309', border: '#fcd34d' }, // amber
+    family: { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' },    // blue
+    debt: { bg: '#f8fafc', text: '#475569', border: '#e2e8f0' },      // slate
     default: { bg: '#f4f4f5', text: '#52525b', border: '#e4e4e7' },   // zinc
   },
 } as const;

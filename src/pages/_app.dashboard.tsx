@@ -7,14 +7,8 @@ import { usePreferences } from '../hooks/usePreferences';
 import { TrendingUp } from 'lucide-react';
 import { formatName } from '../lib/utils';
 import type { Account } from '../types';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
-// ─── Fallback emoji map ──────────────────────────────────────────────────────
-
-const FALLBACK_EMOJI: Record<string, string> = {
-  salary: '💰', freelance: '💻', investments: '📈', gifts: '🎁', 'other-income': '💵',
-  food: '🍜', transport: '🚗', housing: '🏠', utilities: '💡', entertainment: '🎬',
-  shopping: '🛍️', healthcare: '💊', education: '📚', travel: '✈️', 'other-expense': '📦',
-};
 
 
 
@@ -247,9 +241,8 @@ export default function DashboardPage() {
                 const limit = parseFloat(String(b.limitAmount || 0));
                 const pct = b.percentageUsed || 0;
                 const cat = b.category;
-                const emoji = cat?.icon || FALLBACK_EMOJI[b.categoryId] || '📦';
-                const color = cat?.color || 'var(--accent)';
                 const label = cat?.label || b.categoryId;
+                const color = cat?.color || 'var(--accent)';
 
                 return (
                   <div 
@@ -258,9 +251,11 @@ export default function DashboardPage() {
                     onClick={() => window.location.href = '/budget'}
                   >
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15`, color: color }}>
-                        <span className="text-[18px]">{emoji}</span>
-                      </div>
+                      <CategoryIcon 
+                        category={label} 
+                        icon={cat?.icon}
+                        size="md" 
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
                         <p className="text-[12px] font-bold mt-0.5" style={{ color: color }}>{pct}%</p>
@@ -309,9 +304,10 @@ export default function DashboardPage() {
             ) : (
               topCategories.map((cat: { categoryId: string; label: string; amount: number; percentage: number; color: string; }) => (
                 <div key={cat.categoryId} className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--text)]" style={{ backgroundColor: `${cat.color}15` }}>
-                    <span className="text-[18px]">{FALLBACK_EMOJI[cat.categoryId] || '📦'}</span>
-                  </div>
+                  <CategoryIcon 
+                    category={cat.label} 
+                    size="md" 
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1.5">
                       <p className="text-[13px] font-bold text-[var(--text)]">{cat.label}</p>
@@ -354,13 +350,11 @@ export default function DashboardPage() {
                 const diff = new Date(item.nextRunDate).getTime() - new Date().getTime();
                 const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                 const dueStr = days > 0 ? `${days} hari lagi` : days === 0 ? 'Hari ini' : `${Math.abs(days)} hari lalu`;
-                const emoji = item.category?.icon || FALLBACK_EMOJI[item.categoryId] || '📦';
                 return (
                   <BillItem 
                     key={item.id}
-                    icon={() => <span className="text-[18px]">{emoji}</span>} 
-                    color="bg-[rgba(18,183,106,0.1)]" 
-                    iconColor="text-[#15803D]" 
+                    categoryLabel={item.category?.label || item.categoryId}
+                    categoryIcon={item.category?.icon}
                     label={item.description || item.category?.label || 'Tagihan'} 
                     amount={formatMoney(parseFloat(String(item.amount)))} 
                     due={dueStr} 
@@ -399,12 +393,13 @@ export default function DashboardPage() {
           ) : (
             recentTransactions.map((tx: Transaction) => {
               const isIncome = tx.type === 'income';
-              const emoji = tx.category?.icon || FALLBACK_EMOJI[tx.categoryId] || '📦';
               return (
                 <div key={tx.id} className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer group">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-lg flex-shrink-0 group-hover:bg-[var(--card)] transition-colors">
-                    <span className="text-[18px]">{emoji}</span>
-                  </div>
+                  <CategoryIcon 
+                    category={tx.category?.label || tx.categoryId} 
+                    icon={tx.category?.icon} 
+                    size="md" 
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-bold text-[var(--text)] truncate">{tx.description || tx.category?.label}</p>
                     <p className="text-[12px] font-medium text-[var(--text-dim)] mt-0.5 opacity-70">
@@ -448,12 +443,14 @@ function TargetCard({ icon: Icon, color, label, progress, collected, target }: {
   );
 }
 
-function BillItem({ icon: Icon, color, iconColor, label, amount, due }: { icon: React.ElementType | React.ReactNode; color: string; iconColor: string; label: string; amount: string; due: string; }) {
+function BillItem({ categoryLabel, categoryIcon, label, amount, due }: { categoryLabel: string; categoryIcon?: string | null; label: string; amount: string; due: string; }) {
   return (
     <div className="flex items-center gap-4 px-5 py-4">
-      <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center ${iconColor}`}>
-        {typeof Icon === 'function' ? <Icon className="w-5 h-5" /> : Icon}
-      </div>
+      <CategoryIcon 
+        category={categoryLabel} 
+        icon={categoryIcon} 
+        size="md" 
+      />
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-bold text-[var(--text)]">{label}</p>
         <p className="text-[11px] font-bold text-[var(--text-dim-2)] opacity-70 mt-0.5">{due}</p>

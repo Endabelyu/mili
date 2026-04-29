@@ -1,27 +1,29 @@
 import { useState } from 'react';
 import { Button, Input } from '@app/components/ui';
-import { Loader2, DollarSign, Calendar, Tag, FileText, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { Loader2, DollarSign, Calendar, Tag, FileText, Landmark } from 'lucide-react';
 import { transactionsApi } from '@app/api/client';
-import type { Transaction, Category } from '@app/types';
+import type { Transaction, Category, Account } from '@app/types';
 
 interface TransactionFormProps {
   transaction?: Transaction | null;
   categories: Category[];
+  accounts?: Account[];
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export function TransactionForm({ transaction, categories, onSuccess, onCancel }: TransactionFormProps) {
+export function TransactionForm({ transaction, categories, accounts = [], onSuccess, onCancel }: TransactionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!transaction;
 
-  const [type, setType] = useState<'income' | 'expense'>((transaction?.type as 'income' | 'expense') || 'expense');
+  const [type, setType] = useState<'income' | 'expense' | 'transfer'>((transaction?.type as any) || 'expense');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Filter categories by selected type
-  const availableCategories = categories.filter(c =>
-    c.type === type || c.type === 'both'
-  );
+  const availableCategories = categories.filter(c => {
+    if (type === 'transfer') return c.id === 'transfer' || c.type === 'both';
+    return c.type === type || c.type === 'both';
+  });
 
   const validateForm = (formData: FormData): boolean => {
     const newErrors: Record<string, string> = {};
@@ -41,6 +43,16 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
       newErrors.date = 'Please select a date';
     }
 
+    if (type === 'transfer') {
+      const accountId = formData.get('accountId') as string;
+      const toAccountId = formData.get('toAccountId') as string;
+      if (!accountId || !toAccountId) {
+        newErrors.form = 'Please select both source and destination accounts';
+      } else if (accountId === toAccountId) {
+        newErrors.form = 'Source and destination accounts must be different';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -53,16 +65,19 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
 
     setIsSubmitting(true);
     try {
-      const type = formData.get('type') as 'income' | 'expense';
       const amount = formData.get('amount') as string;
       const categoryId = formData.get('categoryId') as string;
+      const accountId = (formData.get('accountId') as string) || undefined;
+      const toAccountId = (formData.get('toAccountId') as string) || undefined;
       const description = (formData.get('description') as string) || '';
       const date = formData.get('date') as string;
 
+      const payload = { type, amount, categoryId, accountId, toAccountId, description, date };
+
       if (isEditing && transaction?.id) {
-        await transactionsApi.update(transaction.id, { type, amount, categoryId, description, date });
+        await transactionsApi.update(transaction.id, payload as any);
       } else {
-        await transactionsApi.create({ type, amount, categoryId, description, date });
+        await transactionsApi.create(payload as any);
       }
 
       onSuccess();
@@ -78,57 +93,89 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Type Selection - Segmented Control */}
+      {errors.form && (
+        <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 text-sm font-medium">
+          {errors.form}
+        </div>
+      )}
+
+      {/* Type Selection */}
       <div>
         <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2.5">
           Transaction Type
         </label>
-        <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--card-bg)] backdrop-blur-md rounded-xl border border-[var(--card-border)]">
-          <button
-            type="button"
-            onClick={() => setType('expense')}
-            className={`
-              relative flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold
-              transition-all duration-200 ease-out
-              ${type === 'expense'
-                ? 'bg-[var(--card-bg)] backdrop-blur-md text-rose-500 shadow-sm ring-1 ring-rose-500/20'
-                : 'text-[var(--text-primary)]/60 hover:text-[var(--text-primary)] hover:bg-[var(--card-bg)] backdrop-blur-md/50'
-              }
-            `}
-          >
-            <ArrowDownCircle className={`w-4 h-4 ${type === 'expense' ? 'text-rose-500' : ''}`} />
-            Expense
-          </button>
-          <button
-            type="button"
-            onClick={() => setType('income')}
-            className={`
-              relative flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold
-              transition-all duration-200 ease-out
-              ${type === 'income'
-                ? 'bg-[var(--card-bg)] backdrop-blur-md text-emerald-500 shadow-sm ring-1 ring-emerald-500/20'
-                : 'text-[var(--text-primary)]/60 hover:text-[var(--text-primary)] hover:bg-[var(--card-bg)] backdrop-blur-md/50'
-              }
-            `}
-          >
-            <ArrowUpCircle className={`w-4 h-4 ${type === 'income' ? 'text-emerald-500' : ''}`} />
-            Income
-          </button>
+        <div className="grid grid-cols-3 gap-2 p-1 bg-[var(--card-bg)] backdrop-blur-md rounded-xl border border-[var(--card-border)]">
+          {(['expense', 'income', 'transfer'] as const).map((tp) => (
+            <button
+              key={tp}
+              type="button"
+              onClick={() => setType(tp)}
+              className={`
+                relative flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-xs font-bold
+                transition-all duration-200 ease-out
+                ${type === tp
+                  ? `bg-[var(--card-bg)] shadow-sm ring-1 ${tp === 'expense' ? 'text-rose-500 ring-rose-500/20' : tp === 'income' ? 'text-emerald-500 ring-emerald-500/20' : 'text-blue-500 ring-blue-500/20'}`
+                  : 'text-[var(--text-primary)]/60 hover:text-[var(--text-primary)]'
+                }
+              `}
+            >
+              <span className="capitalize">{tp}</span>
+            </button>
+          ))}
         </div>
-        <input type="hidden" name="type" value={type} />
       </div>
 
-      {/* Amount Input with Currency Formatting */}
+      {/* Account Selection */}
+      <div className={`grid ${type === 'transfer' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+        <div>
+          <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
+            {type === 'transfer' ? 'From Account' : 'Account'}
+          </label>
+          <div className="relative">
+            <Landmark className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <select
+              name="accountId"
+              defaultValue={transaction?.accountId || ''}
+              className="w-full rounded-xl border-2 pl-10 pr-4 py-2.5 text-sm bg-[var(--card-bg)] text-[var(--text-primary)] border-[#5c4a44]/15 focus:border-[#5c4a44] outline-none"
+            >
+              <option value="">Select Account</option>
+              {accounts.map(acc => (
+                <option key={acc.id} value={acc.id}>{acc.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {type === 'transfer' && (
+          <div>
+            <label className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
+              To Account
+            </label>
+            <div className="relative">
+              <Landmark className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
+              <select
+                name="toAccountId"
+                defaultValue={transaction?.toAccountId || ''}
+                className="w-full rounded-xl border-2 pl-10 pr-4 py-2.5 text-sm bg-[var(--card-bg)] text-[var(--text-primary)] border-blue-500/20 focus:border-blue-500 outline-none"
+              >
+                <option value="">Target Account</option>
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Amount Input */}
       <div>
         <label htmlFor="amount" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Amount
         </label>
-        <div className="relative group">
+        <div className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <DollarSign className={`
-              w-5 h-5 transition-colors duration-200
-              ${type === 'income' ? 'text-emerald-500' : 'text-rose-500'}
-            `} />
+            <DollarSign className={`w-5 h-5 ${type === 'income' ? 'text-emerald-500' : type === 'transfer' ? 'text-blue-500' : 'text-rose-500'}`} />
           </div>
           <Input
             id="amount"
@@ -137,27 +184,11 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
             step="0.01"
             min="0.01"
             placeholder="0.00"
-            defaultValue={transaction?.amount ? parseFloat(transaction.amount.toString()).toFixed(2) : ''}
-            className={`
-              pl-11 pr-4 py-2.5 text-lg font-semibold border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-md
-              focus:border-[#5c4a44] focus:ring-[#5c4a44]/20
-              ${errors.amount ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : ''}
-              transition-all duration-200
-            `}
+            defaultValue={transaction?.amount ? parseFloat(transaction.amount.toString()) : ''}
+            className="pl-11 pr-4 py-2.5 text-lg font-semibold border border-[var(--card-border)] bg-[var(--card-bg)] focus:border-[#5c4a44]"
           />
-          {/* Focus indicator ring */}
-          <div className={`
-            absolute inset-0 rounded-md pointer-events-none opacity-0 group-focus-within:opacity-100
-            transition-opacity duration-200
-            ${type === 'income' ? 'ring-2 ring-green-500/20' : 'ring-2 ring-red-500/20'}
-          `} />
         </div>
-        {errors.amount && (
-          <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-red-500" />
-            {errors.amount}
-          </p>
-        )}
+        {errors.amount && <p className="mt-1 text-xs text-rose-500 font-medium">{errors.amount}</p>}
       </div>
 
       {/* Category Select */}
@@ -166,20 +197,12 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
           Category
         </label>
         <div className="relative group">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <Tag className="w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
-          </div>
+          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <select
             id="categoryId"
             name="categoryId"
             defaultValue={transaction?.categoryId || ''}
-            className={`
-              w-full rounded-xl border-2 px-10 py-2.5 text-sm
-              bg-[var(--card-bg)] backdrop-blur-md appearance-none cursor-pointer text-[var(--text-primary)]
-              transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-[#5c4a44]/20 focus:border-[#5c4a44]
-              ${errors.categoryId ? 'border-rose-500 focus:border-rose-500' : 'border-[#5c4a44]/15'}
-            `}
+            className="w-full rounded-xl border-2 pl-10 pr-4 py-2.5 text-sm bg-[var(--card-bg)] text-[var(--text-primary)] border-[#5c4a44]/15 focus:border-[#5c4a44] outline-none"
           >
             <option value="" disabled>Select a category</option>
             {availableCategories.map((category) => (
@@ -188,25 +211,8 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
               </option>
             ))}
           </select>
-          {/* Custom dropdown arrow */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
         </div>
-        {errors.categoryId && (
-          <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-red-500" />
-            {errors.categoryId}
-          </p>
-        )}
-        {availableCategories.length === 0 && (
-          <p className="mt-1.5 text-sm text-amber-600 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            No categories available for {type}. Please use a different type.
-          </p>
-        )}
+        {errors.categoryId && <p className="mt-1 text-xs text-rose-500 font-medium">{errors.categoryId}</p>}
       </div>
 
       {/* Date Input */}
@@ -214,80 +220,48 @@ export function TransactionForm({ transaction, categories, onSuccess, onCancel }
         <label htmlFor="date" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Date
         </label>
-        <div className="relative group">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <Calendar className="w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
-          </div>
+        <div className="relative">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             id="date"
             name="date"
             type="date"
             defaultValue={transaction?.date ? new Date(transaction.date).toISOString().split('T')[0] : today}
-            className={`
-              pl-10 text-[var(--text-primary)] border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-md
-              focus:border-[#5c4a44] focus:ring-[#5c4a44]/20
-              ${errors.date ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : ''}
-            `}
+            className="pl-10 text-[var(--text-primary)] border border-[var(--card-border)] bg-[var(--card-bg)]"
           />
         </div>
-        {errors.date && (
-          <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-red-500" />
-            {errors.date}
-          </p>
-        )}
+        {errors.date && <p className="mt-1 text-xs text-rose-500 font-medium">{errors.date}</p>}
       </div>
 
-      {/* Description Input */}
+      {/* Description */}
       <div>
         <label htmlFor="description" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Description
-          <span className="text-[var(--text-primary)]/50 font-normal ml-1">(optional)</span>
         </label>
-        <div className="relative group">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <FileText className="w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
-          </div>
+        <div className="relative">
+          <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             id="description"
             name="description"
             type="text"
-            placeholder="e.g., Grocery shopping at Whole Foods"
+            placeholder="e.g., Grocery shopping..."
             defaultValue={transaction?.description || ''}
-            className="pl-10 text-[var(--text-primary)] border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-md focus:border-[#5c4a44] focus:ring-[#5c4a44]/20"
+            className="pl-10 text-[var(--text-primary)] border border-[var(--card-border)] bg-[var(--card-bg)]"
           />
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3 pt-4 border-t border-[#5c4a44]/10">
-        <Button
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="flex-1 h-11 bg-[var(--card-bg)] backdrop-blur-md text-[var(--text-primary)] border border-[var(--card-border)] hover:bg-[#F5E6D8]"
-        >
+      <div className="flex gap-3 pt-4 border-t border-[var(--border)]">
+        <Button type="button" onClick={onCancel} disabled={isSubmitting} className="flex-1 bg-[var(--card-bg)] text-[var(--text-primary)] border border-[var(--border)]">
           Cancel
         </Button>
         <Button
           type="submit"
           disabled={isSubmitting || availableCategories.length === 0}
-          className={`
-            flex-1 h-11 font-semibold text-white
-            ${type === 'income'
-              ? 'bg-[#4a9473] hover:bg-[#3a8060] border-2 border-transparent'
-              : 'bg-[#c0544a] hover:bg-[#a0443a] border-2 border-transparent'
-            }
-          `}
+          className={`flex-1 font-bold text-white ${type === 'income' ? 'bg-emerald-600' : type === 'transfer' ? 'bg-blue-600' : 'bg-rose-600'}`}
         >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {isEditing ? 'Updating...' : 'Adding...'}
-            </>
-          ) : (
-            isEditing ? 'Update Transaction' : `Add ${type === 'income' ? 'Income' : 'Expense'}`
-          )}
+          {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : isEditing ? 'Update' : `Add ${type}`}
         </Button>
       </div>
     </form>

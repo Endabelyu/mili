@@ -1,27 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Check, ChevronRight, Home, Delete, Plus } from 'lucide-react';
+import { X, Check, Home, Delete, Plus } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { categoriesApi, transactionsApi, accountsApi, type Transaction } from '../../api/client';
+import { categoriesApi, transactionsApi, accountsApi } from '../../api/client';
 import { queryKeys } from '../../lib/query-keys';
 import { usePreferences } from '../../hooks/usePreferences';
+import { CategoryIcon } from '../ui/CategoryIcon';
 
-// ─── Fallback emoji map (keyed by BE category.id) ───────────────────────────
-const FALLBACK_EMOJI: Record<string, string> = {
-  salary: '💰', freelance: '💻', investments: '📈', gifts: '🎁', 'other-income': '💵',
-  food: '🍜', transport: '🚗', housing: '🏠', utilities: '💡', entertainment: '🎬',
-  shopping: '🛍️', healthcare: '💊', education: '📚', travel: '✈️', 'other-expense': '📦',
-};
-
-// ─── Pastel background map ───────────────────────────────────────────────────
-const CAT_BG: Record<string, string> = {
-  salary: 'bg-emerald-50', freelance: 'bg-blue-50', investments: 'bg-emerald-50',
-  gifts: 'bg-pink-50', 'other-income': 'bg-lime-50',
-  food: 'bg-orange-50', transport: 'bg-violet-50', housing: 'bg-orange-50',
-  utilities: 'bg-sky-50', entertainment: 'bg-blue-50', shopping: 'bg-rose-50',
-  healthcare: 'bg-rose-50', education: 'bg-indigo-50', travel: 'bg-teal-50',
-  'other-expense': 'bg-gray-50',
-};
 
 // ─── Amount formatting helper ────────────────────────────────────────────────
 function formatDisplay(val: string): string {
@@ -40,9 +25,11 @@ export function NewTransactionModal() {
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const [toAccountId, setToAccountId] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [showAccountSelect, setShowAccountSelect] = useState(false);
+  const [showToAccountSelect, setShowToAccountSelect] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isOpen = searchParams.get('new_transaction') === 'true';
@@ -56,6 +43,7 @@ export function NewTransactionModal() {
       setAmount('');
       setDescription('');
       setSelectedCategory(null);
+      setToAccountId(null);
     }, 300);
   };
 
@@ -75,18 +63,37 @@ export function NewTransactionModal() {
 
   // Set default account if none selected
   useEffect(() => {
-    if (accounts && accounts.length > 0 && !selectedAccount) {
-      const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
-      setSelectedAccount(defaultAcc.id);
+    if (accounts && accounts.length > 0) {
+      if (!selectedAccount) {
+        const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
+        setSelectedAccount(defaultAcc.id);
+      }
+      // For transfer, set a default toAccount that is different from selectedAccount
+      if (type === 'transfer' && !toAccountId) {
+        const otherAcc = accounts.find(a => a.id !== selectedAccount) || accounts[1] || accounts[0];
+        setToAccountId(otherAcc.id);
+      }
     }
-  }, [accounts, selectedAccount]);
+  }, [accounts, selectedAccount, type, toAccountId]);
 
   // Filter categories by type
   const filteredCategories = useMemo(() => {
     if (!categories) return [];
-    const targetType = type === 'transfer' ? 'expense' : type;
-    return categories.filter(c => c.type === targetType || c.type === 'both');
+    if (type === 'transfer') {
+      // Find a transfer category or return all for now
+      const transferCat = categories.find(c => c.id === 'transfer');
+      if (transferCat) return [transferCat];
+      return categories.filter(c => c.type === 'both' || c.type === 'expense');
+    }
+    return categories.filter(c => c.type === type || c.type === 'both');
   }, [categories, type]);
+
+  // Auto-select category if transfer and only one available
+  useEffect(() => {
+    if (type === 'transfer' && filteredCategories.length === 1 && !selectedCategory) {
+      setSelectedCategory(filteredCategories[0].id);
+    }
+  }, [type, filteredCategories, selectedCategory]);
 
   // Auto-focus desktop input
   useEffect(() => {
@@ -132,13 +139,21 @@ export function NewTransactionModal() {
   };
 
   const saveMutation = useMutation({
-    mutationFn: (data: { type: string; amount: string; categoryId: string; accountId?: string; description?: string; date: string }) =>
-      transactionsApi.create(data as Omit<Transaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>),
+    mutationFn: (data: { 
+      type: string; 
+      amount: string; 
+      categoryId: string; 
+      accountId?: string; 
+      toAccountId?: string;
+      description?: string; 
+      date: string 
+    }) => transactionsApi.create(data as any),
     onSuccess: () => {
       // Invalidate all related queries so pages refresh
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['reports'] });
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] }); // Balance changed
       handleClose();
       setSaving(false);
     },
@@ -150,14 +165,16 @@ export function NewTransactionModal() {
 
   const handleSave = () => {
     if (!amount || amount === '0' || !selectedCategory) return;
+    if (type === 'transfer' && (!selectedAccount || !toAccountId || selectedAccount === toAccountId)) return;
+    
     setSaving(true);
 
-    const txType = type === 'transfer' ? 'expense' : type;
     saveMutation.mutate({
-      type: txType,
-      amount: amount, // BE accepts string and converts
+      type: type, // Now sending 'transfer', 'income', or 'expense'
+      amount: amount, 
       categoryId: selectedCategory,
       accountId: selectedAccount || undefined,
+      toAccountId: toAccountId || undefined,
       description: description || undefined,
       date: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
     });
@@ -259,44 +276,94 @@ export function NewTransactionModal() {
         <div className="flex-1 overflow-y-auto pb-10">
           {/* Details Section */}
           <div className="px-6 space-y-3 relative">
-          <button 
-            onClick={() => setShowAccountSelect(!showAccountSelect)}
-            className="w-full flow-card p-4 flex items-center gap-4 text-left relative z-10"
-          >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: accounts?.find(a => a.id === selectedAccount)?.color ? `${accounts.find(a => a.id === selectedAccount)?.color}15` : 'rgba(18,183,106,0.08)' }}>
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: accounts?.find(a => a.id === selectedAccount)?.color || '#15803D' }}>
-                <Home className="w-4 h-4 text-white" />
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-0.5">{t('txn.account')}</p>
-              <p className="text-[15px] font-bold text-[var(--text)] truncate">
-                {accounts?.find(a => a.id === selectedAccount)?.name || 'Pilih Akun...'}
-              </p>
-            </div>
-            <ChevronRight className={`w-5 h-5 text-[var(--text-dim-2)] opacity-50 transition-transform ${showAccountSelect ? 'rotate-90' : ''}`} />
-          </button>
-
-          {/* Account Select Dropdown */}
-          {showAccountSelect && accounts && accounts.length > 0 && (
-            <div className="absolute top-[68px] left-6 right-6 bg-[var(--card)] rounded-2xl shadow-xl border border-[var(--border)] z-20 overflow-hidden animate-fade-in">
-              <div className="max-h-[200px] overflow-y-auto">
-                {accounts.map(acc => (
-                  <button
-                    key={acc.id}
-                    onClick={() => { setSelectedAccount(acc.id); setShowAccountSelect(false); }}
-                    className="w-full flex items-center gap-3 p-4 hover:bg-[var(--muted)] transition-colors border-b border-[var(--border)] last:border-0"
-                  >
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: acc.color }}>
+            {/* Account Selector(s) */}
+            <div className={`grid ${type === 'transfer' ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+              {/* From Account */}
+              <div className="relative">
+                <button 
+                  type="button"
+                  onClick={() => { setShowAccountSelect(!showAccountSelect); setShowToAccountSelect(false); }}
+                  className="w-full flow-card p-4 flex flex-col gap-1 text-left relative z-10"
+                >
+                  <p className="text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider">
+                    {type === 'transfer' ? 'Dari Akun' : t('txn.account')}
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accounts?.find(a => a.id === selectedAccount)?.color || '#15803D' }}>
                       <Home className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-[14px] font-bold text-[var(--text)] truncate">{acc.name}</span>
-                    {selectedAccount === acc.id && <Check className="w-4 h-4 text-[#15803D] ml-auto" strokeWidth={3} />}
-                  </button>
-                ))}
+                    <p className="text-[14px] font-bold text-[var(--text)] truncate">
+                      {accounts?.find(a => a.id === selectedAccount)?.name || 'Pilih Akun...'}
+                    </p>
+                  </div>
+                </button>
+
+                {/* From Account Dropdown */}
+                {showAccountSelect && accounts && accounts.length > 0 && (
+                  <div className="absolute top-[105%] left-0 right-0 bg-[var(--card)] rounded-2xl shadow-xl border border-[var(--border)] z-[20] overflow-hidden animate-fade-in">
+                    <div className="max-h-[200px] overflow-y-auto">
+                      {accounts.map(acc => (
+                        <button
+                          key={acc.id}
+                          type="button"
+                          onClick={() => { setSelectedAccount(acc.id); setShowAccountSelect(false); }}
+                          className="w-full flex items-center gap-3 p-3 hover:bg-[var(--muted)] transition-colors border-b border-[var(--border)] last:border-0"
+                        >
+                          <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: acc.color }}>
+                            <Home className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-[13px] font-bold text-[var(--text)] truncate">{acc.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {/* To Account (Transfer Only) */}
+              {type === 'transfer' && (
+                <div className="relative">
+                  <button 
+                    type="button"
+                    onClick={() => { setShowToAccountSelect(!showToAccountSelect); setShowAccountSelect(false); }}
+                    className="w-full flow-card p-4 flex flex-col gap-1 text-left relative z-10 border-blue-500/20"
+                  >
+                    <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Ke Akun</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accounts?.find(a => a.id === toAccountId)?.color || '#2E90FA' }}>
+                        <Home className="w-4 h-4 text-white" />
+                      </div>
+                      <p className="text-[14px] font-bold text-[var(--text)] truncate">
+                        {accounts?.find(a => a.id === toAccountId)?.name || 'Pilih Akun...'}
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* To Account Dropdown */}
+                  {showToAccountSelect && accounts && accounts.length > 0 && (
+                    <div className="absolute top-[105%] left-0 right-0 bg-[var(--card)] rounded-2xl shadow-xl border border-[var(--border)] z-[20] overflow-hidden animate-fade-in">
+                      <div className="max-h-[200px] overflow-y-auto">
+                        {accounts.map(acc => (
+                          <button
+                            key={acc.id}
+                            type="button"
+                            disabled={acc.id === selectedAccount}
+                            onClick={() => { setToAccountId(acc.id); setShowToAccountSelect(false); }}
+                            className={`w-full flex items-center gap-3 p-3 hover:bg-[var(--muted)] transition-colors border-b border-[var(--border)] last:border-0 ${acc.id === selectedAccount ? 'opacity-30' : ''}`}
+                          >
+                            <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: acc.color }}>
+                              <Home className="w-3 h-3 text-white" />
+                            </div>
+                            <span className="text-[13px] font-bold text-[var(--text)] truncate">{acc.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          )}
+
 
             <div className="flow-card p-4 relative z-0">
               <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">{t('txn.description')}</p>
@@ -314,38 +381,36 @@ export function NewTransactionModal() {
               <p className="text-[14px] font-bold text-[var(--text)] mb-5">{t('txn.category')}</p>
               {filteredCategories.length > 0 ? (
                 <div className="grid grid-cols-4 gap-y-8 gap-x-4">
-                  {filteredCategories.map((cat) => {
-                    const emoji = cat.icon || FALLBACK_EMOJI[cat.id] || '📦';
-                    const bg = CAT_BG[cat.id] || 'bg-gray-50';
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => setSelectedCategory(cat.id)}
-                        className="flex flex-col items-center gap-2.5 group"
-                      >
-                        <div className={`w-14 h-14 rounded-[20px] transition-all flex items-center justify-center text-[24px] shadow-sm ${
-                          selectedCategory === cat.id
-                            ? 'bg-[#15803D] scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--bg)]'
-                            : `${bg} group-hover:scale-105`
-                        }`}>
-                          <span className={selectedCategory === cat.id ? 'grayscale brightness-200' : ''}>{emoji}</span>
-                        </div>
-                        <span className={`text-[12px] font-bold transition-colors text-center leading-tight ${
-                          selectedCategory === cat.id ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'
-                        }`}>
-                          {cat.label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {filteredCategories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className="flex flex-col items-center gap-2.5 group"
+                    >
+                      <div className={`transition-all ${
+                        selectedCategory === cat.id ? 'scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--bg)] rounded-[14px]' : 'group-hover:scale-105'
+                      }`}>
+                        <CategoryIcon 
+                          category={cat.label} 
+                          icon={cat.icon} 
+                          size="md" 
+                        />
+                      </div>
+                      <span className={`text-[12px] font-bold transition-colors text-center leading-tight ${
+                        selectedCategory === cat.id ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'
+                      }`}>
+                        {cat.label}
+                      </span>
+                    </button>
+                  ))}
                   
                   {/* Add Category Button */}
                   <button
                     onClick={() => setIsAddingCategory(true)}
                     className="flex flex-col items-center gap-2.5 group"
                   >
-                    <div className="w-14 h-14 rounded-[20px] bg-[var(--muted)] flex items-center justify-center text-[24px] shadow-sm group-hover:scale-105 transition-all text-[var(--text-dim-2)] border border-dashed border-[var(--border)]">
-                      <Plus className="w-6 h-6" />
+                    <div className="w-[44px] h-[44px] rounded-[14px] bg-[var(--muted)] flex items-center justify-center text-[24px] shadow-sm group-hover:scale-105 transition-all text-[var(--text-dim-2)] border border-dashed border-[var(--border)]">
+                      <Plus className="w-5 h-5" />
                     </div>
                     <span className="text-[12px] font-bold text-[var(--text-dim-2)] text-center leading-tight">
                       Lainnya

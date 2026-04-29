@@ -6,12 +6,8 @@ import { transactionsApi, reportsApi, type Transaction } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
 import { ArrowLeft, MoreHorizontal, Filter, ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
 
-// ─── Category emoji map (keyed by BE category ID from seed data) ─────────────
-const CAT_EMOJI: Record<string, string> = {
-  salary: '💰', freelance: '💻', investments: '📈', gifts: '🎁', 'other-income': '💵',
-  food: '🍜', transport: '🚗', housing: '🏠', utilities: '💡', entertainment: '🎬',
-  shopping: '🛍️', healthcare: '💊', education: '📚', travel: '✈️', 'other-expense': '📦',
-};
+import { CategoryIcon } from '../components/ui/CategoryIcon';
+
 
 // ─── Group transactions by date ──────────────────────────────────────────────
 function groupByDate(items: Transaction[]) {
@@ -177,9 +173,10 @@ export default function TransactionsPage() {
               <div className="flow-card p-4 space-y-4">
                 {topCategories.map((cat) => (
                   <div key={cat.categoryId} className="flex items-center gap-3">
-                    <div className="flow-icon-badge" style={{ background: `${cat.color}15` }}>
-                      <span className="text-[18px]">{CAT_EMOJI[cat.categoryId] || '📦'}</span>
-                    </div>
+                    <CategoryIcon 
+                      category={cat.label} 
+                      size="md" 
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between mb-1.5">
                         <span className="text-[13px] font-bold text-[var(--text)]">{cat.label}</span>
@@ -219,9 +216,9 @@ export default function TransactionsPage() {
                   {group.transactions.map((tx: Transaction) => (
                     <TransactionRow
                       key={tx.id}
-                      emoji={CAT_EMOJI[tx.categoryId] || tx.category?.icon || '📦'}
+                      categoryLabel={tx.category?.label || tx.categoryId}
+                      categoryIcon={tx.category?.icon}
                       label={tx.description || tx.category?.label || tx.categoryId}
-                      category={tx.category?.label || tx.categoryId}
                       amount={parseFloat(String(tx.amount))}
                       isIncome={tx.type === 'income'}
                       formatMoney={formatMoney}
@@ -238,18 +235,20 @@ export default function TransactionsPage() {
 }
 
 // ─── Transaction Row Component ───────────────────────────────────────────────
-function TransactionRow({ emoji, label, category, amount, isIncome, formatMoney }: {
-  emoji: string; label: string; category: string; amount: number; isIncome?: boolean;
+function TransactionRow({ categoryLabel, categoryIcon, label, amount, isIncome, formatMoney }: {
+  categoryLabel: string; categoryIcon?: string | null; label: string; amount: number; isIncome?: boolean;
   formatMoney: (n: number) => string;
 }) {
   return (
     <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]">
-      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] sm:rounded-[16px] bg-[var(--muted)] flex items-center justify-center text-[20px] sm:text-[22px] shrink-0 border border-transparent group-hover:border-[var(--border)] transition-all">
-        {emoji}
-      </div>
+      <CategoryIcon 
+        category={categoryLabel} 
+        icon={categoryIcon} 
+        size="md" 
+      />
       <div className="flex-1 min-w-0 pr-2 sm:pr-4">
         <p className="text-[14px] sm:text-[15px] font-bold text-[var(--text)] truncate">{label}</p>
-        <p className="text-[10px] sm:text-[11px] font-medium text-[var(--text-dim-2)] mt-0.5 opacity-60 uppercase tracking-wider">{category}</p>
+        <p className="text-[10px] sm:text-[11px] font-medium text-[var(--text-dim-2)] mt-0.5 opacity-60 uppercase tracking-wider">{categoryLabel}</p>
       </div>
       <div className="text-right shrink-0">
         <p className={`text-[15px] sm:text-[16px] font-bold tabular-nums ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>

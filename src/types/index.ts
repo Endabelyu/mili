@@ -26,12 +26,15 @@ export interface Transaction {
   type: string;
   categoryId: string;
   accountId?: string | null;
+  toAccountId?: string | null;
   description: string | null;
   date: Date | string;
   createdAt: Date;
   updatedAt: Date;
   category?: Category;
   account?: Account;
+  fromAccount?: Account;
+  toAccount?: Account;
 }
 
 export interface Budget {
