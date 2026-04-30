@@ -129,28 +129,28 @@ export default function TransactionsPage() {
       </div>
 
       {/* Hero Card - Summary */}
-      <div className="rounded-[32px] bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] p-8 text-white shadow-xl shadow-[var(--accent)]/20">
+      <div className="rounded-[32px] p-8 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm">
         <div className="grid grid-cols-3 gap-8">
           <div className="space-y-1.5">
-            <p className="text-[11px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-2">
-              <ArrowUpCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2">
+              <ArrowUpCircle className="w-3.5 h-3.5 text-[#059669]" />
               MASUK
             </p>
-            <p className="text-[22px] font-bold text-emerald-400 tabular-nums">{formatMoney(income)}</p>
+            <p className="text-[22px] font-bold text-[#059669] tabular-nums">{formatMoney(income)}</p>
           </div>
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-2">
-              <ArrowDownCircle className="w-3.5 h-3.5 text-rose-400" />
+          <div className="space-y-1.5 border-x border-[#0891B2]/10 px-8">
+            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2">
+              <ArrowDownCircle className="w-3.5 h-3.5 text-[#E11D48]" />
               KELUAR
             </p>
-            <p className="text-[22px] font-bold text-rose-400 tabular-nums">{formatMoney(expenses)}</p>
+            <p className="text-[22px] font-bold text-[#E11D48] tabular-nums">{formatMoney(expenses)}</p>
           </div>
-          <div className="space-y-1.5 border-l border-white/10 pl-8">
-            <p className="text-[11px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-2">
-              <Wallet className="w-3.5 h-3.5 opacity-70" />
+          <div className="space-y-1.5 pl-8">
+            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2">
+              <Wallet className="w-3.5 h-3.5 text-[#0891B2]" />
               SALDO
             </p>
-            <p className="text-[22px] font-bold tabular-nums">{formatMoney(balance)}</p>
+            <p className="text-[22px] font-bold text-[#0891B2] tabular-nums">{formatMoney(balance)}</p>
           </div>
         </div>
       </div>

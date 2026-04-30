@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { transactionsApi, reportsApi, targetsApi, scheduledApi, accountsApi, budgetsApi, type Transaction, type ScheduledTransaction, type Target, type Budget } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
 import { usePreferences } from '../hooks/usePreferences';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { formatName } from '../lib/utils';
 import type { Account } from '../types';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
@@ -27,6 +27,13 @@ export default function DashboardPage() {
   const { data: summaryData, isLoading: summaryLoading } = useQuery({
     queryKey: queryKeys.reports.summary(),
     queryFn: () => reportsApi.summary(),
+    enabled: !!user,
+  });
+
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const { data: currentMonthData } = useQuery({
+    queryKey: queryKeys.reports.summary(currentMonth),
+    queryFn: () => reportsApi.summary({ month: currentMonth }),
     enabled: !!user,
   });
 
@@ -82,6 +89,13 @@ export default function DashboardPage() {
   }, 0));
 
   const netWorth = totalAssets - totalLiabilities;
+  
+  // Calculate Growth (MoM)
+  const currentMonthFlow = currentMonthData?.balance ?? 0;
+  const previousNetWorth = netWorth - currentMonthFlow;
+  const growth = previousNetWorth > 0 ? (currentMonthFlow / previousNetWorth) * 100 : (currentMonthFlow > 0 ? 100 : 0);
+  const isPositive = growth > 0;
+  const isNegative = growth < 0;
 
   const currentMonthName = new Date().toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'short', year: 'numeric' });
 
@@ -94,70 +108,77 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── Net Worth Hero Card (Real Data) ─── */}
-      <div className="relative rounded-[20px] p-6 text-white overflow-hidden shadow-lg shadow-[var(--accent)]/20" style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)', border: 'none' }}>
-        <div className="flex justify-between items-start">
+      <div className="relative rounded-[32px] p-8 border-[2.5px] border-[#0891B2]/40 bg-[#CFFAFE]/30 text-[#0E7490] overflow-hidden shadow-sm">
+        <div className="relative z-10 flex justify-between items-start">
           <div>
-            <p className="text-[12px] font-bold opacity-80 tracking-[0.05em] uppercase">{t('dashboard.netWorth')}</p>
-            <p className="text-[24px] sm:text-[34px] font-bold tracking-[-0.02em] mt-1 tabular-nums truncate">{formatMoney(netWorth)}</p>
-            <div className="flex flex-wrap gap-4 mt-3 text-[12px] font-bold">
-              <span className="opacity-90">{t('dashboard.assets')} <span className="opacity-100 tabular-nums">{formatMoney(totalAssets)}</span></span>
+            <p className="text-[12px] font-bold text-[#0E7490]/60 tracking-[0.05em] uppercase">{t('dashboard.netWorth')}</p>
+            <p className="text-[32px] sm:text-[44px] font-bold tracking-[-0.03em] mt-1 tabular-nums text-[#0891B2]">{formatMoney(netWorth)}</p>
+            <div className="flex flex-wrap gap-4 mt-4 text-[12px] font-bold">
+              <span className="text-[#0E7490]/50">{t('dashboard.assets')} <span className="text-[#0E7490] tabular-nums">{formatMoney(totalAssets)}</span></span>
               {totalLiabilities > 0 && (
-                <span className="opacity-90">{t('dashboard.liabilities')} <span className="opacity-100 tabular-nums">{formatMoney(totalLiabilities)}</span></span>
+                <span className="text-[#0E7490]/50">{t('dashboard.liabilities')} <span className="text-[#0E7490] tabular-nums">{formatMoney(totalLiabilities)}</span></span>
               )}
             </div>
           </div>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/20 backdrop-blur-sm">
-            <TrendingUp className="w-[11px] h-[11px]" /> +0%
-          </span>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-colors ${
+            isPositive ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 
+            isNegative ? 'bg-rose-500/10 border-rose-500/20 text-rose-600' : 
+            'bg-gray-500/10 border-gray-500/20 text-gray-600'
+          }`}>
+            {isPositive ? <TrendingUp className="w-[12px] h-[12px]" /> : 
+             isNegative ? <TrendingDown className="w-[12px] h-[12px]" /> : 
+             <Minus className="w-[12px] h-[12px]" />}
+            {isPositive ? '+' : ''}{growth.toFixed(1)}%
+          </div>
         </div>
         {/* Subtle Wave Chart Placeholder */}
-        <div className="absolute bottom-0 left-0 w-full h-16 opacity-30 pointer-events-none">
+        <div className="absolute bottom-0 left-0 w-full h-24 opacity-10 pointer-events-none">
           <svg viewBox="0 0 400 100" className="w-full h-full preserve-3d">
-             <path d="M0 80 Q 100 70, 200 85 T 400 75 L 400 100 L 0 100 Z" fill="white" />
+             <path d="M0 80 Q 100 70, 200 85 T 400 75 L 400 100 L 0 100 Z" fill="#0891B2" />
           </svg>
         </div>
       </div>
 
       {/* ─── Monthly Cash Flow (Real Data) ─── */}
-      <div className="flow-card p-6">
+      <div className="rounded-[24px] p-6 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm">
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-[14px] font-bold text-[var(--text)] tracking-[-0.01em]">{t('dashboard.cashFlow')}</h2>
-          <span className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-70 uppercase tracking-widest">{currentMonthName}</span>
+          <h2 className="text-[14px] font-bold text-[#0E7490] tracking-[-0.01em]">{t('dashboard.cashFlow')}</h2>
+          <span className="text-[12px] font-bold text-[#0E7490] opacity-60 uppercase tracking-widest">{currentMonthName}</span>
         </div>
         {summaryLoading ? (
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
-              <div className="h-12 rounded-xl skeleton"></div>
-              <div className="h-12 rounded-xl skeleton"></div>
-              <div className="h-12 rounded-xl skeleton"></div>
+              <div className="h-12 rounded-xl bg-[#CFFAFE] animate-pulse"></div>
+              <div className="h-12 rounded-xl bg-[#CFFAFE] animate-pulse"></div>
+              <div className="h-12 rounded-xl bg-[#CFFAFE] animate-pulse"></div>
             </div>
-            <div className="h-2 rounded-full w-full skeleton"></div>
+            <div className="h-2 rounded-full w-full bg-[#CFFAFE] animate-pulse"></div>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
               <div>
-                <p className="text-[10px] sm:text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.income')}</p>
-                <p className="text-[14px] sm:text-[18px] font-bold text-[var(--income)] tabular-nums truncate">{formatMoney(income)}</p>
+                <p className="text-[10px] sm:text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1">{t('dashboard.income')}</p>
+                <p className="text-[14px] sm:text-[20px] font-bold text-[#059669] tabular-nums truncate">{formatMoney(income)}</p>
               </div>
-              <div className="text-center">
-                <p className="text-[10px] sm:text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.expense')}</p>
-                <p className="text-[14px] sm:text-[18px] font-bold text-[var(--expense)] tabular-nums truncate">{formatMoney(expenses)}</p>
+              <div className="text-center border-x border-[#0891B2]/10 px-2">
+                <p className="text-[10px] sm:text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1">{t('dashboard.expense')}</p>
+                <p className="text-[14px] sm:text-[20px] font-bold text-[#E11D48] tabular-nums truncate">{formatMoney(expenses)}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] sm:text-[11px] font-bold text-[var(--text-dim)] uppercase mb-1">{t('dashboard.balance')}</p>
-                <p className={`text-[14px] sm:text-[18px] font-bold tabular-nums truncate ${balance >= 0 ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
+                <p className="text-[10px] sm:text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1">{t('dashboard.balance')}</p>
+                <p className={`text-[14px] sm:text-[20px] font-bold tabular-nums truncate ${balance >= 0 ? 'text-[#059669]' : 'text-[#E11D48]'}`}>
                   {formatMoney(balance)}
                 </p>
               </div>
             </div>
-            <div className="h-2 w-full rounded-full bg-[var(--muted)] overflow-hidden flex">
+            <div className="h-2.5 w-full rounded-full bg-[#CFFAFE] overflow-hidden flex shadow-inner">
               {income === 0 && expenses === 0 ? (
-                <div className="h-full bg-[var(--border)] w-full" />
+                <div className="h-full bg-[#A5F3FC] w-full" />
               ) : (
                 <>
-                  <div className="h-full bg-[var(--income)]" style={{ width: `${(income / (income + expenses)) * 100}%` }} />
-                  <div className="h-full bg-[var(--expense)]" style={{ width: `${(expenses / (income + expenses)) * 100}%` }} />
+                  <div className="h-full bg-[#10B981]" style={{ width: `${(income / (income + expenses)) * 100}%` }} />
+                  <div className="h-full bg-[#EF4444]" style={{ width: `${(expenses / (income + expenses)) * 100}%` }} />
                 </>
               )}
             </div>
