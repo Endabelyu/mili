@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=https://finance-api.endabelyu.com
+        - VITE_API_URL=https://mili-api.endabelyu.com
     container_name: mili-web
     ports:
       - "4016:4016"
