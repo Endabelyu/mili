@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowUpRight, ArrowDownRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowUpRight, ArrowDownRight, X, ArrowLeft } from 'lucide-react';
 import { calendarApi, type CalendarDay } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
 import type { Transaction } from '../api/client';
@@ -13,6 +14,7 @@ dayjs.locale('id');
 
 export default function CalendarPage() {
   const { formatMoney } = usePreferences();
+  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
@@ -57,8 +59,16 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em]">Kalender</h1>
+      <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em]">Kalender</h1>
+        </div>
         <div className="w-10 h-10 rounded-full bg-[var(--muted)] flex items-center justify-center text-[var(--text)]">
           <CalendarIcon className="w-5 h-5" />
         </div>
