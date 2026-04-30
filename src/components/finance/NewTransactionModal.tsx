@@ -211,9 +211,9 @@ export function NewTransactionModal() {
       type: type,
       amount: amount, 
       categoryId: selectedCategory,
-      accountId: selectedAccount || null,
-      toAccountId: toAccountId || null,
-      description: description || null,
+      accountId: selectedAccount || undefined,
+      toAccountId: toAccountId || undefined,
+      description: description || undefined,
       date: editingTxn?.date ? new Date(editingTxn.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
     };
 
@@ -454,28 +454,26 @@ export function NewTransactionModal() {
                   {filteredCategories.map((cat) => (
                     <button
                       key={cat.id}
+                      type="button"
                       onClick={() => setSelectedCategory(cat.id)}
                       className="flex flex-col items-center gap-2 group w-full"
                     >
                       <div className={`transition-all ${
-                        selectedCategory === cat.id ? 'scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--bg)] rounded-[16px]' : 'group-hover:scale-105'
+                        selectedCategory === cat.id ? 'scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--bg)] rounded-[20px] bg-[var(--accent-tint)]' : 'group-hover:scale-105'
                       }`}>
                         <CategoryIcon 
                           category={cat.label} 
                           icon={cat.icon} 
                           size="lg" 
+                          label={cat.label}
                         />
                       </div>
-                      <span className={`text-[11px] font-bold transition-colors text-center leading-[1.2] line-clamp-2 h-7 flex items-start justify-center max-w-[64px] ${
-                        selectedCategory === cat.id ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'
-                      }`}>
-                        {cat.label}
-                      </span>
                     </button>
                   ))}
                   
                   {/* Add Category Button */}
                   <button
+                    type="button"
                     onClick={() => setIsAddingCategory(true)}
                     className="flex flex-col items-center gap-2 group w-full"
                   >

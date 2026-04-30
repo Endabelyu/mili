@@ -132,25 +132,25 @@ export default function TransactionsPage() {
       <div className="rounded-[32px] bg-gradient-to-br from-[var(--accent)] to-[var(--accent-2)] p-8 text-white shadow-xl shadow-[var(--accent)]/20">
         <div className="grid grid-cols-3 gap-8">
           <div className="space-y-1.5">
-            <p className="text-[11px] font-bold opacity-70 uppercase tracking-widest flex items-center gap-2">
-              <ArrowUpCircle className="w-3.5 h-3.5" />
-              Masuk
+            <p className="text-[11px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-2">
+              <ArrowUpCircle className="w-3.5 h-3.5 text-emerald-400" />
+              MASUK
             </p>
-            <p className="text-[20px] font-bold">{formatMoney(income)}</p>
+            <p className="text-[22px] font-bold text-emerald-400 tabular-nums">{formatMoney(income)}</p>
           </div>
           <div className="space-y-1.5">
-            <p className="text-[11px] font-bold opacity-70 uppercase tracking-widest flex items-center gap-2">
-              <ArrowDownCircle className="w-3.5 h-3.5" />
-              Keluar
+            <p className="text-[11px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-2">
+              <ArrowDownCircle className="w-3.5 h-3.5 text-rose-400" />
+              KELUAR
             </p>
-            <p className="text-[20px] font-bold">{formatMoney(expenses)}</p>
+            <p className="text-[22px] font-bold text-rose-400 tabular-nums">{formatMoney(expenses)}</p>
           </div>
           <div className="space-y-1.5 border-l border-white/10 pl-8">
-            <p className="text-[11px] font-bold opacity-70 uppercase tracking-widest flex items-center gap-2">
-              <Wallet className="w-3.5 h-3.5" />
-              Saldo
+            <p className="text-[11px] font-bold opacity-80 uppercase tracking-widest flex items-center gap-2">
+              <Wallet className="w-3.5 h-3.5 opacity-70" />
+              SALDO
             </p>
-            <p className="text-[20px] font-bold">{formatMoney(balance)}</p>
+            <p className="text-[22px] font-bold tabular-nums">{formatMoney(balance)}</p>
           </div>
         </div>
       </div>

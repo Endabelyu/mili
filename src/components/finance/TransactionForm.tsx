@@ -191,28 +191,39 @@ export function TransactionForm({ transaction, categories, accounts = [], onSucc
         {errors.amount && <p className="mt-1 text-xs text-rose-500 font-medium">{errors.amount}</p>}
       </div>
 
-      {/* Category Select */}
-      <div>
-        <label htmlFor="categoryId" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
-          Category
+      {/* Category Selection Grid */}
+      <div className="space-y-3">
+        <label className="block text-[13px] font-bold text-[var(--text)] mb-2.5 ml-1">
+          {t('txn.category')}
         </label>
-        <div className="relative group">
-          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <select
-            id="categoryId"
-            name="categoryId"
-            defaultValue={transaction?.categoryId || ''}
-            className="w-full rounded-xl border-2 pl-10 pr-4 py-2.5 text-sm bg-[var(--card-bg)] text-[var(--text-primary)] border-[#5c4a44]/15 focus:border-[#5c4a44] outline-none"
-          >
-            <option value="" disabled>Select a category</option>
+        <div className="bg-[var(--muted)]/30 rounded-[24px] p-4 border border-[var(--border)]">
+          <div className="grid grid-cols-3 gap-3 max-h-[280px] overflow-y-auto p-1">
             {availableCategories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.icon && `${category.icon} `}{category.label}
-              </option>
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById('categoryId') as HTMLInputElement;
+                  if (input) input.value = category.id;
+                  // Force a re-render if needed or just use state
+                }}
+                className={`
+                  flex flex-col items-center justify-center p-3 rounded-2xl transition-all
+                  hover:bg-[var(--muted)] border border-transparent
+                `}
+              >
+                <CategoryIcon 
+                  category={category.label} 
+                  icon={category.icon} 
+                  size="md" 
+                  label={category.label}
+                />
+              </button>
             ))}
-          </select>
+          </div>
+          <input type="hidden" id="categoryId" name="categoryId" defaultValue={transaction?.categoryId || ''} />
         </div>
-        {errors.categoryId && <p className="mt-1 text-xs text-rose-500 font-medium">{errors.categoryId}</p>}
+        {errors.categoryId && <p className="mt-1 text-xs text-rose-500 font-medium ml-1">{errors.categoryId}</p>}
       </div>
 
       {/* Date Input */}

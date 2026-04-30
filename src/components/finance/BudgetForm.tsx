@@ -151,10 +151,10 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
           </button>
           <input type="hidden" name="categoryId" value={selectedCategoryId} />
 
-          {/* Custom Dropdown List */}
+          {/* Custom Dropdown Grid */}
           {isCategoryDropdownOpen && !isEditing && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-xl z-[100] overflow-hidden animate-fade-in">
-              <div className="max-h-[260px] overflow-y-auto py-2">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--card)] border border-[var(--border)] rounded-[24px] shadow-xl z-[100] overflow-hidden animate-fade-in p-4">
+              <div className="max-h-[300px] overflow-y-auto grid grid-cols-3 gap-2 p-1">
                 {availableCategories.map((category) => (
                   <button
                     key={category.id}
@@ -164,16 +164,18 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
                       setIsCategoryDropdownOpen(false);
                     }}
                     className={`
-                      w-full px-4 py-3 flex items-center gap-3 text-[14px] font-bold text-left transition-colors
-                      ${selectedCategoryId === category.id ? 'bg-[var(--accent-tint)] text-[var(--accent)]' : 'text-[var(--text)] hover:bg-[var(--muted)]'}
+                      flex flex-col items-center justify-center p-3 rounded-2xl transition-all
+                      ${selectedCategoryId === category.id 
+                        ? 'bg-[var(--accent-tint)] ring-1 ring-[var(--accent)]' 
+                        : 'hover:bg-[var(--muted)] border border-transparent'}
                     `}
                   >
                     <CategoryIcon 
                       category={category.label} 
                       icon={category.icon} 
                       size="md" 
+                      label={category.label}
                     />
-                    <span>{category.label}</span>
                   </button>
                 ))}
               </div>
