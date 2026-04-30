@@ -33,6 +33,7 @@ function groupByDate(items: Transaction[]) {
 
 export default function TransactionsPage() {
   const [view, setView] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('daily');
+  const [filter, setFilter] = useState<'all' | 'income' | 'expense' | 'transfer'>('all');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const search = searchParams.get('search') || undefined;
@@ -40,8 +41,8 @@ export default function TransactionsPage() {
 
   // Fetch real transactions
   const { data: txnsData, isLoading: txnsLoading } = useQuery({
-    queryKey: queryKeys.transactions.list({ limit: 50, search }),
-    queryFn: () => transactionsApi.list({ limit: 50, search }),
+    queryKey: queryKeys.transactions.list({ limit: 50, search, type: filter === 'all' ? undefined : filter }),
+    queryFn: () => transactionsApi.list({ limit: 50, search, type: filter === 'all' ? undefined : filter }),
   });
 
   // Fetch real summary
@@ -92,12 +93,17 @@ export default function TransactionsPage() {
 
       <div className="flex items-center justify-between pt-4">
         <div className="flex items-center gap-4">
-          <button className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em]">Riwayat Transaksi</h1>
         </div>
-        <button className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors">
+        <button 
+          className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
+        >
           <Filter className="w-5 h-5" />
         </button>
       </div>
@@ -151,14 +157,20 @@ export default function TransactionsPage() {
 
       {/* Filter Pills */}
       <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
-        {['Semua', 'Pemasukan', 'Pengeluaran', 'Transfer'].map((label, i) => (
+        {[
+          { id: 'all', label: 'Semua' },
+          { id: 'income', label: 'Pemasukan' },
+          { id: 'expense', label: 'Pengeluaran' },
+          { id: 'transfer', label: 'Transfer' }
+        ].map((item) => (
           <button
-            key={label}
+            key={item.id}
+            onClick={() => setFilter(item.id as 'all' | 'income' | 'expense' | 'transfer')}
             className={`px-6 py-2.5 rounded-2xl text-[14px] font-bold whitespace-nowrap transition-all active:scale-95 ${
-              i === 0 ? 'bg-[var(--text)] text-[var(--bg)] shadow-lg' : 'bg-[var(--muted)] text-[var(--text-dim-2)] hover:bg-[var(--border)]'
+              filter === item.id ? 'bg-[var(--text)] text-[var(--bg)] shadow-lg' : 'bg-[var(--muted)] text-[var(--text-dim-2)] hover:bg-[var(--border)]'
             }`}
           >
-            {label}
+            {item.label}
           </button>
         ))}
       </div>

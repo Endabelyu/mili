@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, X, Wallet, CreditCard, Landmark, Coins, TrendingUp, Check, Trash2 } from 'lucide-react';
+import { Plus, X, Wallet, CreditCard, Landmark, Coins, TrendingUp, Check, Trash2, ArrowLeft } from 'lucide-react';
 import { accountsApi } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
 import { usePreferences } from '../hooks/usePreferences';
 import type { Account } from '../types';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
+import { StatusToggle } from '../components/ui/StatusToggle';
 
 // ─── Donut Chart Component ───────────────────────────────────────────────────
 interface Segment {
@@ -14,7 +16,7 @@ interface Segment {
   color: string;
 }
 
-function NetWorthDonut({ value, segments }: { value: string; segments: Segment[] }) {
+function NetWorthDonut({ value, segments, t }: { value: string; segments: Segment[]; t: (k: string) => string }) {
   const total = segments.reduce((acc, s) => acc + s.value, 0);
   const radius = 45;
   const circumference = 2 * Math.PI * radius;
@@ -56,7 +58,7 @@ function NetWorthDonut({ value, segments }: { value: string; segments: Segment[]
         ) : null}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-        <p className="text-[9px] font-bold text-[var(--text-dim-2)] uppercase tracking-[0.12em] leading-none mb-1">Kekayaan Bersih</p>
+        <p className="text-[9px] font-bold text-[var(--text-dim-2)] uppercase tracking-[0.12em] leading-none mb-1">{t('acc.netWorth')}</p>
         <p className="text-[18px] font-bold text-[var(--text)] tracking-tighter tabular-nums leading-none">{value}</p>
       </div>
     </div>
@@ -64,16 +66,17 @@ function NetWorthDonut({ value, segments }: { value: string; segments: Segment[]
 }
 
 
-const ACCOUNT_TYPES = [
-  { id: 'bank', label: 'Bank', icon: Landmark },
-  { id: 'e-wallet', label: 'E-Wallet', icon: Wallet },
-  { id: 'cash', label: 'Tunai (Cash)', icon: Coins },
-  { id: 'investment', label: 'Investasi', icon: TrendingUp },
-  { id: 'credit-card', label: 'Kartu Kredit', icon: CreditCard },
+const ACCOUNT_TYPES = (t: (k: string) => string) => [
+  { id: 'bank', label: t('acc.bank'), icon: Landmark },
+  { id: 'e-wallet', label: t('acc.eWallet'), icon: Wallet },
+  { id: 'cash', label: t('acc.cash'), icon: Coins },
+  { id: 'investment', label: t('acc.investment'), icon: TrendingUp },
+  { id: 'credit-card', label: t('acc.creditCard'), icon: CreditCard },
 ];
 
 export default function AccountsPage() {
-  const { formatMoney } = usePreferences();
+  const { formatMoney, t } = usePreferences();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -84,6 +87,7 @@ export default function AccountsPage() {
   const [type, setType] = useState<Account['type']>('bank');
   const [balance, setBalance] = useState('');
   const [color, setColor] = useState('#15803D');
+  const [isDefault, setIsDefault] = useState(false);
 
   const { data: accounts = [], isLoading } = useQuery({
     queryKey: queryKeys.accounts.all,
@@ -141,7 +145,7 @@ export default function AccountsPage() {
       balance: balance || '0',
       currency: 'IDR',
       color,
-      isDefault: editingAccount ? editingAccount.isDefault : accounts.length === 0,
+      isDefault,
     };
 
     if (editingAccount) {
@@ -153,7 +157,7 @@ export default function AccountsPage() {
 
   const handleDelete = () => {
     if (!editingAccount) return;
-    if (window.confirm(`Apakah Anda yakin ingin menghapus akun "${editingAccount.name}"?`)) {
+    if (window.confirm(`${t('acc.deleteConfirm')} "${editingAccount.name}"?`)) {
       setSaving(true);
       deleteMutation.mutate(editingAccount.id);
     }
@@ -165,6 +169,7 @@ export default function AccountsPage() {
     setType(acc.type);
     setBalance(String(acc.balance));
     setColor(acc.color);
+    setIsDefault(acc.isDefault || false);
     setIsModalOpen(true);
   };
 
@@ -175,6 +180,7 @@ export default function AccountsPage() {
     setBalance('');
     setType('bank');
     setColor('#15803D');
+    setIsDefault(false);
     setSaving(false);
   };
 
@@ -201,11 +207,11 @@ export default function AccountsPage() {
 
   // Prepare dynamic chart segments
   const typeMap: Record<string, { label: string; color: string }> = {
-    'bank': { label: 'Bank', color: '#7F56D9' },
-    'e-wallet': { label: 'E-Wallet', color: '#0BA5EC' },
-    'cash': { label: 'Tunai', color: '#F79009' },
-    'investment': { label: 'Investasi', color: '#EE46BC' },
-    'credit-card': { label: 'Kartu Kredit', color: '#F04438' },
+    'bank': { label: t('acc.bank'), color: '#7F56D9' },
+    'e-wallet': { label: t('acc.eWallet'), color: '#0BA5EC' },
+    'cash': { label: t('acc.cash'), color: '#F79009' },
+    'investment': { label: t('acc.investment'), color: '#EE46BC' },
+    'credit-card': { label: t('acc.creditCard'), color: '#F04438' },
   };
 
   const chartSegments: Segment[] = Object.entries(grouped)
@@ -223,7 +229,15 @@ export default function AccountsPage() {
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <div className="flex items-center justify-between pt-4">
-        <h1 className="text-[32px] font-bold text-[var(--text)] tracking-[-0.03em]">Akun</h1>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-[32px] font-bold text-[var(--text)] tracking-[-0.03em]">{t('acc.title')}</h1>
+        </div>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors"
@@ -235,7 +249,7 @@ export default function AccountsPage() {
       {/* Hero Card - High Fidelity Donut Chart */}
       <div className="flow-card p-8 flex flex-col gap-8">
         <div className="flex flex-col md:flex-row items-center gap-10">
-          <NetWorthDonut value={formatMoney(totalBalance)} segments={chartSegments} />
+          <NetWorthDonut value={formatMoney(totalBalance)} segments={chartSegments} t={t} />
           
           <div className="w-full flex-1 grid grid-cols-2 gap-x-6 gap-y-3 mt-4 md:mt-0">
             {chartSegments.length > 0 ? (
@@ -249,7 +263,7 @@ export default function AccountsPage() {
               ))
             ) : (
               <div className="col-span-full py-4 text-center">
-                <p className="text-[13px] font-bold text-[var(--text-dim-2)] opacity-60">Belum ada data rekening untuk ditampilkan</p>
+                <p className="text-[13px] font-bold text-[var(--text-dim-2)] opacity-60">{t('acc.noAccounts')}</p>
               </div>
             )}
           </div>
@@ -257,11 +271,11 @@ export default function AccountsPage() {
 
         <div className="grid grid-cols-2 gap-8 pt-6 border-t border-[var(--border)] border-dashed">
           <div>
-            <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">Aset</p>
+            <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">{t('acc.assets')}</p>
             <p className="text-[22px] font-bold text-[#15803D]">{formatMoney(assets)}</p>
           </div>
           <div>
-            <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">Kewajiban</p>
+            <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">{t('acc.liabilities')}</p>
             <p className="text-[22px] font-bold text-[#F04438]">{formatMoney(liabilities)}</p>
           </div>
         </div>
@@ -273,18 +287,18 @@ export default function AccountsPage() {
           <div className="w-20 h-20 rounded-3xl bg-[#15803D]/10 text-[#15803D] flex items-center justify-center mx-auto mb-6">
             <Wallet className="w-10 h-10" />
           </div>
-          <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada akun</h3>
-          <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[300px] mx-auto leading-relaxed">Tambahkan akun bank, e-wallet, atau aset Anda untuk mulai melacak kekayaan Anda.</p>
+          <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">{t('acc.noAccounts')}</h3>
+          <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[300px] mx-auto leading-relaxed">{t('acc.noAccountsDesc')}</p>
           <button 
             onClick={() => setIsModalOpen(true)}
             className="px-8 py-4 rounded-2xl bg-[var(--text)] text-[var(--bg)] font-bold text-[15px] shadow-xl transition-all active:scale-95"
           >
-            Tambah Akun Pertama
+            {t('acc.addAccount')}
           </button>
         </div>
       ) : (
         <div className="space-y-10">
-          {ACCOUNT_TYPES.map(({ id, label, icon: Icon }) => {
+          {ACCOUNT_TYPES(t).map(({ id, label, icon: Icon }) => {
             const items = grouped[id];
             if (!items || items.length === 0) return null;
             
@@ -311,7 +325,7 @@ export default function AccountsPage() {
                         <div className="flex items-center gap-2">
                           <p className="text-[16px] font-bold text-[var(--text)] truncate">{acc.name}</p>
                           {acc.isDefault && (
-                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#15803D]/10 text-[#15803D] uppercase tracking-wider">Utama</span>
+                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[#15803D]/10 text-[#15803D] uppercase tracking-wider">{t('acc.main')}</span>
                           )}
                         </div>
                         <p className="text-[12px] font-medium text-[var(--text-dim-2)] opacity-60 mt-1">
@@ -339,7 +353,7 @@ export default function AccountsPage() {
           <div className="fixed inset-0 bg-black/40 z-[90] backdrop-blur-sm animate-fade-in" onClick={handleCloseModal} />
           <div className="fixed inset-x-0 bottom-0 lg:top-[10%] lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] pb-safe">
             <div className="flex items-center justify-between p-4 shrink-0 border-b border-[var(--border)]">
-              <h2 className="text-[16px] font-bold text-[var(--text)] pl-2">{editingAccount ? 'Ubah Akun' : 'Tambah Akun'}</h2>
+              <h2 className="text-[16px] font-bold text-[var(--text)] pl-2">{editingAccount ? t('acc.editAccount') : t('acc.addAccount')}</h2>
               <div className="flex items-center gap-2">
                 {editingAccount && (
                   <button 
@@ -359,9 +373,9 @@ export default function AccountsPage() {
             <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
               {/* Type */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Jenis Akun</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('acc.accountType')}</label>
                 <div className="grid grid-cols-2 gap-3">
-                  {ACCOUNT_TYPES.map(({ id, label, icon: Icon }) => (
+                  {ACCOUNT_TYPES(t).map(({ id, label, icon: Icon }) => (
                     <button
                       key={id}
                       onClick={() => setType(id as Account['type'])}
@@ -380,7 +394,7 @@ export default function AccountsPage() {
 
               {/* Name */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Nama Akun</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('acc.accountName')}</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -391,7 +405,7 @@ export default function AccountsPage() {
 
               {/* Balance */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{editingAccount ? 'Saldo Saat Ini' : 'Saldo Awal'}</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{editingAccount ? t('acc.currentBalance') : t('acc.initialBalance')}</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--text-dim-2)]">Rp</span>
                   <input
@@ -406,11 +420,12 @@ export default function AccountsPage() {
 
               {/* Color */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Warna</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('common.color')}</label>
                 <div className="flex gap-3 flex-wrap">
                   {['#15803D', '#0BA5EC', '#7F56D9', '#F04438', '#F79009', '#EE46BC', '#334155'].map((c) => (
                     <button
                       key={c}
+                      type="button"
                       onClick={() => setColor(c)}
                       className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform ${color === c ? 'scale-110 ring-2 ring-offset-2 ring-offset-[var(--bg)]' : ''}`}
                       style={{ backgroundColor: c, borderColor: c }}
@@ -420,6 +435,15 @@ export default function AccountsPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Default Toggle */}
+              <div className="flex items-center justify-between p-4 bg-[var(--muted)]/50 rounded-[20px] border border-[var(--border)]">
+                <div className="flex flex-col">
+                  <label className="text-[14px] font-bold text-[var(--text)]">{t('acc.setAsDefault')}</label>
+                  <p className="text-[11px] font-medium text-[var(--text-dim-2)] opacity-60">{t('acc.setAsDefaultDesc')}</p>
+                </div>
+                <StatusToggle active={isDefault} onToggle={() => setIsDefault(!isDefault)} />
+              </div>
             </div>
 
             <div className="p-4 border-t border-[var(--border)] shrink-0">
@@ -428,7 +452,7 @@ export default function AccountsPage() {
                 disabled={!name || saving}
                 className="w-full py-4 rounded-[16px] bg-[var(--accent)] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50 transition-all active:scale-95"
               >
-                {saving ? 'Menyimpan...' : editingAccount ? 'Simpan Perubahan' : 'Simpan Akun'}
+                {saving ? t('common.loading') : editingAccount ? t('acc.saveAccount') : t('acc.saveAccount')}
               </button>
             </div>
           </div>

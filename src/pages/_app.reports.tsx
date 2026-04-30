@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../lib/query-keys';
 import {
@@ -15,12 +16,14 @@ import {
 } from 'recharts';
 import { transactionsApi } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
+import { ArrowLeft } from 'lucide-react';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
   const { t, formatMoney, language } = usePreferences();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'expense' | 'income'>('expense');
 
   // Get current YYYY-MM
@@ -102,9 +105,17 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em]">{t('analytics.title')}</h1>
-        <p className="text-[14px] font-medium text-[var(--text-dim)]">{currentMonthName}</p>
+      <div className="flex items-center gap-4 pt-4">
+        <button 
+          onClick={() => navigate(-1)}
+          className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em] leading-tight">{t('analytics.title')}</h1>
+          <p className="text-[14px] font-medium text-[var(--text-dim-2)] opacity-60">{currentMonthName}</p>
+        </div>
       </div>
 
       {/* ─── Tab Switcher ─── */}

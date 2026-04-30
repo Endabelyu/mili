@@ -106,20 +106,18 @@ export function NewTransactionModal() {
   const filteredCategories = useMemo(() => {
     if (!categories) return [];
     if (type === 'transfer') {
-      // Find a transfer category or return all for now
-      const transferCat = categories.find(c => c.id === 'transfer');
-      if (transferCat) return [transferCat];
-      return categories.filter(c => c.type === 'both' || c.type === 'expense');
+      return categories;
     }
     return categories.filter(c => c.type === type || c.type === 'both');
   }, [categories, type]);
 
   // Auto-select category if transfer and only one available
   useEffect(() => {
-    if (type === 'transfer' && filteredCategories.length === 1 && !selectedCategory) {
-      setSelectedCategory(filteredCategories[0].id);
+    if (type === 'transfer' && !selectedCategory && categories) {
+      const transferCat = categories.find(c => c.id === 'transfer');
+      if (transferCat) setSelectedCategory(transferCat.id);
     }
-  }, [type, filteredCategories, selectedCategory]);
+  }, [type, categories, selectedCategory]);
 
   // Auto-focus desktop input
   useEffect(() => {

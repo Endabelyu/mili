@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../lib/query-keys';
 import { budgetsApi, categoriesApi, type Budget } from '../api/client';
@@ -12,6 +13,7 @@ import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 export default function BudgetPage() {
   const { formatMoney, t } = usePreferences();
+  const navigate = useNavigate();
 
   // Get current YYYY-MM
   const currentMonth = useMemo(() => {
@@ -73,7 +75,10 @@ export default function BudgetPage() {
 
       <div className="flex items-center justify-between pt-4">
         <div className="flex items-center gap-4">
-          <button className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
