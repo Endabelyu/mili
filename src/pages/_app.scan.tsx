@@ -5,8 +5,21 @@ import { useNavigate } from 'react-router-dom';
 export default function ScanReceiptPage() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleGalleryClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log("Selected file from gallery:", file.name);
+      // Logic for OCR processing will go here
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -85,9 +98,19 @@ export default function ScanReceiptPage() {
 
       {/* ─── Footer Actions ─── */}
       <div className="bg-[var(--bg)] p-8 pb-14 lg:pb-10 flex items-center gap-5 shrink-0 border-t border-[var(--border)]">
-        <button className="flex-1 h-16 rounded-[24px] bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center gap-3 text-[16px] font-bold text-[var(--text)] transition-all active:scale-[0.96] hover:bg-[var(--border)]">
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          className="hidden" 
+          accept="image/*" 
+          onChange={handleFileChange}
+        />
+        <button 
+          onClick={handleGalleryClick}
+          className="flex-1 h-16 rounded-[24px] bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center gap-3 text-[16px] font-bold text-[var(--text)] transition-all active:scale-[0.96] hover:bg-[var(--border)]"
+        >
           <ImageIcon className="w-6 h-6 text-[var(--text-dim-2)]" />
-          Unggah Foto
+          Galeri
         </button>
         <button className="flex-1 h-16 rounded-[24px] bg-[#15803D] flex items-center justify-center gap-3 text-[16px] font-bold text-white transition-all active:scale-[0.96] shadow-xl shadow-[#15803D25] hover:bg-[#0E9355]">
           <Camera className="w-6 h-6" />
