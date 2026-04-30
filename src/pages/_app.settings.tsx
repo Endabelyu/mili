@@ -20,7 +20,9 @@ import {
   X,
 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
-import ExcelJS from 'exceljs';
+import type * as ExcelJSTypes from 'exceljs';
+// ExcelJS imported dynamically to avoid Vite fetch issues
+// import * as ExcelJS from 'exceljs';
 
 import { useQuery } from '@tanstack/react-query';
 import { transactionsApi, accountsApi, budgetsApi } from '../api/client';
@@ -29,7 +31,7 @@ import { authClient } from '../lib/auth-client';
 export default function SettingsPage() {
   const { language, setLanguage, currency, setCurrency, isDark, toggleDark, t } = usePreferences();
   const { data: session } = authClient.useSession();
-  const userName = session?.user?.name?.toLowerCase().replace(/\s+/g, '_') || 'user';
+  const userName = session?.user?.name?.toLowerCase()?.replace(/\s+/g, '_') || 'user';
 
   // Sheet state for language/currency pickers
   const [showLangPicker, setShowLangPicker] = useState(false);
@@ -92,7 +94,9 @@ export default function SettingsPage() {
 
   const handleExportExcel = async () => {
     setShowExportPicker(false);
-    const workbook = new ExcelJS.Workbook();
+    const ExcelJS = await import('exceljs');
+    // @ts-ignore
+    const workbook = new (ExcelJS.Workbook || (ExcelJS as any).default.Workbook)();
     const worksheet = workbook.addWorksheet('Laporan Keuangan');
 
     // 1. Setup Columns
@@ -110,12 +114,12 @@ export default function SettingsPage() {
     const INCOME_COLOR = 'FF10B981';
     const EXPENSE_COLOR = 'FFEF4444';
 
-    const HEADER_STYLE: Partial<ExcelJS.Style> = {
+    const HEADER_STYLE: Partial<ExcelJSTypes.Style> = {
       font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: BRAND_COLOR } },
       alignment: { vertical: 'middle', horizontal: 'center' }
     };
-    const SUB_HEADER_STYLE: Partial<ExcelJS.Style> = {
+    const SUB_HEADER_STYLE: Partial<ExcelJSTypes.Style> = {
       font: { bold: true, color: { argb: 'FF334155' } },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } },
       border: { bottom: { style: 'thin' } }
@@ -551,7 +555,6 @@ export default function SettingsPage() {
       <div className="space-y-3">
         <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('settings.preferences')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
-          {/* Language — opens picker */}
           <button onClick={() => setShowLangPicker(true)} className="w-full flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer group">
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
               <Globe className="w-5 h-5 text-blue-500" />
@@ -565,7 +568,6 @@ export default function SettingsPage() {
             </div>
           </button>
 
-          {/* Currency — opens picker */}
           <button onClick={() => setShowCurrencyPicker(true)} className="w-full flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer group">
             <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
               <Coins className="w-5 h-5 text-orange-500" />
@@ -579,7 +581,6 @@ export default function SettingsPage() {
             </div>
           </button>
 
-          {/* Dark Mode Toggle */}
           <div className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer" onClick={toggleDark}>
             <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
               <Moon className="w-5 h-5 text-slate-500" />
@@ -595,7 +596,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ─── Notifications ─── */}
       <div className="space-y-3">
         <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('settings.notifications')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
@@ -610,7 +610,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ─── Data & Privacy ─── */}
       <div className="space-y-3">
         <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('settings.dataPrivacy')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
@@ -621,7 +620,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ─── About ─── */}
       <div className="space-y-3">
         <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('settings.about')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
@@ -641,7 +639,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ─── Version Footer ─── */}
       <div className="flow-card p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
@@ -655,7 +652,6 @@ export default function SettingsPage() {
         <span className="text-[12px] font-bold text-[var(--income)] bg-[rgba(18,183,106,0.08)] px-2.5 py-1 rounded-lg">v2.0.0</span>
       </div>
 
-      {/* ─── Language Picker Sheet ─── */}
       {showLangPicker && (
         <PickerSheet
           title={t('settings.language')}
@@ -666,7 +662,6 @@ export default function SettingsPage() {
         />
       )}
 
-      {/* ─── Currency Picker Sheet ─── */}
       {showCurrencyPicker && (
         <PickerSheet
           title={t('settings.currency')}
@@ -676,7 +671,7 @@ export default function SettingsPage() {
           onSelect={(val) => { setCurrency(val as Currency); setShowCurrencyPicker(false); }}
         />
       )}
-      {/* ─── Export Picker Sheet ─── */}
+
       {showExportPicker && (
         <div className="fixed inset-0 z-[200] flex items-end lg:items-center justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowExportPicker(false)} />
@@ -770,7 +765,6 @@ export default function SettingsPage() {
   );
 }
 
-// ─── Setting Row (static with chevron) ───────────────────────────────────────
 function SettingRow({ icon: Icon, color, iconColor, label, value, subtext, labelColor, onClick }: {
   icon: React.ElementType; color: string; iconColor: string; label: string;
   value?: string; subtext?: string; labelColor?: string; onClick?: () => void;
@@ -795,7 +789,6 @@ function SettingRow({ icon: Icon, color, iconColor, label, value, subtext, label
   );
 }
 
-// ─── Setting Toggle Row ──────────────────────────────────────────────────────
 function SettingToggleRow({ icon: Icon, color, iconColor, label, subtext, defaultChecked }: {
   icon: React.ElementType; color: string; iconColor: string; label: string;
   subtext?: string; defaultChecked?: boolean;
@@ -818,7 +811,6 @@ function SettingToggleRow({ icon: Icon, color, iconColor, label, subtext, defaul
   );
 }
 
-// ─── Picker Sheet (modal overlay for language/currency selection) ─────────────
 function PickerSheet({ title, onClose, options, selected, onSelect }: {
   title: string;
   onClose: () => void;
@@ -828,10 +820,7 @@ function PickerSheet({ title, onClose, options, selected, onSelect }: {
 }) {
   return (
     <div className="fixed inset-0 z-[200] flex items-end lg:items-center justify-center" onClick={onClose}>
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-
-      {/* Sheet */}
       <div
         className="relative bg-[var(--card)] rounded-t-[24px] lg:rounded-[32px] w-full max-w-[420px] p-6 pb-safe animate-slide-up lg:animate-fade-in lg:mt-0"
         onClick={(e) => e.stopPropagation()}
