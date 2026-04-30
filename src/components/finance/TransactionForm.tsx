@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Button, Input } from '@app/components/ui';
-import { Loader2, DollarSign, Calendar, Tag, FileText, Landmark } from 'lucide-react';
+import { Loader2, DollarSign, Calendar, FileText, Landmark } from 'lucide-react';
 import { transactionsApi } from '@app/api/client';
+import { usePreferences } from '@app/hooks/usePreferences';
+import { CategoryIcon } from '../ui/CategoryIcon';
 import type { Transaction, Category, Account } from '@app/types';
 
 interface TransactionFormProps {
@@ -13,6 +15,7 @@ interface TransactionFormProps {
 }
 
 export function TransactionForm({ transaction, categories, accounts = [], onSuccess, onCancel }: TransactionFormProps) {
+  const { t } = usePreferences();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!transaction;
 

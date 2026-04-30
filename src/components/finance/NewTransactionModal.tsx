@@ -213,7 +213,7 @@ export function NewTransactionModal() {
       categoryId: selectedCategory,
       accountId: selectedAccount || undefined,
       toAccountId: toAccountId || undefined,
-      description: description || undefined,
+      description: description || null,
       date: editingTxn?.date ? new Date(editingTxn.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
     };
 
