@@ -1,7 +1,7 @@
 export { Button } from './Button';
 export { Input } from './Input';
 export { Modal } from './Modal';
-export { CategoryIcon, getCategoryStyles, getCategoryEmoji } from './CategoryIcon';
+export { CategoryIcon, getCategoryStyles } from './CategoryIcon';
 export { DateGroupHeader } from './DateGroupHeader';
 export { TipCard } from './TipCard';
 export { FilterPills } from './FilterPills';
