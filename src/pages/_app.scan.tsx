@@ -1,6 +1,35 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Image as ImageIcon, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Tesseract from 'tesseract.js';
+
+// Helper to extract amount from OCR text
+const extractAmountFromText = (text: string): string => {
+  const lines = text.split('\n');
+  const possibleAmounts: number[] = [];
+
+  // Patterns for money: Rp. 10.000, 10,000.00, etc.
+  const moneyPattern = /(?:rp|[$]|)\s*([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/gi;
+
+  lines.forEach(line => {
+    const matches = line.matchAll(moneyPattern);
+    for (const match of matches) {
+      const clean = match[1].replace(/[.,]/g, '');
+      const num = parseFloat(clean);
+      if (!isNaN(num) && num > 100) { // Filter out small numbers like dates
+        possibleAmounts.push(num);
+      }
+    }
+  });
+
+  if (possibleAmounts.length > 0) {
+    // Usually the largest number on a receipt is the total
+    const maxAmount = Math.max(...possibleAmounts);
+    return Math.floor(maxAmount).toString();
+  }
+
+  return "0";
+};
 
 export default function ScanReceiptPage() {
   const navigate = useNavigate();
@@ -18,19 +47,24 @@ export default function ScanReceiptPage() {
       setIsScanning(true);
       stopCamera();
       
-      // Simulate OCR processing delay
-      setTimeout(() => {
-        console.log("OCR Scan Complete for:", file.name);
-        
-        // Mock scanned data
-        const scannedAmount = "50000"; // Default mock amount
+      // Real OCR processing
+      Tesseract.recognize(file, 'ind+eng', {
+        logger: m => console.log(m)
+      }).then(({ data: { text } }) => {
+        console.log("OCR Result:", text);
+        const scannedAmount = extractAmountFromText(text);
         const scannedDescription = `Scan Struk: ${file.name}`;
         
-        // Navigate to dashboard and trigger New Transaction modal with data
-        navigate(`/?new_transaction=true&amount=${scannedAmount}&description=${encodeURIComponent(scannedDescription)}`, { replace: true });
-        
+        // Small delay for UI feel
+        setTimeout(() => {
+          navigate(`/?new_transaction=true&amount=${scannedAmount}&description=${encodeURIComponent(scannedDescription)}`, { replace: true });
+          setIsScanning(false);
+        }, 1500);
+      }).catch(err => {
+        console.error("OCR Error:", err);
+        setError("Gagal membaca struk. Silakan coba lagi.");
         setIsScanning(false);
-      }, 3000);
+      });
     }
   };
 
