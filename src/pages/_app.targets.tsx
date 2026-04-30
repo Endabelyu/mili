@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Target as TargetIcon, X, Check, Edit2, Trash2, Pin, Clock, ArrowLeft } from 'lucide-react';
+import { Plus, Target as TargetIcon, X, Check, Edit2, Trash2, Clock, ArrowLeft } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
 import { targetsApi, type Target } from '../api/client';
+import { TARGET_EMOJI_LIST } from '../lib/constants';
 import { usePreferences } from '../hooks/usePreferences';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 
@@ -41,16 +42,7 @@ function CircularProgress({ percentage, color, icon }: { percentage: number; col
   );
 }
 
-const EMOJI_LIST = [
-  'category_savings', 
-  'category_travel', 
-  'category_wedding', 
-  'category_investment', 
-  'category_education', 
-  'category_shopping', 
-  'category_transport', 
-  'category_general'
-];
+
 
 export default function TargetsPage() {
   const { formatMoney, t } = usePreferences();
@@ -185,8 +177,19 @@ export default function TargetsPage() {
     );
   }
 
-  const totalCurrent = targets.reduce((acc, curr) => acc + parseFloat(String(curr.currentAmount)), 0);
-  const totalTarget = targets.reduce((acc, curr) => acc + parseFloat(String(curr.targetAmount)), 0);
+
+
+  const activeTargets = targets.filter(t => {
+    const current = parseFloat(String(t.currentAmount));
+    const total = parseFloat(String(t.targetAmount));
+    return current < total;
+  });
+
+  const completedTargets = targets.filter(t => {
+    const current = parseFloat(String(t.currentAmount));
+    const total = parseFloat(String(t.targetAmount));
+    return current >= total;
+  });
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -322,7 +325,7 @@ export default function TargetsPage() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[90] backdrop-blur-sm animate-fade-in" onClick={resetForm} />
           <div 
-            className="fixed inset-x-0 bottom-0 lg:top-[10%] lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] pb-safe"
+            className="fixed inset-x-0 bottom-0 lg:top-1/2 lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] pb-safe"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-4 shrink-0 border-b border-[var(--border)]">
@@ -339,17 +342,60 @@ export default function TargetsPage() {
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Emoji</label>
                 <div className="flex gap-2.5 flex-wrap">
-                  {EMOJI_LIST.map((e) => (
-                    <button
-                      key={e}
-                      onClick={() => setIcon(e)}
-                      className={`text-[24px] w-12 h-12 rounded-[16px] flex items-center justify-center border transition-all ${
-                        icon === e ? 'border-[#15803D] bg-[#15803D]/5 scale-110' : 'border-[var(--border)] hover:bg-[var(--muted)]'
-                      }`}
-                    >
-                      <CategoryIcon category="target" icon={e} size="lg" />
-                    </button>
-                  ))}
+                  {TARGET_EMOJI_LIST.map((e: string) => {
+                    const emojiMap: Record<string, string> = {
+                      '🕋': 'Haji & Umrah',
+                      '🐑': 'Qurban',
+                      '🏠': 'Rumah & Properti',
+                      '💍': 'Pernikahan',
+                      '👶': 'Anak & Keluarga',
+                      '🎓': 'Pendidikan',
+                      '🚗': 'Kendaraan',
+                      '✈️': 'Liburan & Travel',
+                      '🛒': 'Belanja',
+                      '💻': 'Gadget & Kerja',
+                      '🏥': 'Kesehatan',
+                      '🎁': 'Hadiah & Sosial',
+                      '🆘': 'Dana Darurat',
+                      '💸': 'Pelunasan Hutang',
+                      '💰': 'Tabungan',
+                      '📈': 'Investasi',
+                      '🏢': 'Bisnis',
+                      '🕌': 'Ibadah',
+                      '🎨': 'Hobi & Kreatif',
+                      '⚽': 'Olahraga',
+                      '📚': 'Buku & Kursus',
+                      '🧘': 'Self Care',
+                      '🥘': 'Kuliner',
+                      '📽️': 'Hiburan',
+                      '👗': 'Fashion',
+                    };
+
+                    const label = e.startsWith('category_') 
+                      ? e.replace('category_', '').replace(/_/g, ' ')
+                      : (emojiMap[e] || 'Target');
+                    
+                    const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                    
+                    return (
+                      <button
+                        key={e}
+                        type="button"
+                        onClick={() => setIcon(e)}
+                        title={formattedLabel}
+                        className={`w-[72px] h-[84px] rounded-[24px] flex flex-col items-center justify-center border transition-all ${
+                          icon === e ? 'border-[#15803D] bg-[#15803D]/5 scale-110 shadow-lg shadow-[#15803D]/10' : 'border-[var(--border)] hover:bg-[var(--muted)]'
+                        }`}
+                      >
+                        <CategoryIcon 
+                          category={formattedLabel} 
+                          icon={e} 
+                          size="lg" 
+                          label={formattedLabel}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -382,8 +428,8 @@ export default function TargetsPage() {
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--text-dim-2)]">Rp</span>
                   <input
-                    value={collectedAmount ? parseInt(collectedAmount, 10).toLocaleString('id-ID') : ''}
-                    onChange={(e) => setCollectedAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                    value={currentAmount ? parseInt(currentAmount, 10).toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCurrentAmount(e.target.value.replace(/[^0-9]/g, ''))}
                     placeholder="0"
                     inputMode="numeric"
                     className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] pl-11 pr-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
@@ -420,11 +466,11 @@ export default function TargetsPage() {
 
             <div className="p-4 border-t border-[var(--border)] shrink-0">
               <button
-                onClick={handleSave}
+                onClick={selectedTarget ? handleUpdate : handleSave}
                 disabled={!name || !targetAmount || saving}
                 className="w-full py-4 rounded-[16px] bg-[var(--accent)] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50 transition-all active:scale-95"
               >
-                {saving ? t('common.loading') : t('target.saveTarget')}
+                {saving ? t('common.loading') : selectedTarget ? t('target.updateTarget') : t('target.saveTarget')}
               </button>
             </div>
           </div>

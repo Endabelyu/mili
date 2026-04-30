@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, X, Wallet, CreditCard, Landmark, Coins, TrendingUp, Check, Trash2, ArrowLeft } from 'lucide-react';
 import { accountsApi } from '../api/client';
 import { queryKeys } from '../lib/query-keys';
+import { ACCOUNT_EMOJI_LIST } from '../lib/constants';
 import { usePreferences } from '../hooks/usePreferences';
 import type { Account } from '../types';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
@@ -87,6 +88,7 @@ export default function AccountsPage() {
   const [type, setType] = useState<Account['type']>('bank');
   const [balance, setBalance] = useState('');
   const [color, setColor] = useState('#15803D');
+  const [icon, setIcon] = useState('category_bank');
   const [isDefault, setIsDefault] = useState(false);
 
   const { data: accounts = [], isLoading } = useQuery({
@@ -145,6 +147,7 @@ export default function AccountsPage() {
       balance: balance || '0',
       currency: 'IDR',
       color,
+      icon,
       isDefault,
     };
 
@@ -169,6 +172,7 @@ export default function AccountsPage() {
     setType(acc.type);
     setBalance(String(acc.balance));
     setColor(acc.color);
+    setIcon(acc.icon || 'category_bank');
     setIsDefault(acc.isDefault || false);
     setIsModalOpen(true);
   };
@@ -180,6 +184,7 @@ export default function AccountsPage() {
     setBalance('');
     setType('bank');
     setColor('#15803D');
+    setIcon('category_bank');
     setIsDefault(false);
     setSaving(false);
   };
@@ -317,7 +322,7 @@ export default function AccountsPage() {
                     >
                       <CategoryIcon 
                         category={acc.name} 
-                        icon={acc.type} // Using type as icon key for consistency
+                        icon={acc.icon || acc.type} 
                         size="lg" 
                       />
                       
@@ -335,7 +340,9 @@ export default function AccountsPage() {
 
                       <div className="flex items-center gap-4 shrink-0">
                         <div className="text-right">
-                          <p className="text-[18px] font-bold text-[var(--text)] tracking-tight tabular-nums">{formatMoney(parseFloat(String(acc.balance)))}</p>
+                          <p className={`text-[18px] font-bold tracking-tight tabular-nums ${parseFloat(String(acc.balance)) < 0 ? 'text-[#F04438]' : 'text-[var(--text)]'}`}>
+                            {formatMoney(Math.abs(parseFloat(String(acc.balance))))}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -351,7 +358,7 @@ export default function AccountsPage() {
       {isModalOpen && (
         <>
           <div className="fixed inset-0 bg-black/40 z-[90] backdrop-blur-sm animate-fade-in" onClick={handleCloseModal} />
-          <div className="fixed inset-x-0 bottom-0 lg:top-[10%] lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] pb-safe">
+          <div className="fixed inset-x-0 bottom-0 lg:top-1/2 lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] pb-safe">
             <div className="flex items-center justify-between p-4 shrink-0 border-b border-[var(--border)]">
               <h2 className="text-[16px] font-bold text-[var(--text)] pl-2">{editingAccount ? t('acc.editAccount') : t('acc.addAccount')}</h2>
               <div className="flex items-center gap-2">
@@ -433,6 +440,53 @@ export default function AccountsPage() {
                       {color === c && <Check className="w-5 h-5 text-white" strokeWidth={3} />}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Icon/Emoji Picker */}
+              <div className="space-y-3">
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Icon / Emoji</label>
+                <div className="flex gap-2.5 flex-wrap p-2 bg-[var(--muted)]/30 rounded-2xl max-h-[160px] overflow-y-auto">
+                  {ACCOUNT_EMOJI_LIST.map((e: string) => {
+                    const accountEmojiMap: Record<string, string> = {
+                      '🏦': 'Bank Utama',
+                      '💳': 'Kartu Kredit',
+                      '💸': 'Uang Tunai',
+                      '💰': 'Tabungan',
+                      '🪙': 'Koin / Logam Mulia',
+                      '📊': 'Investasi',
+                      '📈': 'Trading',
+                      '🏛️': 'Bank Negara',
+                      '📱': 'E-Wallet / Dompet Digital',
+                      '💵': 'Mata Uang Asing',
+                      '🏧': 'Rekening ATM',
+                      '🧾': 'Tagihan / Piutang',
+                      '💹': 'Pasar Modal',
+                    };
+
+                    const label = e.startsWith('category_') 
+                      ? e.replace('category_', '').replace(/_/g, ' ')
+                      : (accountEmojiMap[e] || 'Akun');
+                    
+                    const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                    
+                    return (
+                      <button
+                        key={e}
+                        type="button"
+                        onClick={() => setIcon(e)}
+                        title={formattedLabel}
+                        className={`transition-all ${icon === e ? 'scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--card)] rounded-[20px] bg-[var(--accent-tint)]' : 'opacity-60 hover:opacity-100'}`}
+                      >
+                        <CategoryIcon 
+                          category={formattedLabel} 
+                          icon={e} 
+                          size="lg" 
+                          label={formattedLabel}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
