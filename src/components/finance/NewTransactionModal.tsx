@@ -133,6 +133,14 @@ export function NewTransactionModal() {
     }
   }, [type, categories, selectedCategory]);
 
+  // Sync from URL params (for Scanner)
+  useEffect(() => {
+    const urlAmount = searchParams.get('amount');
+    const urlDesc = searchParams.get('description');
+    if (urlAmount) setAmount(urlAmount);
+    if (urlDesc) setDescription(urlDesc);
+  }, [searchParams]);
+
   // Auto-focus desktop input
   useEffect(() => {
     if (isOpen && window.innerWidth >= 1024 && inputRef.current) {
