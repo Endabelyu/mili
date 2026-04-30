@@ -5,14 +5,24 @@ import { useNavigate } from 'react-router-dom';
 export default function ScanReceiptPage() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
   const [, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log("Selected file from gallery:", file.name);
-      // Logic for OCR processing will go here
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImage(imageUrl);
+      setIsScanning(true);
+      stopCamera();
+      
+      // Simulate OCR processing delay
+      setTimeout(() => {
+        console.log("OCR Scan Complete for:", file.name);
+        // In a real app, this would navigate to the transaction preview with the data
+      }, 3000);
     }
   };
 
@@ -61,8 +71,14 @@ export default function ScanReceiptPage() {
       {/* ─── Camera Preview / Scan Frame ─── */}
       <div className="flex-1 bg-black relative flex flex-col items-center justify-center p-8 pt-20">
         <div className="relative w-full max-w-[420px] aspect-[3/4] border-2 border-white/20 rounded-[32px] overflow-hidden shadow-2xl bg-[#0a0a0a]">
-          {/* Live Camera Feed */}
-          {error ? (
+          {/* Selected Image Preview (from Gallery) */}
+          {selectedImage ? (
+            <img 
+              src={selectedImage} 
+              alt="Receipt preview" 
+              className="absolute inset-0 w-full h-full object-cover animate-in fade-in zoom-in duration-500"
+            />
+          ) : error ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center">
               <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
                 <Camera className="w-10 h-10 text-white/10" />
@@ -79,34 +95,49 @@ export default function ScanReceiptPage() {
             />
           )}
 
-          {/* Scan Line Animation */}
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-[#15803D] shadow-[0_0_20px_#15803D] animate-scan-line z-10" />
+          {/* Scan Line Animation (Always visible when scanning or camera active) */}
+          {(!error || selectedImage) && (
+            <div className="absolute top-0 left-0 w-full h-[3px] bg-[#15803D] shadow-[0_0_20px_#15803D] animate-scan-line z-10" />
+          )}
           
           {/* Corner Decorations */}
           <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-[#15803D] rounded-tl-lg" />
           <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-[#15803D] rounded-tr-lg" />
           <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-[#15803D] rounded-bl-lg" />
           <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-[#15803D] rounded-br-lg" />
+
+          {/* Scanning Overlay */}
+          {isScanning && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-20 animate-in fade-in duration-300">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-white/20 border-t-[#15803D] rounded-full animate-spin" />
+                <p className="text-white font-bold tracking-wider text-[14px]">Menganalisa Struk...</p>
+              </div>
+            </div>
+          )}
         </div>
-        <p className="mt-10 text-white/50 text-[14px] font-bold tracking-[0.1em] uppercase">Posisikan struk di dalam bingkai</p>
+        <p className="mt-10 text-white/50 text-[14px] font-bold tracking-[0.1em] uppercase">
+          {isScanning ? 'Mohon Tunggu' : selectedImage ? 'Struk Berhasil Dimuat' : 'Posisikan struk di dalam bingkai'}
+        </p>
       </div>
 
       {/* ─── Footer Actions ─── */}
       <div className="bg-[var(--bg)] p-8 pb-14 lg:pb-10 flex items-center gap-5 shrink-0 border-t border-[var(--border)]">
-        <input 
-          id="gallery-upload"
-          type="file" 
-          className="hidden" 
-          accept="image/*" 
-          onChange={handleFileChange}
-        />
-        <label 
-          htmlFor="gallery-upload"
-          className="flex-1 h-16 rounded-[24px] bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center gap-3 text-[16px] font-bold text-[var(--text)] transition-all active:scale-[0.96] hover:bg-[var(--border)] cursor-pointer"
-        >
-          <ImageIcon className="w-6 h-6 text-[var(--text-dim-2)]" />
-          Galeri
-        </label>
+        <div className="flex-1 relative group active:scale-[0.96] transition-transform">
+          <input 
+            id="gallery-upload"
+            type="file" 
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+            accept="image/*" 
+            onChange={handleFileChange}
+          />
+          <div 
+            className="w-full h-16 rounded-[24px] bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center gap-3 text-[16px] font-bold text-[var(--text)] transition-all group-hover:bg-[var(--border)]"
+          >
+            <ImageIcon className="w-6 h-6 text-[var(--text-dim-2)]" />
+            Galeri
+          </div>
+        </div>
         <button className="flex-1 h-16 rounded-[24px] bg-[#15803D] flex items-center justify-center gap-3 text-[16px] font-bold text-white transition-all active:scale-[0.96] shadow-xl shadow-[#15803D25] hover:bg-[#0E9355]">
           <Camera className="w-6 h-6" />
           Ambil Foto
