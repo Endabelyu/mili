@@ -463,12 +463,14 @@ export function NewTransactionModal() {
 
             <div className="flow-card p-4 relative z-0">
               <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">{t('txn.description')}</p>
-              <input
+              <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t('txn.descriptionPlaceholder')}
                 aria-label={t('txn.description')}
-                className="w-full bg-transparent text-[15px] font-medium text-[var(--text)] focus:outline-none placeholder:text-[var(--text-dim-2)] placeholder:opacity-40"
+                rows={3}
+                maxLength={5000}
+                className="w-full bg-transparent text-[15px] font-medium text-[var(--text)] focus:outline-none placeholder:text-[var(--text-dim-2)] placeholder:opacity-40 resize-none min-h-[90px]"
               />
             </div>
 

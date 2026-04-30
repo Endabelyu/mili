@@ -1,117 +1,69 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Image as ImageIcon, Camera } from 'lucide-react';
+import { X, Image as ImageIcon, Camera, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useReceiptOcr } from '../../features/receipt-scanner/useReceiptOcr';
+import { ReceiptPreview } from '../../features/receipt-scanner/ReceiptPreview';
+import type { ReceiptData } from '../../features/receipt-scanner/types';
 
 interface ScanModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-import Tesseract from 'tesseract.js';
-
-// Helper to extract amount, merchant, and items from OCR text
-const analyzeReceipt = (text: string) => {
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
-  
-  // 1. Merchant Name (Heuristic: usually first few non-empty lines)
-  const merchant = lines[0] || "Struk Baru";
-  
-  // 2. Extract Amounts
-  const moneyPattern = /(?:rp|[$]|)\s*([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/gi;
-  const possibleAmounts: { val: number; line: string }[] = [];
-  
-  lines.forEach(line => {
-    const matches = Array.from(line.matchAll(moneyPattern));
-    for (const match of matches) {
-      const clean = match[1].replace(/[.,]/g, '');
-      const num = parseFloat(clean);
-      if (!isNaN(num) && num > 100) { 
-        possibleAmounts.push({ val: num, line });
-      }
-    }
-  });
-
-  const totalAmount = possibleAmounts.length > 0 
-    ? Math.max(...possibleAmounts.map(a => a.val)) 
-    : 0;
-
-  // 3. Extract Items (Heuristic: lines with money that aren't the total)
-  const totalLine = possibleAmounts.find(a => a.val === totalAmount)?.line;
-  const items = lines.filter(line => {
-    const isTotal = line === totalLine || line.toLowerCase().includes('total') || line.toLowerCase().includes('jumlah');
-    const hasMoney = line.match(moneyPattern);
-    return hasMoney && !isTotal;
-  }).map(l => l.replace(moneyPattern, '').trim()) // Remove prices from item lines
-    .filter(l => l.length > 2)
-    .slice(0, 5); // Limit to top 5 items
-
-  const description = `${merchant}${items.length > 0 ? ': ' + items.join(', ') : ''}`;
-
-  return {
-    amount: Math.floor(totalAmount).toString(),
-    description
-  };
-};
-
 export function ScanModal({ isOpen, onClose }: ScanModalProps) {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [, setStream] = useState<MediaStream | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
+  const { scanFree, scanAI, status, result, error, scanMode, aiEnabled, reset } = useReceiptOcr();
+
+  // ─── File selection (Gallery) ─────────────────────────────────────────────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
-      setIsScanning(true);
+      setSelectedFile(file);
       stopCamera();
-      
-      // Real OCR processing
-      Tesseract.recognize(file, 'ind+eng', {
-        logger: m => console.log(m)
-      }).then(({ data: { text } }) => {
-        console.log("OCR Result:", text);
-        const { amount: scannedAmount, description: scannedDescription } = analyzeReceipt(text);
-        
-        // Small delay for UI feel
-        setTimeout(() => {
-          onClose(); // Close the scan modal first
-          navigate(`/?new_transaction=true&amount=${scannedAmount}&description=${encodeURIComponent(scannedDescription)}`, { replace: true });
-          setIsScanning(false);
-        }, 1500);
-      }).catch(err => {
-        console.error("OCR Error:", err);
-        setError("Gagal membaca struk. Silakan coba lagi.");
-        setIsScanning(false);
-      });
     }
   };
 
+  // ─── Confirm scanned result → navigate to transaction form ────────────────
+  const handleConfirm = (data: ReceiptData) => {
+    const amount = data.total?.toString() || '0';
+    const itemsList = data.items?.map(i => `- ${i.name}`).filter(Boolean).join('\n') || '';
+    const desc = `${data.store_name || 'Struk'}${itemsList ? '\n' + itemsList : ''}`;
+
+    onClose();
+    navigate(`/?new_transaction=true&amount=${amount}&description=${encodeURIComponent(desc)}`, { replace: true });
+  };
+
+  // ─── Rescan → clear result, keep image ────────────────────────────────────
+  const handleRescan = () => {
+    reset();
+  };
+
+  // ─── Camera controls ──────────────────────────────────────────────────────
   const startCamera = async () => {
     try {
-      if (selectedImage) return; // Don't start camera if we have an image
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+      if (selectedImage) return;
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
       });
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-      setError(null);
-    } catch (err) {
-      console.error("Error accessing camera:", err);
-      setError("Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.");
+      if (videoRef.current) videoRef.current.srcObject = mediaStream;
+      setCameraError(null);
+    } catch {
+      setCameraError('Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.');
     }
   };
 
   const stopCamera = () => {
-    setStream(currentStream => {
-      if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-      }
+    setStream(current => {
+      current?.getTracks().forEach(track => track.stop());
       return null;
     });
   };
@@ -121,99 +73,180 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
       startCamera();
     } else {
       stopCamera();
-      // Reset state on close
       setSelectedImage(null);
-      setIsScanning(false);
+      setSelectedFile(null);
+      reset();
     }
     return () => stopCamera();
   }, [isOpen]);
 
   if (!isOpen) return null;
 
+  const isScanning = status === 'scanning';
+  const hasResult = status === 'success' && result;
+  const hasImage = !!selectedImage;
+
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      {/* Backdrop - Click anywhere to close as requested */}
+      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in cursor-pointer" onClick={onClose} />
-      
-      {/* Modal Content - Slender and focused on the frame */}
-      <div className="relative w-full max-w-[420px] h-fit max-h-[90vh] bg-black rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-white/10" onClick={(e) => e.stopPropagation()}>
-        {/* ─── Close Button ─── */}
+
+      {/* Modal */}
+      <div
+        className="relative w-full max-w-[420px] h-fit max-h-[90vh] bg-black rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-white/10"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close */}
         <div className="absolute top-4 right-4 z-[210]">
-          <button onClick={onClose} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white transition-all hover:bg-black/60 border border-white/10 active:scale-95">
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white transition-all hover:bg-black/60 border border-white/10 active:scale-95"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* ─── Camera Preview / Scan Frame ─── */}
-        <div className="flex-1 relative flex flex-col items-center justify-center p-6 pt-10">
-          <div className="relative w-full h-fit max-h-[50vh] aspect-[3/4] border-2 border-[#15803D]/40 rounded-[24px] overflow-hidden shadow-2xl bg-[#0d0d0d]">
-            {/* Image Preview (Gallery) */}
-            {selectedImage ? (
-              <img 
-                src={selectedImage} 
-                alt="Receipt" 
-                className="absolute inset-0 w-full h-full object-cover animate-in fade-in zoom-in duration-500"
-              />
-            ) : error ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                  <Camera className="w-8 h-8 text-white/20" />
+        {/* ─── Preview Frame / Camera ─── */}
+        {!hasResult && (
+          <div className="flex-1 relative flex flex-col items-center justify-center p-6 pt-10">
+            <div className="relative w-full h-fit max-h-[50vh] aspect-[3/4] border-2 border-[#15803D]/40 rounded-[24px] overflow-hidden shadow-2xl bg-[#0d0d0d]">
+              {/* Image Preview */}
+              {selectedImage ? (
+                <img
+                  src={selectedImage}
+                  alt="Receipt"
+                  className="absolute inset-0 w-full h-full object-cover animate-in fade-in zoom-in duration-500"
+                />
+              ) : cameraError ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                    <Camera className="w-8 h-8 text-white/20" />
+                  </div>
+                  <p className="text-white/60 text-[14px] leading-relaxed">{cameraError}</p>
                 </div>
-                <p className="text-white/60 text-[14px] leading-relaxed">{error}</p>
-              </div>
-            ) : (
-              <video 
-                ref={videoRef}
-                autoPlay 
-                playsInline 
-                muted
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            )}
+              ) : (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              )}
 
-            {/* Scan Line Animation */}
-            {(!error || selectedImage) && (
-              <div className="absolute top-0 left-0 w-full h-[2px] bg-[#15803D] shadow-[0_0_15px_#15803D] animate-scan-line z-10" />
-            )}
+              {/* Scan line */}
+              {(!cameraError || selectedImage) && (
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-[#15803D] shadow-[0_0_15px_#15803D] animate-scan-line z-10" />
+              )}
 
-            {/* Scanning Overlay */}
-            {isScanning && (
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-20 animate-in fade-in duration-300">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-10 h-10 border-4 border-white/20 border-t-[#15803D] rounded-full animate-spin" />
-                  <p className="text-white font-bold tracking-wider text-[12px] uppercase">Menganalisa Struk...</p>
+              {/* Scanning overlay */}
+              {isScanning && (
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-20 animate-in fade-in duration-300">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-4 border-white/20 border-t-[#15803D] rounded-full animate-spin" />
+                    <p className="text-white font-bold tracking-wider text-[12px] uppercase">
+                      {scanMode === 'ai' ? 'AI sedang menganalisa...' : 'Menganalisa Struk...'}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-          <p className="mt-4 text-white/40 text-[12px] font-bold tracking-widest uppercase">
-            {isScanning ? 'Mohon Tunggu' : selectedImage ? 'Struk Berhasil Dimuat' : 'Posisikan struk di dalam bingkai'}
-          </p>
-        </div>
-
-        {/* ─── Minimal Action Buttons ─── */}
-        <div className="bg-[#111] p-6 pb-8 flex items-center gap-3 shrink-0 border-t border-white/5">
-          <div className="flex-1 relative group active:scale-[0.96] transition-transform">
-            <input 
-              type="file" 
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-              accept="image/*" 
-              onChange={handleFileChange}
-              disabled={isScanning}
-            />
-            <div className="w-full h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 text-[14px] font-bold text-white/80 transition-all group-hover:bg-white/10">
-              <ImageIcon className="w-4 h-4 text-white/40" />
-              Galeri
+              )}
             </div>
+
+            <p className="mt-4 text-white/40 text-[12px] font-bold tracking-widest uppercase">
+              {isScanning
+                ? 'Mohon Tunggu'
+                : selectedImage
+                  ? 'Pilih metode scan di bawah'
+                  : 'Posisikan struk di dalam bingkai'}
+            </p>
+
+            {/* Error message */}
+            {error && (
+              <p className="mt-2 text-red-400 text-[12px] font-medium text-center px-4">{error}</p>
+            )}
           </div>
-          <button 
-            className="flex-2 h-12 rounded-xl bg-[#15803D] flex items-center justify-center gap-2 text-[14px] font-bold text-white transition-all active:scale-[0.98] shadow-lg shadow-[#15803D30] hover:bg-[#0f9d5b] disabled:opacity-50"
-            disabled={isScanning}
-          >
-            <Camera className="w-4 h-4" />
-            Ambil Foto
-          </button>
-        </div>
+        )}
+
+        {/* ─── Receipt Preview (after scan success) ─── */}
+        {hasResult && result && (
+          <ReceiptPreview
+            data={result}
+            scanMode={scanMode}
+            onConfirm={handleConfirm}
+            onRescan={handleRescan}
+          />
+        )}
+
+        {/* ─── Footer Actions ─── */}
+        {!hasResult && (
+          <div className="bg-[#111] p-5 pb-7 flex flex-col gap-3 shrink-0 border-t border-white/5">
+            {/* Row 1: Gallery + Camera (always visible) */}
+            {!hasImage && (
+              <div className="flex items-center gap-3">
+                <div className="flex-1 relative group active:scale-[0.96] transition-transform">
+                  <input
+                    type="file"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    disabled={isScanning}
+                  />
+                  <div className="w-full h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 text-[14px] font-bold text-white/80 transition-all group-hover:bg-white/10">
+                    <ImageIcon className="w-4 h-4 text-white/40" />
+                    Galeri
+                  </div>
+                </div>
+                <button
+                  className="flex-[2] h-12 rounded-xl bg-[#15803D] flex items-center justify-center gap-2 text-[14px] font-bold text-white transition-all active:scale-[0.98] shadow-lg shadow-[#15803D30] hover:bg-[#0f9d5b] disabled:opacity-50"
+                  disabled={isScanning}
+                >
+                  <Camera className="w-4 h-4" />
+                  Ambil Foto
+                </button>
+              </div>
+            )}
+
+            {/* Row 2: Scan buttons (visible after image selected) */}
+            {hasImage && !isScanning && (
+              <div className="flex items-center gap-3">
+                {/* Change image */}
+                <div className="relative group active:scale-[0.96] transition-transform">
+                  <input
+                    type="file"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 transition-all group-hover:bg-white/10">
+                    <ImageIcon className="w-4 h-4" />
+                  </div>
+                </div>
+
+                {/* Scan Gratis */}
+                <button
+                  onClick={() => selectedFile && scanFree(selectedFile)}
+                  className="flex-1 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center gap-2 text-[13px] font-bold text-emerald-300 transition-all active:scale-[0.96] hover:bg-emerald-500/20"
+                >
+                  🆓 Scan Gratis
+                </button>
+
+                {/* Scan AI */}
+                <button
+                  onClick={() => selectedFile && aiEnabled && scanAI(selectedFile)}
+                  disabled={!aiEnabled}
+                  className={`flex-1 h-12 rounded-xl flex items-center justify-center gap-2 text-[13px] font-bold transition-all ${
+                    aiEnabled 
+                      ? 'bg-purple-500/10 border border-purple-500/30 text-purple-300 active:scale-[0.96] hover:bg-purple-500/20'
+                      : 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {aiEnabled ? 'Scan AI' : 'AI Coming Soon'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
