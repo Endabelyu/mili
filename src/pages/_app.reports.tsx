@@ -6,8 +6,8 @@ import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -22,7 +22,7 @@ import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
-  const { t, formatMoney, language } = usePreferences();
+  const { t, formatMoney } = usePreferences();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'expense' | 'income'>('expense');
 
@@ -101,7 +101,6 @@ export default function AnalyticsPage() {
     );
   }
 
-  const currentMonthName = new Date().toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' });
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -114,7 +113,34 @@ export default function AnalyticsPage() {
         </button>
         <div className="flex flex-col gap-0.5">
           <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em] leading-tight">{t('analytics.title')}</h1>
-          <p className="text-[14px] font-medium text-[var(--text-dim-2)] opacity-60">{currentMonthName}</p>
+          <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-60 uppercase tracking-[0.1em]">Analisis Arus Kas Anda</p>
+        </div>
+      </div>
+
+      {/* ─── Financial Pulse (The "Friendly Standard" Card) ─── */}
+      <div className="relative rounded-[32px] p-8 border-[2.5px] border-[#0891B2]/20 bg-[#CFFAFE]/10 overflow-hidden group">
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div>
+            <h2 className="text-[14px] font-bold text-[#0E7490] tracking-[0.05em] uppercase mb-1">Denyut Finansial</h2>
+            <p className="text-[13px] text-[#0E7490]/70 font-medium max-w-[320px]">
+              {totalAmount > 0 
+                ? `Alur ${activeTab === 'expense' ? 'pengeluaran' : 'pemasukan'} Anda bulan ini terlihat ${totalAmount > 1000000 ? 'deras' : 'stabil'}. Mari pastikan semuanya tetap bermuara pada tabungan.` 
+                : 'Belum ada arus kas yang tercatat bulan ini. Mari mulai mencatat untuk melihat alur rezeki Anda.'}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+             <p className="text-[11px] font-bold text-[#0E7490]/50 uppercase tracking-widest mb-1">Rasio Menabung</p>
+             <p className="text-[32px] font-bold text-[#0891B2] tracking-[-0.03em] tabular-nums">24.5%</p>
+             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-[10px] font-bold mt-1">
+               Lancar
+             </div>
+          </div>
+        </div>
+        {/* Subtle Wave Decoration */}
+        <div className="absolute -bottom-1 left-0 w-full h-12 opacity-[0.07] pointer-events-none group-hover:opacity-10 transition-opacity">
+          <svg viewBox="0 0 400 100" className="w-full h-full preserve-3d" preserveAspectRatio="none">
+             <path d="M0 80 Q 100 60, 200 85 T 400 70 L 400 100 L 0 100 Z" fill="#0891B2" />
+          </svg>
         </div>
       </div>
 
@@ -189,13 +215,25 @@ export default function AnalyticsPage() {
         </div>
       </section>
 
-      {/* ─── Daily Activity Bar Chart ─── */}
+      {/* ─── Daily Activity Smooth Chart ─── */}
       <section className="flow-card p-8">
-        <h3 className="text-[14px] font-bold text-[var(--text)] mb-6">{t('analytics.daily')}</h3>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-[14px] font-bold text-[var(--text)]">{t('analytics.daily')}</h3>
+          <div className="flex items-center gap-2">
+             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: activeTab === 'expense' ? '#F04438' : '#10B981' }} />
+             <span className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">{activeTab === 'expense' ? 'Arus Keluar' : 'Arus Masuk'}</span>
+          </div>
+        </div>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dailyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+            <AreaChart data={dailyData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={activeTab === 'expense' ? '#F04438' : '#10B981'} stopOpacity={0.15}/>
+                  <stop offset="95%" stopColor={activeTab === 'expense' ? '#F04438' : '#10B981'} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
               <XAxis
                 dataKey="day"
                 axisLine={false}
@@ -205,25 +243,29 @@ export default function AnalyticsPage() {
               />
               <YAxis axisLine={false} tickLine={false} hide />
               <Tooltip
-                cursor={{ fill: 'var(--muted)', radius: 4 }}
+                cursor={{ stroke: 'var(--accent)', strokeWidth: 1, strokeDasharray: '4 4' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-[var(--card)] p-2 rounded-lg border border-[var(--border)] shadow-sm">
-                        <p className="text-[12px] font-bold text-[var(--text)]">{formatMoney(payload[0].value as number)}</p>
+                      <div className="bg-[var(--card)] p-3 rounded-2xl border border-[var(--border)] shadow-xl animate-in zoom-in-95 duration-200">
+                        <p className="text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest mb-1">Tanggal {payload[0].payload.day}</p>
+                        <p className="text-[14px] font-bold text-[var(--text)] tabular-nums">{formatMoney(payload[0].value as number)}</p>
                       </div>
                     );
                   }
                   return null;
                 }}
               />
-              <Bar
+              <Area
+                type="monotone"
                 dataKey="amount"
-                fill={activeTab === 'expense' ? '#F04438' : '#15803D'}
-                radius={[4, 4, 0, 0]}
-                barSize={12}
+                stroke={activeTab === 'expense' ? '#F04438' : '#10B981'}
+                strokeWidth={3}
+                fillOpacity={1}
+                fill="url(#colorAmount)"
+                animationDuration={1500}
               />
-            </BarChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </section>
