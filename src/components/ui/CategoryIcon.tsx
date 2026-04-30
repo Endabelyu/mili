@@ -39,6 +39,18 @@ export const getCategoryStyles = (categoryName: string) => {
   // Freelance & Side Hustle
   if (name.includes('freelance') || name.includes('lepas') || name.includes('side')) return colors.category.freelance;
   
+  // Charity & Giving
+  if (name.includes('charity') || name.includes('sedekah') || name.includes('amal') || name.includes('zakat') || name.includes('donasi')) return colors.category.charity;
+  
+  // Housing & Living
+  if (name.includes('house') || name.includes('home') || name.includes('rumah') || name.includes('kos') || name.includes('rent')) return colors.category.housing;
+  
+  // Pets
+  if (name.includes('pet') || name.includes('hewan') || name.includes('kucing') || name.includes('anjing')) return colors.category.family;
+  
+  // Gadgets & Tech
+  if (name.includes('gadget') || name.includes('hp') || name.includes('laptop') || name.includes('tech')) return colors.category.shopping;
+  
   // Investment & Savings
   if (name.includes('invest') || name.includes('saham') || name.includes('goal') || name.includes('target') || name.includes('pensiun')) return colors.category.investment;
   
@@ -58,21 +70,54 @@ export const getCategoryStyles = (categoryName: string) => {
 export const getCategory3DIcon = (categoryName: string) => {
   const name = categoryName.toLowerCase();
   
+  // Accounts & Core Finance
+  if (name.includes('bank') || name.includes('rekening')) return 'category_bank';
+  if (name.includes('credit') || name.includes('kartu') || name.includes('cc')) return 'category_credit_card';
+  if (name.includes('cash') || name.includes('tunai') || name.includes('wallet')) return 'category_cash';
+  if (name.includes('crypto') || name.includes('koin') || name.includes('coin')) return 'category_crypto';
+  
+  // Daily & Lifestyle
   if (name.includes('makan') || name.includes('minum') || name.includes('kopi') || name.includes('food')) return 'category_food';
-  if (name.includes('belanja') || name.includes('shop') || name.includes('pakaian')) return 'category_shopping';
+  if (name.includes('belanja') || name.includes('shop')) return 'category_shopping';
+  if (name.includes('cloth') || name.includes('pakaian') || name.includes('baju') || name.includes('celana')) return 'category_clothing';
   if (name.includes('transport') || name.includes('car') || name.includes('bensin') || name.includes('parkir') || name.includes('otomotif')) return 'category_transport';
-  if (name.includes('sehat') || name.includes('med') || name.includes('gym') || name.includes('health')) return 'category_health';
+  
+  // Health & Education
+  if (name.includes('sehat') || name.includes('med') || name.includes('health')) return 'category_health';
+  if (name.includes('gym') || name.includes('fitness') || name.includes('olahraga')) return 'category_gym';
   if (name.includes('edu') || name.includes('sekolah') || name.includes('belajar') || name.includes('book')) return 'category_education';
+  
+  // Bills & Utilities
   if (name.includes('bill') || name.includes('util') || name.includes('tagihan') || name.includes('listrik') || name.includes('internet')) return 'category_bills';
-  if (name.includes('fun') || name.includes('hiburan') || name.includes('hobby') || name.includes('hobby')) return 'category_entertainment';
-  if (name.includes('travel') || name.includes('liburan') || name.includes('jalan')) return 'category_travel';
-  if (name.includes('salary') || name.includes('gaji') || name.includes('bonus') || name.includes('profit')) return 'category_salary';
+  if (name.includes('gas') || name.includes('lpg')) return 'category_gas';
+  if (name.includes('water') || name.includes('air')) return 'category_water';
+  
+  // Income & Profit
+  if (name.includes('salary') || name.includes('gaji') || name.includes('profit')) return 'category_salary';
+  if (name.includes('gift') || name.includes('hadiah') || name.includes('kado') || name.includes('bonus')) return 'category_gift';
+  if (name.includes('freelance') || name.includes('side')) return 'category_freelance';
+  
+  // Savings & Goals
   if (name.includes('invest') || name.includes('saham')) return 'category_investment';
   if (name.includes('goal') || name.includes('tabungan') || name.includes('savings')) return 'category_savings';
-  if (name.includes('fam') || name.includes('keluarga') || name.includes('anak') || name.includes('bayi')) return 'category_family';
-  if (name.includes('debt') || name.includes('hutang') || name.includes('cicilan') || name.includes('loan')) return 'category_debt';
-  if (name.includes('wedding') || name.includes('nikah')) return 'category_wedding';
+  if (name.includes('retire') || name.includes('pensiun') || name.includes('tua')) return 'category_retirement';
+  if (name.includes('tax') || name.includes('pajak')) return 'category_tax';
   
+  // Family & Misc
+  if (name.includes('fam') || name.includes('keluarga') || name.includes('anak') || name.includes('bayi')) return 'category_family';
+  if (name.includes('wedding') || name.includes('nikah')) return 'category_wedding';
+  if (name.includes('charity') || name.includes('sedekah') || name.includes('amal') || name.includes('zakat') || name.includes('donasi')) return 'category_charity';
+  if (name.includes('house') || name.includes('home') || name.includes('rumah') || name.includes('kos') || name.includes('rent')) return 'category_housing';
+  if (name.includes('pet') || name.includes('hewan') || name.includes('kucing') || name.includes('anjing')) return 'category_pet';
+  if (name.includes('gadget') || name.includes('hp') || name.includes('laptop') || name.includes('tech')) return 'category_gadget';
+  if (name.includes('emergen') || name.includes('darurat') || name.includes('sos')) return 'category_emergency';
+  
+  // Entertainment & Travel
+  if (name.includes('fun') || name.includes('hiburan') || name.includes('hobby')) return 'category_entertainment';
+  if (name.includes('hobby') || name.includes('hobi') || name.includes('game') || name.includes('musik')) return 'category_hobby';
+  if (name.includes('travel') || name.includes('liburan') || name.includes('jalan')) return 'category_travel';
+  if (name.includes('debt') || name.includes('hutang') || name.includes('cicilan') || name.includes('loan')) return 'category_debt';
+
   return 'category_general'; // generic 3D icon fallback
 };
 

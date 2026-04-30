@@ -79,6 +79,8 @@ export const colors = {
     investment: { bg: '#fef3c7', text: '#b45309', border: '#fcd34d' }, // amber
     family: { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' },    // blue
     debt: { bg: '#f8fafc', text: '#475569', border: '#e2e8f0' },      // slate
+    charity: { bg: '#fef2f2', text: '#991b1b', border: '#fecaca' },   // red/rose
+    housing: { bg: '#fff7ed', text: '#9a3412', border: '#ffedd5' },   // orange
     default: { bg: '#f4f4f5', text: '#52525b', border: '#e4e4e7' },   // zinc
   },
 } as const;
