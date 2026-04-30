@@ -22,9 +22,15 @@ export default function OnboardingOverlay() {
   const slides = [
     {
       title: "Selamat Datang di Mili",
-      description: "Asisten keuangan pribadi cerdas yang siap membantu Anda mengontrol pendapatan dan pengeluaran secara optimal.",
+      description: "Asisten keuangan pribadi cerdas yang siap membantu Anda mengontrol setiap butir nominal keuangan Anda.",
       icon: <Sparkles className="w-12 h-12 text-[var(--accent)]" />,
       color: "from-purple-500/10 to-indigo-500/10"
+    },
+    {
+      title: "Tentang Mili",
+      description: "Mili berasal dari filosofi bahwa setiap nominal kecil—bahkan satu 'mili' sekalipun—berharga untuk dikelola. Kami membantu Anda mengumpulkan butiran kecil finansial hingga menjadi Miliaran impian yang terwujud.",
+      icon: <div className="text-4xl font-bold text-[var(--accent)]">M</div>,
+      color: "from-amber-500/10 to-orange-500/10"
     },
     {
       title: "Pencatatan Transaksi Kilat",
