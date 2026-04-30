@@ -18,15 +18,16 @@ function StatusToggle({ active, onToggle }: { active: boolean; onToggle: () => v
   );
 }
 
-const FREQUENCIES = [
-  { id: 'daily', label: 'Harian' },
-  { id: 'weekly', label: 'Mingguan' },
-  { id: 'monthly', label: 'Bulanan' },
-  { id: 'yearly', label: 'Tahunan' },
+const FREQUENCIES = (t: (k: string) => string) => [
+  { id: 'daily', label: t('scheduled.daily') },
+  { id: 'weekly', label: t('scheduled.weekly') },
+  { id: 'monthly', label: t('scheduled.monthly') },
+  { id: 'yearly', label: t('scheduled.yearly') },
 ];
 
 export default function ScheduledPage() {
-  const { formatMoney } = usePreferences();
+  const { formatMoney, t } = usePreferences();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -105,6 +106,28 @@ export default function ScheduledPage() {
     onError: () => setSaving(false),
   });
 
+  const postMutation = useMutation({
+    mutationFn: (id: string) => 
+      fetch(`/api/scheduled/${id}/post`, { method: 'POST' }).then(res => res.json()),
+    onSuccess: (data) => {
+      if (data.error) {
+        alert(data.error);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['scheduled'] });
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      }
+      setSaving(false);
+    },
+    onError: () => setSaving(false),
+  });
+
+  const handlePost = (id: string) => {
+    if (window.confirm(t('scheduled.postConfirm'))) {
+      setSaving(true);
+      postMutation.mutate(id);
+    }
+  };
+
   const resetForm = () => {
     setIsModalOpen(false);
     setType('expense');
@@ -152,7 +175,7 @@ export default function ScheduledPage() {
 
   const handleDelete = () => {
     if (!selectedScheduled) return;
-    if (window.confirm(`Hapus jadwal "${selectedScheduled.description || selectedScheduled.category?.label}"?`)) {
+    if (window.confirm(`${t('scheduled.deleteConfirm')} "${selectedScheduled.description || selectedScheduled.category?.label}"?`)) {
       setSaving(true);
       deleteMutation.mutate(selectedScheduled.id);
     }
@@ -172,7 +195,7 @@ export default function ScheduledPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em]">Terjadwal</h1>
+          <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em]">{t('scheduled.title')}</h1>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -182,15 +205,14 @@ export default function ScheduledPage() {
         </button>
       </div>
 
-      {/* Summary Card - White Style to match Transactions */}
       <div className="rounded-[24px] bg-[var(--card)] p-6 border border-[var(--border)] shadow-sm">
         <div className="grid grid-cols-3 gap-6">
           <div className="space-y-1">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Pemasukan</p>
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">{t('dashboard.income')}</p>
             <p className="text-[18px] font-bold text-[var(--income)]">{formatMoney(scheduled.filter(s => s.type === 'income').reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0))}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Pengeluaran</p>
+            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">{t('dashboard.expense')}</p>
             <p className="text-[18px] font-bold text-[var(--expense)]">{formatMoney(scheduled.filter(s => s.type === 'expense').reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0))}</p>
           </div>
           <div className="space-y-1 border-l border-[var(--border)] pl-6">
@@ -200,16 +222,15 @@ export default function ScheduledPage() {
         </div>
       </div>
 
-      {/* Filter Pills */}
       <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
-        {['Semua', 'Aktif', 'Dijeda'].map((label, i) => (
+        {[{ id: 'all', label: t('scheduled.allSchedules') }, { id: 'active', label: t('scheduled.active') }, { id: 'paused', label: t('scheduled.paused') }].map((item, i) => (
           <button
-            key={label}
+            key={item.id}
             className={`px-6 py-2.5 rounded-2xl text-[14px] font-bold whitespace-nowrap transition-all active:scale-95 ${
               i === 0 ? 'bg-[var(--text)] text-[var(--bg)] shadow-lg' : 'bg-[var(--muted)] text-[var(--text-dim-2)] hover:bg-[var(--border)]'
             }`}
           >
-            {label}
+            {item.label}
           </button>
         ))}
       </div>
@@ -220,13 +241,13 @@ export default function ScheduledPage() {
             <div className="w-20 h-20 rounded-3xl bg-[var(--accent-tint)] text-[var(--accent)] flex items-center justify-center mx-auto mb-6">
               <RefreshCw className="w-10 h-10" />
             </div>
-            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada jadwal</h3>
-            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[320px] mx-auto leading-relaxed">Jadwalkan pengeluaran rutin Anda seperti langganan Netflix, BPJS, atau tagihan listrik.</p>
+            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">{t('scheduled.noSchedules')}</h3>
+            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[320px] mx-auto leading-relaxed">{t('scheduled.noSchedulesDesc')}</p>
             <button 
               onClick={() => setIsModalOpen(true)}
               className="px-8 py-4 rounded-2xl bg-[var(--text)] text-[var(--bg)] font-bold text-[15px] shadow-xl transition-all active:scale-95"
             >
-              Buat Jadwal Pertama
+              {t('scheduled.addSchedule')}
             </button>
           </div>
         ) : (
@@ -234,18 +255,17 @@ export default function ScheduledPage() {
             {scheduled.map((item) => (
               <div 
                 key={item.id} 
-                onClick={() => handleEdit(item)}
                 className="flex items-center gap-4 px-6 py-5 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]"
               >
                 <CategoryIcon 
                   category={item.category?.label || item.categoryId} 
                   size="lg" 
                 />
-                <div className="flex-1 min-w-0 pr-4">
+                <div className="flex-1 min-w-0 pr-4" onClick={() => handleEdit(item)}>
                   <div className="flex items-center gap-2">
                     <p className="text-[17px] font-bold text-[var(--text)] truncate">{item.description || item.category?.label}</p>
                     <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[var(--accent-tint)] text-[var(--accent)] uppercase tracking-wider">
-                      {FREQUENCIES.find(f => f.id === item.frequency)?.label}
+                      {FREQUENCIES(t).find(f => f.id === item.frequency)?.label}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1 text-[13px] font-medium text-[var(--text-dim-2)] opacity-70">
@@ -257,6 +277,13 @@ export default function ScheduledPage() {
 
                 <div className="flex flex-col items-end gap-3 shrink-0">
                   <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => handlePost(item.id)}
+                      disabled={saving}
+                      className="px-3 py-1.5 rounded-lg bg-[var(--accent)] text-white text-[11px] font-bold hover:opacity-90 active:scale-95"
+                    >
+                      {t('scheduled.payNow')}
+                    </button>
                     <p className={`text-[18px] font-bold tracking-tight ${item.type === 'income' ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
                       {item.type === 'income' ? '+' : '−'}{formatMoney(parseFloat(String(item.amount)))}
                     </p>
@@ -281,7 +308,7 @@ export default function ScheduledPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
-              <h2 className="text-[18px] font-bold text-[var(--text)]">{selectedScheduled ? 'Edit Transaksi Terjadwal' : 'Tambah Transaksi Terjadwal'}</h2>
+              <h2 className="text-[18px] font-bold text-[var(--text)]">{selectedScheduled ? t('scheduled.editSchedule') : t('scheduled.addSchedule')}</h2>
               <div className="flex items-center gap-2">
                 {selectedScheduled && (
                   <button 
@@ -313,14 +340,14 @@ export default function ScheduledPage() {
                       type === tp ? 'bg-[var(--card)] text-[var(--text)] shadow-sm' : 'text-[var(--text-dim-2)]'
                     }`}
                   >
-                    {tp === 'expense' ? 'Pengeluaran' : 'Pemasukan'}
+                    {tp === 'expense' ? t('dashboard.expense') : t('dashboard.income')}
                   </button>
                 ))}
               </div>
 
               {/* Amount */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Jumlah</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('txn.amount')}</label>
                 <input
                   value={amount ? parseInt(amount, 10).toLocaleString('id-ID') : ''}
                   onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
@@ -332,7 +359,7 @@ export default function ScheduledPage() {
 
               {/* Category */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Kategori</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('txn.category')}</label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
@@ -347,7 +374,7 @@ export default function ScheduledPage() {
 
               {/* Account (Required) */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Sumber Rekening</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('txn.account')}</label>
                 <select
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}
@@ -362,13 +389,13 @@ export default function ScheduledPage() {
 
               {/* Frequency */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Frekuensi</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('scheduled.frequency')}</label>
                 <select
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
                   className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                 >
-                  {FREQUENCIES.map(f => (
+                  {FREQUENCIES(t).map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </select>
@@ -376,7 +403,7 @@ export default function ScheduledPage() {
 
               {/* Next Run Date */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Tanggal Mulai Tagihan</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('scheduled.startDate')}</label>
                 <input
                   type="date"
                   value={nextRunDate}
@@ -387,7 +414,7 @@ export default function ScheduledPage() {
 
               {/* Description */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Keterangan</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('txn.description')}</label>
                 <input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -403,7 +430,7 @@ export default function ScheduledPage() {
                 disabled={!amount || !categoryId || !accountId || !nextRunDate || saving}
                 className="w-full py-4 rounded-[16px] bg-[#15803D] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
               >
-                {saving ? 'Menyimpan...' : selectedScheduled ? 'Simpan Perubahan' : 'Jadwalkan Transaksi'}
+                {saving ? t('common.loading') : selectedScheduled ? t('scheduled.saveSchedule') : t('scheduled.saveSchedule')}
               </button>
             </div>
           </div>
