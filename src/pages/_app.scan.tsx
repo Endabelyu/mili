@@ -21,7 +21,15 @@ export default function ScanReceiptPage() {
       // Simulate OCR processing delay
       setTimeout(() => {
         console.log("OCR Scan Complete for:", file.name);
-        // In a real app, this would navigate to the transaction preview with the data
+        
+        // Mock scanned data
+        const scannedAmount = "50000"; // Default mock amount
+        const scannedDescription = `Scan Struk: ${file.name}`;
+        
+        // Navigate to dashboard and trigger New Transaction modal with data
+        navigate(`/?new_transaction=true&amount=${scannedAmount}&description=${encodeURIComponent(scannedDescription)}`, { replace: true });
+        
+        setIsScanning(false);
       }, 3000);
     }
   };

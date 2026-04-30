@@ -22,11 +22,11 @@ export function NewTransactionModal() {
   const { t } = usePreferences();
   
   const [type, setType] = useState<'expense' | 'income' | 'transfer'>('expense');
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(searchParams.get('amount') || '');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [toAccountId, setToAccountId] = useState<string | null>(null);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(searchParams.get('description') || '');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -41,6 +41,8 @@ export function NewTransactionModal() {
     // Remove the ?new_transaction=true from URL without going back in history
     searchParams.delete('new_transaction');
     searchParams.delete('edit_transaction_id');
+    searchParams.delete('amount');
+    searchParams.delete('description');
     navigate({ search: searchParams.toString() }, { replace: true });
     // Reset state after close animation (approx)
     setTimeout(() => {
