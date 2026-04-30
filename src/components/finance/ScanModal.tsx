@@ -9,32 +9,48 @@ interface ScanModalProps {
 
 import Tesseract from 'tesseract.js';
 
-// Helper to extract amount from OCR text
-const extractAmountFromText = (text: string): string => {
-  const lines = text.split('\n');
-  const possibleAmounts: number[] = [];
-
-  // Patterns for money: Rp. 10.000, 10,000.00, etc.
+// Helper to extract amount, merchant, and items from OCR text
+const analyzeReceipt = (text: string) => {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+  
+  // 1. Merchant Name (Heuristic: usually first few non-empty lines)
+  const merchant = lines[0] || "Struk Baru";
+  
+  // 2. Extract Amounts
   const moneyPattern = /(?:rp|[$]|)\s*([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)/gi;
-
+  const possibleAmounts: { val: number; line: string }[] = [];
+  
   lines.forEach(line => {
-    const matches = line.matchAll(moneyPattern);
+    const matches = Array.from(line.matchAll(moneyPattern));
     for (const match of matches) {
       const clean = match[1].replace(/[.,]/g, '');
       const num = parseFloat(clean);
-      if (!isNaN(num) && num > 100) { // Filter out small numbers like dates
-        possibleAmounts.push(num);
+      if (!isNaN(num) && num > 100) { 
+        possibleAmounts.push({ val: num, line });
       }
     }
   });
 
-  if (possibleAmounts.length > 0) {
-    // Usually the largest number on a receipt is the total
-    const maxAmount = Math.max(...possibleAmounts);
-    return Math.floor(maxAmount).toString();
-  }
+  const totalAmount = possibleAmounts.length > 0 
+    ? Math.max(...possibleAmounts.map(a => a.val)) 
+    : 0;
 
-  return "0";
+  // 3. Extract Items (Heuristic: lines with money that aren't the total)
+  const totalLine = possibleAmounts.find(a => a.val === totalAmount)?.line;
+  const items = lines.filter(line => {
+    const isTotal = line === totalLine || line.toLowerCase().includes('total') || line.toLowerCase().includes('jumlah');
+    const hasMoney = line.match(moneyPattern);
+    return hasMoney && !isTotal;
+  }).map(l => l.replace(moneyPattern, '').trim()) // Remove prices from item lines
+    .filter(l => l.length > 2)
+    .slice(0, 5); // Limit to top 5 items
+
+  const description = `${merchant}${items.length > 0 ? ': ' + items.join(', ') : ''}`;
+
+  return {
+    amount: Math.floor(totalAmount).toString(),
+    description
+  };
 };
 
 export function ScanModal({ isOpen, onClose }: ScanModalProps) {
@@ -58,8 +74,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
         logger: m => console.log(m)
       }).then(({ data: { text } }) => {
         console.log("OCR Result:", text);
-        const scannedAmount = extractAmountFromText(text);
-        const scannedDescription = `Scan Struk: ${file.name}`;
+        const { amount: scannedAmount, description: scannedDescription } = analyzeReceipt(text);
         
         // Small delay for UI feel
         setTimeout(() => {
