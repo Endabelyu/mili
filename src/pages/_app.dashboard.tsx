@@ -105,6 +105,7 @@ export default function DashboardPage() {
       {/* ─── Hero Header ─── */}
       <div className="mb-6">
         <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em]">{formatName(user?.name)}</h1>
+        <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-60 mt-1 uppercase tracking-[0.15em]">Mengalirkan Ketenangan Finansial</p>
       </div>
 
       {/* ─── Net Worth Hero Card (Real Data) ─── */}

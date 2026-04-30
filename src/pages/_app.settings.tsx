@@ -630,8 +630,8 @@ export default function SettingsPage() {
             iconColor="text-blue-500" 
             label={t('settings.aboutApp')} 
             onClick={() => showAlert(
-              'Tentang Mili', 
-              'Mili berasal dari bahasa Jawa yang artinya "mengalir" (seperti frasa "banyu mili"). Ini adalah filosofi rezeki yang terus mengalir tanpa henti, bergerak alami membawa kelancaran dan ketenangan hidup. Di Mili, kami mengalirkan keteraturan pada pemasukan dan pengeluaran Anda.', 
+              'Filosofi Mili', 
+              'Mili berasal dari bahasa Jawa yang artinya "mengalir" — sering muncul dalam frasa "banyu mili" (air mengalir). Dalam budaya Jawa, ini adalah simbol rezeki yang terus mengalir tanpa henti — tidak dipaksakan, tidak dibendung, tapi bergerak alami menuju tempatnya. Seperti motif Pamor Banyu Mili pada keris pusaka, Mili hadir untuk membawa kelancaran rezeki dan ketenangan hidup bagi Anda.', 
               'info'
             )}
           />

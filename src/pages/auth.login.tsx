@@ -57,8 +57,9 @@ export default function LoginPage() {
           <div className="flex justify-center mb-0">
             <img src="/icon-192.png" className="w-40 h-40 object-contain -my-10" alt="Logo Mili" />
           </div>
-          <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--text)]">Selamat Datang</h1>
-          <p className="mt-2 text-[13px] text-[var(--text-dim)]">
+          <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--text)]">Selamat Datang di Mili</h1>
+          <p className="mt-2 text-[11px] font-bold text-[var(--text-dim-2)] opacity-60 uppercase tracking-[0.2em]">Mengalirkan Ketenangan Finansial</p>
+          <p className="mt-5 text-[13px] text-[var(--text-dim)]">
             Belum punya akun?{' '}
             <Link to="/auth/register" className="font-semibold text-[var(--accent)] hover:opacity-80 transition-opacity">
               Daftar sekarang
