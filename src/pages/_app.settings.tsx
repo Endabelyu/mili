@@ -95,8 +95,7 @@ export default function SettingsPage() {
   const handleExportExcel = async () => {
     setShowExportPicker(false);
     const ExcelJS = await import('exceljs');
-    // @ts-ignore
-    const workbook = new (ExcelJS.Workbook || (ExcelJS as any).default.Workbook)();
+    const workbook = new (ExcelJS.Workbook || (ExcelJS as unknown as { default: { Workbook: new () => ExcelJSTypes.Workbook } }).default.Workbook)();
     const worksheet = workbook.addWorksheet('Laporan Keuangan');
 
     // 1. Setup Columns
