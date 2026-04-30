@@ -220,3 +220,15 @@ export const consentApi = {
   record: (data: { consentVersion: string }) => 
     request<void>('/api/v1/consent', { method: 'POST', body: JSON.stringify(data) }),
 };
+
+// ─── OCR — Receipt Scanner ────────────────────────────────────────────────────
+export const ocrApi = {
+  getStatus: () =>
+    request<{ enabled: boolean; limit: number }>('/api/v1/ocr/status'),
+  scanReceipt: (base64Image: string) =>
+    request<Record<string, unknown>>('/api/v1/ocr/scan-receipt', {
+      method: 'POST',
+      body: JSON.stringify({ image: base64Image }),
+      timeoutMs: 30_000, // OCR can take a while
+    }),
+};
