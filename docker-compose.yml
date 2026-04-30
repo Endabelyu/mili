@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=https://finance-api.endabelyu.com
-    container_name: finance-tracker-web
+    container_name: mili-web
     ports:
       - "4016:4016"
     restart: unless-stopped
