@@ -17,6 +17,7 @@
     "@tanstack/react-query-devtools": "^5.100.1",
     "better-auth": "^1.5.4",
     "dayjs": "^1.11.20",
+    "exceljs": "^4.4.0",
     "lucide-react": "^0.577.0",
     "posthog-js": "^1.359.1",
     "react": "^19.2.0",

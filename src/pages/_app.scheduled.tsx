@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, RefreshCw, X, ArrowLeft, MoreVertical, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Alert } from '../components/ui/Alert';
 import { scheduledApi, categoriesApi, accountsApi, type ScheduledTransaction, type Category } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';

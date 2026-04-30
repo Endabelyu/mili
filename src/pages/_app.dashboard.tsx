@@ -285,16 +285,13 @@ export default function DashboardPage() {
         {/* ─── Top Categories (Real Data) ─── */}
         <section>
           <h2 className="text-[14px] font-bold text-[var(--text)] mb-4">{t('dashboard.topCategories')}</h2>
-          <div className="flow-card p-5 space-y-5">
+          <div className="flow-card p-6">
             {catLoading ? (
-              <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl skeleton" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 rounded w-1/3 skeleton" />
-                      <div className="h-2 rounded w-full skeleton" />
-                    </div>
+                  <div key={i} className="flex flex-col items-center gap-2 animate-pulse">
+                    <div className="w-12 h-12 rounded-2xl bg-[var(--muted)]" />
+                    <div className="w-12 h-2 rounded-full bg-[var(--muted)]" />
                   </div>
                 ))}
               </div>
@@ -304,23 +301,18 @@ export default function DashboardPage() {
                 <p className="text-[11px]">Catat pengeluaran untuk melihat kategori teratas.</p>
               </div>
             ) : (
-              topCategories.map((cat: { categoryId: string; label: string; amount: number; percentage: number; color: string; }) => (
-                <div key={cat.categoryId} className="flex items-center gap-4">
-                  <CategoryIcon 
-                    category={cat.label} 
-                    size="lg" 
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center mb-1.5">
-                      <p className="text-[13px] font-bold text-[var(--text)]">{cat.label}</p>
-                      <p className="text-[13px] font-bold text-[var(--text)] tabular-nums">{formatMoney(cat.amount)}</p>
-                    </div>
-                    <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${cat.percentage}%`, backgroundColor: cat.color }} />
-                    </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-6">
+                {topCategories.map((cat: { categoryId: string; label: string; amount: number; percentage: number; color: string; }) => (
+                  <div key={cat.categoryId} className="flex flex-col items-center group">
+                    <CategoryIcon 
+                      category={cat.label} 
+                      size="lg" 
+                      label={cat.label}
+                    />
+                    <p className="text-[12px] font-bold text-[var(--text)] mt-1 tabular-nums">{formatMoney(cat.amount)}</p>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </section>

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
+import { usePreferences } from '../hooks/usePreferences';
 import { 
   ChevronRight,
   User,
@@ -248,7 +249,8 @@ export default function ProfilePage() {
             color="bg-orange-50" 
             iconColor="text-orange-500"
             label={t('profile.phone')} 
-            value="+62 812-XXXX-XXXX" 
+            value="+62 812-3456-7890" 
+            href="tel:+6281234567890"
           />
         </div>
       </div>
@@ -539,6 +541,11 @@ function ProfileRow({ icon: Icon, color, iconColor, label, value, subtext, href,
     </div>
   );
 
-  if (href) return <Link to={href} className="block">{content}</Link>;
+  if (href) {
+    if (href.startsWith('tel:') || href.startsWith('mailto:')) {
+      return <a href={href} className="block no-underline">{content}</a>;
+    }
+    return <Link to={href} className="block">{content}</Link>;
+  }
   return content;
 }

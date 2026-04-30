@@ -20,12 +20,16 @@ import {
   X,
 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
+import ExcelJS from 'exceljs';
 
 import { useQuery } from '@tanstack/react-query';
-import { transactionsApi } from '../api/client';
+import { transactionsApi, accountsApi, budgetsApi } from '../api/client';
+import { authClient } from '../lib/auth-client';
 
 export default function SettingsPage() {
   const { language, setLanguage, currency, setCurrency, isDark, toggleDark, t } = usePreferences();
+  const { data: session } = authClient.useSession();
+  const userName = session?.user?.name?.toLowerCase().replace(/\s+/g, '_') || 'user';
 
   // Sheet state for language/currency pickers
   const [showLangPicker, setShowLangPicker] = useState(false);
@@ -60,36 +64,432 @@ export default function SettingsPage() {
   const currentLangLabel = LANGUAGE_OPTIONS.find(l => l.value === language)?.nativeLabel || 'Bahasa Indonesia';
   const currentCurrencyLabel = CURRENCY_OPTIONS.find(c => c.value === currency)?.label || 'Rupiah (Rp)';
 
-  // Query all transactions for CSV Export
-  const { data } = useQuery({
+  const [showExportPicker, setShowExportPicker] = useState(false);
+  const [exportOptions, setExportOptions] = useState({
+    includeAssets: true,
+    includeBudgets: true,
+    includeTransactions: true
+  });
+
+  // Query Data for Exports
+  const { data: txnsData } = useQuery({
     queryKey: ['transactions', 'all'],
     queryFn: () => transactionsApi.list({ limit: 1000 }),
   });
-  const transactions = data?.items || [];
+  const transactions = txnsData?.items || [];
+
+  const { data: accountsData } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: () => accountsApi.list(),
+  });
+  const accounts = accountsData || [];
+
+  const { data: budgetsData } = useQuery({
+    queryKey: ['budgets'],
+    queryFn: () => budgetsApi.list(),
+  });
+  const budgets = budgetsData || [];
+
+  const handleExportExcel = async () => {
+    setShowExportPicker(false);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Laporan Keuangan');
+
+    // 1. Setup Columns
+    worksheet.columns = [
+      { header: '', key: 'col1', width: 25 },
+      { header: '', key: 'col2', width: 20 },
+      { header: '', key: 'col3', width: 35 },
+      { header: '', key: 'col4', width: 18 },
+      { header: '', key: 'col5', width: 18 },
+      { header: '', key: 'col6', width: 18 },
+    ];
+
+    // 2. Header Style Definitions
+    const BRAND_COLOR = 'FF15803D'; // Emerald-700
+    const INCOME_COLOR = 'FF10B981';
+    const EXPENSE_COLOR = 'FFEF4444';
+
+    const HEADER_STYLE: Partial<ExcelJS.Style> = {
+      font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: BRAND_COLOR } },
+      alignment: { vertical: 'middle', horizontal: 'center' }
+    };
+    const SUB_HEADER_STYLE: Partial<ExcelJS.Style> = {
+      font: { bold: true, color: { argb: 'FF334155' } },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } },
+      border: { bottom: { style: 'thin' } }
+    };
+
+    // 3. Document Title
+    worksheet.addRow(['Mili / Finance']).font = { size: 18, bold: true, color: { argb: BRAND_COLOR } };
+    worksheet.addRow(['LAPORAN KEUANGAN KONSOLIDASI']).font = { size: 14, bold: true };
+    worksheet.addRow([`Laporan Untuk: ${session?.user?.name || 'User'}`]).font = { italic: true };
+    worksheet.addRow([`Periode: ${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`]);
+    worksheet.addRow(['']);
+
+    // 4. TOTAL ASSETS (TOP)
+    const totalAssetAmount = (accounts || []).reduce((acc, a) => acc + parseFloat(String(a.balance)), 0);
+    worksheet.addRow(['TOTAL KEKAYAAN (ASET)']).font = { bold: true, size: 12 };
+    const totalAssetRow = worksheet.addRow([`Rp ${totalAssetAmount.toLocaleString('id-ID')}`]);
+    totalAssetRow.font = { bold: true, size: 24, color: { argb: BRAND_COLOR } };
+    worksheet.addRow(['']);
+
+    // 5. Assets Section (SYNC COLORS)
+    if (exportOptions.includeAssets) {
+      const assetTitle = worksheet.addRow(['RINGKASAN ASET & SALDO']);
+      assetTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
+      worksheet.mergeCells(`A${assetTitle.number}:F${assetTitle.number}`);
+
+      const assetHead = worksheet.addRow(['Nama Akun', 'Tipe', 'Saldo']);
+      assetHead.eachCell(cell => Object.assign(cell, SUB_HEADER_STYLE));
+
+      (accounts || []).forEach(a => {
+        const row = worksheet.addRow([a.name, a.type, parseFloat(String(a.balance))]);
+        const accColor = a.color?.replace('#', '') || '334155';
+        row.getCell(1).font = { color: { argb: `FF${accColor}` }, bold: true };
+        row.getCell(3).numFmt = '#,##0';
+        row.getCell(3).font = { color: { argb: `FF${accColor}` }, bold: true };
+      });
+      worksheet.addRow(['']);
+    }
+
+    // 6. Summary Section (INCOME/EXPENSE COLORS)
+    const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(String(t.amount)), 0);
+    const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(String(t.amount)), 0);
+    const balance = totalIncome - totalExpense;
+
+    const summaryTitleRow = worksheet.addRow(['RINGKASAN ARUS KAS (INCOME/EXPENSE)']);
+    summaryTitleRow.eachCell(cell => Object.assign(cell, HEADER_STYLE));
+    worksheet.mergeCells(`A${summaryTitleRow.number}:F${summaryTitleRow.number}`);
+
+    const sumHead = worksheet.addRow(['Keterangan', '', 'Jumlah']);
+    sumHead.eachCell(cell => Object.assign(cell, SUB_HEADER_STYLE));
+
+    const incRow = worksheet.addRow(['Total Pemasukan', '', totalIncome]);
+    incRow.getCell(3).numFmt = '#,##0';
+    incRow.getCell(3).font = { color: { argb: INCOME_COLOR }, bold: true };
+
+    const expRow = worksheet.addRow(['Total Pengeluaran', '', totalExpense]);
+    expRow.getCell(3).numFmt = '#,##0';
+    expRow.getCell(3).font = { color: { argb: EXPENSE_COLOR }, bold: true };
+
+    const balRow = worksheet.addRow(['Saldo Bersih', '', balance]);
+    balRow.getCell(3).numFmt = '#,##0';
+    balRow.getCell(3).font = { bold: true };
+    worksheet.addRow(['']);
+
+    // 7. Budgets Section (SYNC COLORS)
+    if (exportOptions.includeBudgets) {
+      const budgetTitle = worksheet.addRow(['PEMANTAUAN ANGGARAN']);
+      budgetTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
+      worksheet.mergeCells(`A${budgetTitle.number}:F${budgetTitle.number}`);
+
+      const budgetHead = worksheet.addRow(['Kategori', 'Batas', 'Terpakai', 'Persentase']);
+      budgetHead.eachCell(cell => Object.assign(cell, SUB_HEADER_STYLE));
+
+      (budgets || []).forEach(b => {
+        const perc = b.percentageUsed ?? 0;
+        const filled = Math.min(Math.floor(perc / 10), 10);
+        const progressBar = `[${'■'.repeat(filled)}${' '.repeat(10 - filled)}] ${perc}%`;
+        
+        const row = worksheet.addRow([
+          b.category?.label || b.categoryId,
+          parseFloat(String(b.limitAmount)),
+          parseFloat(String(b.spent || 0)),
+          progressBar
+        ]);
+        const catColor = b.category?.color?.replace('#', '') || '334155';
+        row.getCell(1).font = { color: { argb: `FF${catColor}` }, bold: true };
+        row.getCell(2).numFmt = '#,##0';
+        row.getCell(3).numFmt = '#,##0';
+        
+        const barColor = perc >= 100 ? EXPENSE_COLOR : (perc >= 80 ? 'FFF59E0B' : 'FF10B981');
+        row.getCell(4).font = { color: { argb: barColor }, bold: true };
+      });
+      worksheet.addRow(['']);
+    }
+
+    // 8. Transactions Ledger (SYNC COLORS)
+    if (exportOptions.includeTransactions) {
+      const ledgerTitle = worksheet.addRow(['RINCIAN BUKU KAS (LEDGER)']);
+      ledgerTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
+      worksheet.mergeCells(`A${ledgerTitle.number}:F${ledgerTitle.number}`);
+
+      const ledgerHead = worksheet.addRow(['Tanggal', 'Kategori', 'Keterangan', 'Masuk', 'Keluar', 'Saldo']);
+      ledgerHead.eachCell(cell => Object.assign(cell, SUB_HEADER_STYLE));
+
+      let rb = 0;
+      const sorted = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      sorted.forEach(t => {
+        const amt = parseFloat(String(t.amount));
+        const isInc = t.type === 'income';
+        if (isInc) rb += amt; else rb -= amt;
+        const row = worksheet.addRow([
+          new Date(t.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }),
+          t.category?.label || t.categoryId,
+          t.description || '-',
+          isInc ? amt : 0,
+          !isInc ? amt : 0,
+          rb
+        ]);
+        const catColor = t.category?.color?.replace('#', '') || '334155';
+        row.getCell(2).font = { color: { argb: `FF${catColor}` } };
+        row.getCell(4).numFmt = '#,##0';
+        row.getCell(5).numFmt = '#,##0';
+        row.getCell(6).numFmt = '#,##0';
+        if (isInc) row.getCell(4).font = { color: { argb: INCOME_COLOR }, bold: true };
+        if (!isInc) row.getCell(5).font = { color: { argb: EXPENSE_COLOR }, bold: true };
+      });
+    }
+
+    worksheet.addRow(['']);
+    worksheet.addRow(['Dokumen ini sah dihasilkan oleh Mili Finance System']).font = { italic: true, size: 10 };
+    worksheet.addRow([new Date().toLocaleString('id-ID')]).font = { size: 9 };
+
+    // 9. Generate and Download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${userName}_mili_${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    setTimeout(() => showAlert('Sukses', 'Data berhasil diekspor ke format Excel (.xlsx) Premium.', 'success'), 500);
+  };
+
+
 
   const handleExportCSV = () => {
+    setShowExportPicker(false);
     if (transactions.length === 0) {
       showAlert('Gagal Ekspor', 'Tidak ada data transaksi untuk diekspor.', 'error');
       return;
     }
-    const headers = ['Tanggal', 'Jenis', 'Jumlah', 'Kategori', 'Keterangan'];
-    const rows = transactions.map(t => [
-      new Date(t.date).toLocaleDateString('id-ID'),
-      t.type === 'expense' ? 'Pengeluaran' : 'Pemasukan',
-      t.amount,
-      t.category?.label || t.categoryId,
-      t.description || ''
-    ]);
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+
+    const headers = ['Tanggal', 'Kategori', 'Keterangan', 'Pemasukan', 'Pengeluaran', 'Saldo'];
+    let runningBalance = 0;
+    const sorted = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    const rows = sorted.map(t => {
+      const amt = parseFloat(String(t.amount));
+      const isInc = t.type === 'income';
+      if (isInc) runningBalance += amt; else runningBalance -= amt;
+      return [
+        new Date(t.date).toLocaleDateString('id-ID'),
+        t.category?.label || t.categoryId,
+        t.description || '',
+        isInc ? amt : 0,
+        !isInc ? amt : 0,
+        runningBalance
+      ];
+    });
+
+    const csvString = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     
-    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `transaksi_saku_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${userName}_mili_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    setTimeout(() => showAlert('Sukses', 'Data berhasil diekspor ke format Excel (CSV).', 'success'), 500);
+  };
+
+  const handleExportPDF = () => {
+    setShowExportPicker(false);
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      showAlert('Blokir Pop-up', 'Mohon izinkan pop-up untuk mengunduh PDF.', 'warning');
+      return;
+    }
+
+    const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(String(t.amount)), 0);
+    const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(String(t.amount)), 0);
+    const balance = totalIncome - totalExpense;
+    const totalAssetAmount = (accounts || []).reduce((acc, a) => acc + parseFloat(String(a.balance)), 0);
+
+    const html = `
+      <html>
+        <head>
+          <title>Mili Finance - Laporan Keuangan</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+            body { font-family: 'Inter', sans-serif; padding: 60px; color: #0f172a; line-height: 1.5; background: #fff; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 1px solid #e2e8f0; padding-bottom: 30px; }
+            .brand { font-size: 28px; font-weight: 800; color: #15803D; letter-spacing: -0.02em; }
+            .brand span { color: #0f172a; opacity: 0.3; font-weight: 400; margin: 0 8px; }
+            .report-title { text-align: right; }
+            .report-title h1 { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin: 0; }
+            .report-title p { font-size: 13px; font-weight: 600; color: #1e293b; margin: 4px 0 0 0; }
+
+            .total-wealth { margin: 40px 0; }
+            .total-wealth label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+            .total-wealth .amount { font-size: 36px; font-weight: 800; color: #15803D; margin-top: 5px; }
+
+            .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+            .summary-card { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #f1f5f9; }
+            .summary-card label { display: block; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+            .summary-card .val { font-size: 18px; font-weight: 700; }
+            .val.income { color: #10b981; }
+            .val.expense { color: #ef4444; }
+
+            .section-title { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin: 40px 0 15px 0; display: flex; align-items: center; gap: 10px; }
+            .section-title::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+
+            .asset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            .asset-card { border: 1px solid #f1f5f9; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+            .asset-info h4 { margin: 0; font-size: 14px; font-weight: 700; }
+            .asset-info p { margin: 2px 0 0 0; font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; }
+
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { text-align: left; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
+            td { padding: 15px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+            .row-main { font-weight: 600; }
+            .row-income { color: #10b981; font-weight: 700; }
+            .row-expense { color: #ef4444; font-weight: 700; }
+            .text-right { text-align: right; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="brand">Mili<span>/</span>Finance</div>
+            <div class="report-title">
+              <h1>Laporan Keuangan Konsolidasi</h1>
+              <p style="color: #64748b; font-size: 11px; margin-top: 2px;">Laporan Untuk: ${session?.user?.name || 'User'}</p>
+              <p>${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</p>
+            </div>
+          </div>
+
+          <div class="total-wealth">
+            <label>Total Kekayaan (Aset)</label>
+            <div class="amount">Rp ${totalAssetAmount.toLocaleString('id-ID')}</div>
+          </div>
+
+          ${exportOptions.includeAssets ? `
+            <div class="section-title">Ringkasan Aset & Saldo</div>
+            <div class="asset-grid">
+              ${(accounts || []).map(a => `
+                <div class="asset-card" style="border-left: 4px solid ${a.color || '#e2e8f0'}">
+                  <div class="asset-info">
+                    <h4 style="color: ${a.color || '#0f172a'}">${a.name}</h4>
+                    <p>${a.type}</p>
+                  </div>
+                  <div style="font-weight: 700; font-size: 15px; color: ${a.color || '#0f172a'}">Rp ${parseFloat(String(a.balance)).toLocaleString('id-ID')}</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="section-title">Ringkasan Arus Kas</div>
+          <div class="summary-grid">
+            <div class="summary-card">
+              <label>Total Pemasukan</label>
+              <div class="val income">Rp ${totalIncome.toLocaleString('id-ID')}</div>
+            </div>
+            <div class="summary-card">
+              <label>Total Pengeluaran</label>
+              <div class="val expense">Rp ${totalExpense.toLocaleString('id-ID')}</div>
+            </div>
+            <div class="summary-card">
+              <label>Saldo Bersih</label>
+              <div class="val">Rp ${balance.toLocaleString('id-ID')}</div>
+            </div>
+          </div>
+
+          ${exportOptions.includeBudgets ? `
+            <div class="section-title">Pemantauan Anggaran</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Kategori</th>
+                  <th class="text-right">Batas</th>
+                  <th class="text-right">Terpakai</th>
+                  <th>Progres</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(budgets || []).map(b => {
+                  const perc = b.percentageUsed ?? 0;
+                  const barColor = perc >= 100 ? '#ef4444' : (perc >= 80 ? '#f59e0b' : '#10b981');
+                  return `
+                  <tr>
+                    <td style="font-weight: 700; color: ${b.category?.color || '#0f172a'}">${b.category?.label || b.categoryId}</td>
+                    <td class="text-right">Rp ${parseFloat(String(b.limitAmount)).toLocaleString('id-ID')}</td>
+                    <td class="text-right">Rp ${parseFloat(String(b.spent || 0)).toLocaleString('id-ID')}</td>
+                    <td style="width: 150px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden;">
+                          <div style="width: ${Math.min(perc, 100)}%; height: 100%; background: ${barColor};"></div>
+                        </div>
+                        <span style="font-size: 10px; font-weight: 800; color: ${barColor}">${perc}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                `; }).join('')}
+              </tbody>
+            </table>
+          ` : ''}
+
+          ${exportOptions.includeTransactions ? `
+            <div class="section-title">Rincian Buku Kas (Ledger)</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th class="text-right">Masuk</th>
+                  <th class="text-right">Keluar</th>
+                  <th class="text-right">Saldo</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(() => {
+                  let rb = 0;
+                  const sorted = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                  return sorted.map(t => {
+                    const amt = parseFloat(String(t.amount));
+                    const isInc = t.type === 'income';
+                    if (isInc) rb += amt; else rb -= amt;
+                    return `
+                      <tr>
+                        <td>${new Date(t.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</td>
+                        <td>
+                          <div style="font-weight: 700; color: ${t.category?.color || '#0f172a'}">${t.category?.label || t.categoryId}</div>
+                          <div style="font-size: 11px; opacity: 0.6;">${t.description || '-'}</div>
+                        </td>
+                        <td class="text-right ${isInc ? 'row-income' : ''}">${isInc ? amt.toLocaleString('id-ID') : '-'}</td>
+                        <td class="text-right ${!isInc ? 'row-expense' : ''}">${!isInc ? amt.toLocaleString('id-ID') : '-'}</td>
+                        <td class="text-right" style="font-weight: 700; background: #f8fafc;">${rb.toLocaleString('id-ID')}</td>
+                      </tr>
+                    `;
+                  }).join('');
+                })()}
+              </tbody>
+            </table>
+          ` : ''}
+
+          <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8;">
+            <div>Dokumen ini sah dihasilkan oleh Mili Finance System</div>
+            <div>${new Date().toLocaleString('id-ID')}</div>
+          </div>
+
+          <script>
+            window.onload = () => { setTimeout(() => { window.print(); }, 500); };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   const handleDeleteAll = () => {
@@ -214,7 +614,7 @@ export default function SettingsPage() {
       <div className="space-y-3">
         <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('settings.dataPrivacy')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
-          <SettingRow icon={Download} color="bg-slate-50" iconColor="text-slate-500" label={t('settings.exportData')} value={t('settings.exportDataDesc')} onClick={handleExportCSV} />
+          <SettingRow icon={Download} color="bg-slate-50" iconColor="text-slate-500" label={t('settings.exportData')} value={t('settings.exportDataDesc')} onClick={() => setShowExportPicker(true)} />
           <SettingRow icon={Upload} color="bg-orange-50" iconColor="text-orange-500" label={t('settings.importData')} value={t('settings.importDataDesc')} onClick={() => showAlert('Dalam Pengembangan', 'Fitur Impor Data sedang dalam tahap pengembangan.', 'info')} />
           <SettingToggleRow icon={Cloud} color="bg-emerald-50" iconColor="text-emerald-500" label={t('settings.autoBackup')} subtext={t('settings.autoBackupDesc')} defaultChecked={true} />
           <SettingRow icon={Trash2} color="bg-rose-50" iconColor="text-rose-500" label={t('settings.deleteAll')} labelColor="text-rose-600" subtext={t('settings.deleteAllDesc')} onClick={handleDeleteAll} />
@@ -276,7 +676,87 @@ export default function SettingsPage() {
           onSelect={(val) => { setCurrency(val as Currency); setShowCurrencyPicker(false); }}
         />
       )}
-      {/* ─── Global Alert ─── */}
+      {/* ─── Export Picker Sheet ─── */}
+      {showExportPicker && (
+        <div className="fixed inset-0 z-[200] flex items-end lg:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowExportPicker(false)} />
+          <div className="relative bg-[var(--card)] rounded-t-[32px] lg:rounded-[32px] w-full max-w-[480px] p-8 animate-slide-up lg:animate-fade-in">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-[20px] font-bold text-[var(--text)]">Konfigurasi Laporan</h3>
+              <button onClick={() => setShowExportPicker(false)} className="w-10 h-10 rounded-full bg-[var(--muted)] flex items-center justify-center">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 mb-10">
+              <button
+                onClick={handleExportExcel}
+                className="w-full py-4 rounded-2xl bg-[var(--accent)] text-white font-bold text-[14px] shadow-lg shadow-[var(--accent)]/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                <div className="w-5 h-5 bg-white/20 rounded flex items-center justify-center text-[10px]">XLS</div>
+                Unduh Excel (.xlsx)
+              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleExportPDF}
+                  className="py-3 rounded-xl border border-[var(--border)] font-bold text-[13px] hover:bg-[var(--muted)] transition-all flex items-center justify-center gap-2"
+                >
+                  📄 PDF
+                </button>
+                <button
+                  onClick={handleExportCSV}
+                  className="py-3 rounded-xl border border-[var(--border)] font-bold text-[13px] hover:bg-[var(--muted)] transition-all flex items-center justify-center gap-2"
+                >
+                  📑 CSV
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <h4 className="text-[12px] font-bold text-[var(--text-dim)] uppercase tracking-widest px-1">Opsi Laporan</h4>
+              
+              <div className="flex items-center justify-between p-4 bg-[var(--muted)]/50 rounded-2xl border border-[var(--border)]">
+                <div>
+                  <p className="text-[14px] font-bold text-[var(--text)]">Rincian Aset</p>
+                  <p className="text-[11px] text-[var(--text-dim-2)]">Daftar saldo semua rekening/dompet</p>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={exportOptions.includeAssets} 
+                  onChange={(e) => setExportOptions(prev => ({ ...prev, includeAssets: e.target.checked }))}
+                  className="w-5 h-5 accent-[var(--accent)]" 
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-[var(--muted)]/50 rounded-2xl border border-[var(--border)]">
+                <div>
+                  <p className="text-[14px] font-bold text-[var(--text)]">Rincian Anggaran</p>
+                  <p className="text-[11px] text-[var(--text-dim-2)]">Status budget per kategori bulan ini</p>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={exportOptions.includeBudgets} 
+                  onChange={(e) => setExportOptions(prev => ({ ...prev, includeBudgets: e.target.checked }))}
+                  className="w-5 h-5 accent-[var(--accent)]" 
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-[var(--muted)]/50 rounded-2xl border border-[var(--border)]">
+                <div>
+                  <p className="text-[14px] font-bold text-[var(--text)]">Buku Kas (Transaksi)</p>
+                  <p className="text-[11px] text-[var(--text-dim-2)]">Daftar lengkap riwayat transaksi</p>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={exportOptions.includeTransactions} 
+                  onChange={(e) => setExportOptions(prev => ({ ...prev, includeTransactions: e.target.checked }))}
+                  className="w-5 h-5 accent-[var(--accent)]" 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <Alert
         isOpen={alertConfig.isOpen}
         onClose={closeAlert}
@@ -353,7 +833,7 @@ function PickerSheet({ title, onClose, options, selected, onSelect }: {
 
       {/* Sheet */}
       <div
-        className="relative bg-[var(--card)] rounded-t-[24px] lg:rounded-[24px] w-full max-w-[420px] p-6 pb-safe animate-slide-up"
+        className="relative bg-[var(--card)] rounded-t-[24px] lg:rounded-[32px] w-full max-w-[420px] p-6 pb-safe animate-slide-up lg:animate-fade-in lg:mt-0"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
