@@ -100,7 +100,7 @@ export default function DashboardPage() {
   const currentMonthName = new Date().toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'short', year: 'numeric' });
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10 content-auto">
+    <div className="space-y-6 animate-fade-in pb-10 content-auto">
       
       {/* ─── Hero Header ─── */}
       <div className="mb-6">
@@ -108,13 +108,13 @@ export default function DashboardPage() {
         <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-60 mt-1 uppercase tracking-[0.15em]">Mengalirkan Ketenangan Finansial</p>
       </div>
 
-      {/* ─── Net Worth Hero Card (Real Data) ─── */}
-      <div className="relative rounded-[32px] p-8 border-[2.5px] border-[#0891B2]/40 bg-[#CFFAFE]/30 text-[#0E7490] overflow-hidden shadow-sm">
+      {/* ─── Net Worth Hero Card (Slimmer) ─── */}
+      <div className="relative rounded-[28px] p-6 border-[2px] border-[#0891B2]/30 bg-[#CFFAFE]/20 text-[#0E7490] overflow-hidden shadow-sm">
         <div className="relative z-10 flex justify-between items-start">
           <div>
-            <p className="text-[12px] font-bold text-[#0E7490]/60 tracking-[0.05em] uppercase">{t('dashboard.netWorth')}</p>
-            <p className="text-[32px] sm:text-[44px] font-bold tracking-[-0.03em] mt-1 tabular-nums text-[#0891B2]">{formatMoney(netWorth)}</p>
-            <div className="flex flex-wrap gap-4 mt-4 text-[12px] font-bold">
+            <p className="text-[11px] font-bold text-[#0E7490]/60 tracking-[0.05em] uppercase">{t('dashboard.netWorth')}</p>
+            <p className="text-[28px] sm:text-[36px] font-bold tracking-[-0.03em] mt-1 tabular-nums text-[#0891B2]">{formatMoney(netWorth)}</p>
+            <div className="flex flex-wrap gap-4 mt-3 text-[11px] font-bold">
               <span className="text-[#0E7490]/50">{t('dashboard.assets')} <span className="text-[#0E7490] tabular-nums">{formatMoney(totalAssets)}</span></span>
               {totalLiabilities > 0 && (
                 <span className="text-[#0E7490]/50">{t('dashboard.liabilities')} <span className="text-[#0E7490] tabular-nums">{formatMoney(totalLiabilities)}</span></span>
@@ -133,18 +133,18 @@ export default function DashboardPage() {
           </div>
         </div>
         {/* Subtle Wave Chart Placeholder */}
-        <div className="absolute bottom-0 left-0 w-full h-24 opacity-10 pointer-events-none">
-          <svg viewBox="0 0 400 100" className="w-full h-full preserve-3d">
+        <div className="absolute bottom-0 left-0 w-full h-20 opacity-10 pointer-events-none">
+          <svg viewBox="0 0 400 100" className="w-full h-full preserve-3d" preserveAspectRatio="none">
              <path d="M0 80 Q 100 70, 200 85 T 400 75 L 400 100 L 0 100 Z" fill="#0891B2" />
           </svg>
         </div>
       </div>
 
-      {/* ─── Monthly Cash Flow (Real Data) ─── */}
-      <div className="rounded-[24px] p-6 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-[14px] font-bold text-[#0E7490] tracking-[-0.01em]">{t('dashboard.cashFlow')}</h2>
-          <span className="text-[12px] font-bold text-[#0E7490] opacity-60 uppercase tracking-widest">{currentMonthName}</span>
+      {/* ─── Monthly Cash Flow (Slimmer) ─── */}
+      <div className="rounded-[24px] p-5 border-[2px] border-[#0891B2]/20 bg-[#ECFEFF] shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-[13px] font-bold text-[#0E7490] tracking-[-0.01em] uppercase tracking-wider">{t('dashboard.cashFlow')}</h2>
+          <span className="text-[11px] font-bold text-[#0E7490] opacity-50 uppercase tracking-widest">{currentMonthName}</span>
         </div>
         {summaryLoading ? (
           <div className="space-y-4">
