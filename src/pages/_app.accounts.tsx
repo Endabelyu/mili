@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, X, Wallet, CreditCard, Landmark, Coins, TrendingUp, Check, Trash2, ArrowLeft } from 'lucide-react';
@@ -90,6 +90,8 @@ export default function AccountsPage() {
   const [color, setColor] = useState('#15803D');
   const [icon, setIcon] = useState('category_bank');
   const [isDefault, setIsDefault] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const balanceRef = useRef<HTMLInputElement>(null);
 
   const { data: accounts = [], isLoading } = useQuery({
     queryKey: queryKeys.accounts.all,
@@ -175,6 +177,9 @@ export default function AccountsPage() {
     setIcon(acc.icon || 'category_bank');
     setIsDefault(acc.isDefault || false);
     setIsModalOpen(true);
+    if (window.innerWidth >= 1024) {
+      setTimeout(() => nameRef.current?.focus(), 100);
+    }
   };
 
   const handleCloseModal = () => {
@@ -385,7 +390,10 @@ export default function AccountsPage() {
                   {ACCOUNT_TYPES(t).map(({ id, label, icon: Icon }) => (
                     <button
                       key={id}
-                      onClick={() => setType(id as Account['type'])}
+                      onClick={() => {
+                        setType(id as Account['type']);
+                        if (window.innerWidth >= 1024) nameRef.current?.focus();
+                      }}
                       className={`flex items-center gap-3 p-3 rounded-[16px] border transition-all ${
                         type === id 
                           ? 'border-[#15803D] bg-[#15803D]/5' 
@@ -403,6 +411,7 @@ export default function AccountsPage() {
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('acc.accountName')}</label>
                 <input
+                  ref={nameRef}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Contoh: BCA Tahapan, OVO, Dompet"
@@ -416,6 +425,7 @@ export default function AccountsPage() {
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--text-dim-2)]">Rp</span>
                   <input
+                    ref={balanceRef}
                     value={balance ? parseInt(balance).toLocaleString('id-ID') : ''}
                     onChange={handleBalanceInput}
                     placeholder="0"
@@ -474,7 +484,10 @@ export default function AccountsPage() {
                       <button
                         key={e}
                         type="button"
-                        onClick={() => setIcon(e)}
+                        onClick={() => {
+                          setIcon(e);
+                          if (window.innerWidth >= 1024) balanceRef.current?.focus();
+                        }}
                         title={formattedLabel}
                         className={`transition-all ${icon === e ? 'scale-110 ring-2 ring-[#15803D] ring-offset-2 ring-offset-[var(--card)] rounded-[20px] bg-[var(--accent-tint)]' : 'opacity-60 hover:opacity-100'}`}
                       >

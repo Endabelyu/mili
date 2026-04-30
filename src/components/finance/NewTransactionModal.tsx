@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Check, Home, Delete, Plus } from 'lucide-react';
+import { X, Check, Home, Trash2, Plus, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesApi, transactionsApi, accountsApi, type Transaction } from '../../api/client';
@@ -29,6 +29,7 @@ export function NewTransactionModal() {
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showAccountSelect, setShowAccountSelect] = useState(false);
   const [showToAccountSelect, setShowToAccountSelect] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -48,17 +49,28 @@ export function NewTransactionModal() {
       setSelectedCategory(null);
       setToAccountId(null);
       setEditingTxn(null);
+      setShowDeleteConfirm(false);
+      setDeleting(false);
     }, 300);
   };
 
   const [editingTxn, setEditingTxn] = useState<Transaction | null>(null);
 
   // Fetch transaction if editing
-  const { data: txnData } = useQuery({
+  const { data: txnData, isError: isTxnError } = useQuery({
     queryKey: ['transactions', editId],
     queryFn: () => transactionsApi.get(editId!),
-    enabled: !!editId,
+    enabled: !!editId && !deleting && !showDeleteConfirm,
+    retry: false,
   });
+
+  // Handle fetch error (e.g. 404)
+  useEffect(() => {
+    if (isTxnError && editId) {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      handleClose();
+    }
+  }, [isTxnError, editId]);
 
   // Populate state when editing
   useEffect(() => {
@@ -149,6 +161,9 @@ export function NewTransactionModal() {
       setSelectedCategory(newCat.id);
       setIsAddingCategory(false);
       setNewCatLabel('');
+      if (window.innerWidth >= 1024) {
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
     },
   });
 
@@ -225,10 +240,12 @@ export function NewTransactionModal() {
   };
 
   const handleDelete = () => {
-    if (window.confirm(t('common.confirmDelete') || 'Yakin ingin menghapus transaksi ini?')) {
-      setDeleting(true);
-      deleteMutation.mutate();
-    }
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    setDeleting(true);
+    deleteMutation.mutate();
   };
 
   // ── Keypad handler (mobile/tablet only) ──
@@ -302,10 +319,9 @@ export function NewTransactionModal() {
             <button 
               type="button"
               onClick={handleDelete}
-              disabled={deleting}
               className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center transition-all active:scale-95"
             >
-              {deleting ? <div className="w-4 h-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" /> : <Delete className="w-5 h-5" />}
+              <Trash2 className="w-5 h-5" />
             </button>
           ) : (
             <div className="w-10" />
@@ -455,7 +471,10 @@ export function NewTransactionModal() {
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => {
+                        setSelectedCategory(cat.id);
+                        if (window.innerWidth >= 1024) inputRef.current?.focus();
+                      }}
                       className="flex flex-col items-center gap-2 group w-full"
                     >
                       <div className={`transition-all ${
@@ -510,7 +529,7 @@ export function NewTransactionModal() {
                 aria-label={key === 'backspace' ? 'Hapus' : key}
                 className="h-14 flex items-center justify-center text-[24px] font-bold text-[var(--text)] bg-[var(--card)] active:bg-[var(--border)] rounded-2xl shadow-sm border border-[var(--border)]/50 transition-all active:scale-[0.97]"
               >
-                {key === 'backspace' ? <Delete className="w-6 h-6 text-[#F04438]" /> : key}
+                {key === 'backspace' ? <Trash2 className="w-6 h-6 text-[#F04438]" /> : key}
               </button>
             ))}
           </div>
@@ -518,6 +537,7 @@ export function NewTransactionModal() {
           {/* Footer Section */}
           <div className="p-5 bg-[var(--bg)] pb-safe">
             <button
+              type="button"
               onClick={handleSave}
               disabled={!amount || amount === '0' || !selectedCategory || saving}
               className="w-full h-15 rounded-[20px] bg-[#15803D] text-white font-bold text-[16px] shadow-2xl shadow-[#15803D40] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -584,17 +604,54 @@ export function NewTransactionModal() {
                 </div>
                 <div className="flex gap-3 pt-2">
                   <button 
+                    type="button"
                     onClick={() => setIsAddingCategory(false)}
                     className="flex-1 py-3 rounded-xl bg-[var(--muted)] text-[var(--text)] font-bold text-[14px]"
                   >
                     Batal
                   </button>
                   <button 
+                    type="button"
                     onClick={handleAddCategory}
                     disabled={!newCatLabel || addCategoryMutation.isPending}
                     className="flex-2 py-3 px-6 rounded-xl bg-[#15803D] text-white font-bold text-[14px] disabled:opacity-50"
                   >
                     {addCategoryMutation.isPending ? '...' : 'Tambah'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── Delete Confirmation Overlay ─── */}
+        {showDeleteConfirm && (
+          <div className="absolute inset-0 z-[160] flex items-center justify-center p-6">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-md animate-fade-in" onClick={() => setShowDeleteConfirm(false)} />
+            <div className="relative w-full bg-[var(--card)] rounded-[28px] p-6 shadow-2xl animate-fade-in border border-[var(--border)] overflow-hidden">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-3xl bg-red-50 flex items-center justify-center mb-4">
+                  <AlertCircle className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-[20px] font-bold text-[var(--text)] mb-2">Hapus Transaksi?</h3>
+                <p className="text-[14px] text-[var(--text-dim)] font-medium mb-8">Tindakan ini tidak dapat dibatalkan. Saldo akun Anda akan disesuaikan kembali secara otomatis.</p>
+                
+                <div className="grid grid-cols-2 gap-3 w-full">
+                  <button 
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="py-3.5 rounded-2xl bg-[var(--muted)] text-[var(--text)] font-bold text-[15px] transition-all active:scale-95"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={confirmDelete}
+                    disabled={deleting}
+                    className="py-3.5 rounded-2xl bg-red-500 text-white font-bold text-[15px] shadow-lg shadow-red-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    {deleting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Hapus
                   </button>
                 </div>
               </div>
