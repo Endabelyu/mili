@@ -75,6 +75,7 @@ const translations: Record<Language, Record<string, string>> = {
     'txn.descriptionPlaceholder': 'Tambahkan keterangan...',
     'txn.category': 'Kategori',
     'txn.saveTransaction': 'Simpan Transaksi',
+    'txn.editTransaction': 'Edit Transaksi',
 
     // Analytics
     'analytics.title': 'Analitik',
@@ -209,6 +210,7 @@ const translations: Record<Language, Record<string, string>> = {
     'txn.descriptionPlaceholder': 'Add a description...',
     'txn.category': 'Category',
     'txn.saveTransaction': 'Save Transaction',
+    'txn.editTransaction': 'Edit Transaction',
 
     // Analytics
     'analytics.title': 'Analytics',

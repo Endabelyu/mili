@@ -39,6 +39,7 @@ export function NewTransactionModal() {
   const handleClose = () => {
     // Remove the ?new_transaction=true from URL without going back in history
     searchParams.delete('new_transaction');
+    searchParams.delete('edit_transaction_id');
     navigate({ search: searchParams.toString() }, { replace: true });
     // Reset state after close animation (approx)
     setTimeout(() => {
