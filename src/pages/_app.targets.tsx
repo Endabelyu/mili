@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Target as TargetIcon, X, Check, Edit2, Trash2, Pin, Clock } from 'lucide-react';
+import { Plus, Target as TargetIcon, X, Check, Edit2, Trash2, Pin, Clock, ArrowLeft } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
 import { targetsApi, type Target } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
@@ -52,7 +53,8 @@ const EMOJI_LIST = [
 ];
 
 export default function TargetsPage() {
-  const { formatMoney } = usePreferences();
+  const { formatMoney, t } = usePreferences();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -191,7 +193,15 @@ export default function TargetsPage() {
       {/* Removed Redundant Top Navigation as per User Request */}
 
       <div className="flex items-center justify-between pt-4">
-        <h1 className="text-[32px] font-bold text-[var(--text)] tracking-[-0.03em]">Target</h1>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em]">{t('target.title')}</h1>
+        </div>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors"
@@ -200,64 +210,47 @@ export default function TargetsPage() {
         </button>
       </div>
 
-      {/* Summary Card - White Style to match Transactions */}
-      <div className="rounded-[24px] bg-[var(--card)] p-6 border border-[var(--border)] shadow-sm">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
-          <div className="space-y-0.5">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Terkumpul</p>
-            <p className="text-[16px] sm:text-[22px] font-bold text-[var(--income)] tabular-nums">{formatMoney(totalCurrent)}</p>
-          </div>
-          <div className="space-y-0.5 sm:border-l border-[var(--border)] sm:pl-6">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Total Target</p>
-            <p className="text-[16px] sm:text-[22px] font-bold text-[var(--text)] tabular-nums">{formatMoney(totalTarget)}</p>
-          </div>
-          <div className="space-y-0.5 col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-[var(--border)] pt-2.5 sm:pt-0 sm:pl-6">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Progres</p>
-            <p className="text-[16px] sm:text-[22px] font-bold text-[var(--income)] tabular-nums">
-              {totalTarget > 0 ? Math.round((totalCurrent / totalTarget) * 100) : 0}%
-            </p>
-          </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-[var(--card)] p-5 rounded-[24px] border border-[var(--border)] shadow-sm">
+          <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest mb-1">{t('target.active')}</p>
+          <p className="text-[24px] font-bold text-[var(--text)]">{activeTargets.length}</p>
+        </div>
+        <div className="bg-[var(--card)] p-5 rounded-[24px] border border-[var(--border)] shadow-sm">
+          <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest mb-1">{t('target.completed')}</p>
+          <p className="text-[24px] font-bold text-[var(--text)]">{completedTargets.length}</p>
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex items-center gap-8 border-b border-[var(--border)] px-1">
         <button 
           onClick={() => setActiveTab('active')}
           className={`py-4 text-[15px] font-bold transition-all relative ${activeTab === 'active' ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)] opacity-50'}`}
         >
-          Aktif
+          {t('target.activeTab')}
           {activeTab === 'active' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--accent)] rounded-t-full" />}
         </button>
         <button 
           onClick={() => setActiveTab('completed')}
           className={`py-4 text-[15px] font-bold transition-all relative ${activeTab === 'completed' ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)] opacity-50'}`}
         >
-          Selesai
+          {t('target.completedTab')}
+          {activeTab === 'completed' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--accent)] rounded-t-full" />}
         </button>
       </div>
 
-      {/* List Section */}
       <div className="space-y-4">
-        {targets.length > 0 && (
-          <div className="flex items-center gap-2 px-1 pt-2">
-            <Pin className="w-4 h-4 text-[var(--income)] rotate-45" />
-            <h3 className="text-[16px] font-bold text-[var(--text)]">Target Disematkan</h3>
-          </div>
-        )}
-
         {targets.length === 0 ? (
           <div className="text-center py-20 px-6 bg-[var(--card)] rounded-[32px] border border-[var(--border)]">
-            <div className="w-20 h-20 rounded-3xl bg-[var(--accent-tint)] text-[var(--accent)] flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 rounded-3xl bg-amber-50 text-amber-500 flex items-center justify-center mx-auto mb-6">
               <TargetIcon className="w-10 h-10" />
             </div>
-            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada target</h3>
-            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[300px] mx-auto leading-relaxed">Tentukan impian finansial Anda sekarang dan capai perlahan bersama Saku.</p>
+            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">{t('target.noTargets')}</h3>
+            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[300px] mx-auto leading-relaxed">{t('target.noTargetsDesc')}</p>
             <button 
               onClick={() => setIsModalOpen(true)}
               className="px-8 py-4 rounded-2xl bg-[var(--text)] text-[var(--bg)] font-bold text-[15px] shadow-xl transition-all active:scale-95"
             >
-              Buat Target Pertama
+              {t('target.addTarget')}
             </button>
           </div>
         ) : (
@@ -272,10 +265,10 @@ export default function TargetsPage() {
               .map((target) => {
                 const current = parseFloat(String(target.currentAmount));
                 const total = parseFloat(String(target.targetAmount));
-                const progress = Math.min((current / total) * 100, 100);
+                const progress = Math.min(Math.round((current / total) * 100), 100);
 
               return (
-                <div key={target.id} className="flow-card p-6 flex flex-col gap-6 relative group transition-all hover:shadow-xl hover:shadow-[#15803D05] border-transparent hover:border-[var(--income)]/20">
+                <div key={target.id} className="flow-card p-6 flex flex-col gap-6 relative group transition-all hover:shadow-xl border-transparent hover:border-[var(--income)]/20">
                   <div className="flex items-center gap-5">
                     <CircularProgress percentage={progress} color={target.color} icon={target.icon} />
                     
@@ -283,39 +276,18 @@ export default function TargetsPage() {
                       <h4 className="text-[15px] sm:text-[18px] font-bold text-[var(--text)] leading-tight">{target.name}</h4>
                       <div className="mt-1.5 flex items-center gap-2">
                         <Clock className="w-3.5 h-3.5 text-[var(--text-dim-2)] opacity-60 flex-shrink-0" />
-                        <div className="flex flex-col text-[12px] font-medium text-[var(--text-dim-2)] leading-tight">
-                          <span>
-                            {target.deadline ? (() => {
-                              const now = new Date();
-                              const dl = new Date(target.deadline);
-                              const diffTime = dl.getTime() - now.getTime();
-                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                              if (diffDays <= 0) return 'Tenggat lewat';
-                              const diffMonths = (dl.getFullYear() - now.getFullYear()) * 12 + (dl.getMonth() - now.getMonth());
-                              if (diffMonths <= 0) return `${diffDays} hari lagi`;
-                              return `${diffMonths} bulan lagi`;
-                            })() : 'Selamanya'}
-                          </span>
-                          {target.deadline && (
-                            <span className="opacity-70 mt-0.5">
-                              {new Date(target.deadline).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
-                            </span>
-                          )}
-                        </div>
+                        <span className="text-[12px] font-medium text-[var(--text-dim-2)]">
+                          {target.deadline ? new Date(target.deadline).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : t('target.noDeadline')}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="text-right shrink-0">
-                      <p className="text-[22px] font-bold" style={{ color: target.color }}>{progress.toFixed(0)}%</p>
-                    </div>
-
-                    {/* Actions on hover */}
                     <div className="absolute top-6 right-6 flex items-center gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => openEditModal(target)} className="p-2.5 rounded-xl bg-[var(--muted)] text-[var(--text-dim-2)] hover:text-[var(--accent)] transition-all">
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button 
-                        onClick={() => showConfirm('Hapus Target?', 'Hapus target ini?', () => { deleteMutation.mutate(target.id); closeAlert(); }, 'error')}
+                        onClick={() => showConfirm(t('target.deleteConfirmTitle'), t('target.deleteConfirmMessage'), () => { deleteMutation.mutate(target.id); closeAlert(); }, 'error')}
                         className="p-2.5 rounded-xl bg-[var(--muted)] text-[var(--text-dim-2)] hover:text-[var(--expense)] transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -324,6 +296,10 @@ export default function TargetsPage() {
                   </div>
 
                   <div className="space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">{t('target.progress')}</p>
+                      <p className="text-[11px] font-bold text-[var(--text)]">{progress}%</p>
+                    </div>
                     <div className="w-full h-2.5 bg-[var(--muted)] rounded-full overflow-hidden">
                       <div 
                         className="h-full rounded-full transition-all duration-700 ease-out" 
@@ -331,8 +307,8 @@ export default function TargetsPage() {
                       />
                     </div>
                     <div className="flex justify-between items-center text-[13px] font-bold">
-                      <span className="text-[var(--text-dim-2)]">Terkumpul: <span className="text-[var(--text)]">{formatMoney(current)}</span></span>
-                      <span className="text-[var(--text-dim-2)]">Target: <span className="text-[var(--text)]">{formatMoney(total)}</span></span>
+                      <span className="text-[var(--text-dim-2)]">{formatMoney(current)}</span>
+                      <span className="text-[var(--text-dim-2)]">{formatMoney(total)}</span>
                     </div>
                   </div>
                 </div>
@@ -342,16 +318,15 @@ export default function TargetsPage() {
         )}
       </div>
 
-      {/* ─── Add/Edit Modals ─── */}
       {(isModalOpen || isEditModalOpen) && (
         <>
           <div className="fixed inset-0 bg-black/40 z-[90] backdrop-blur-sm animate-fade-in" onClick={resetForm} />
           <div 
-            className="fixed inset-x-0 bottom-0 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:max-h-[85vh] lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] overflow-hidden"
+            className="fixed inset-x-0 bottom-0 lg:top-[10%] lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] pb-safe"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
-              <h2 className="text-[18px] font-bold text-[var(--text)]">{isEditModalOpen ? 'Edit Target' : 'Tambah Target'}</h2>
+            <div className="flex items-center justify-between p-4 shrink-0 border-b border-[var(--border)]">
+              <h2 className="text-[16px] font-bold text-[var(--text)] pl-2">{selectedTarget ? t('target.editTarget') : t('target.addTarget')}</h2>
               <button 
                 onClick={resetForm} 
                 className="relative z-[210] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] hover:bg-[var(--border)] transition-all active:scale-95"
@@ -361,7 +336,6 @@ export default function TargetsPage() {
             </div>
 
             <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
-              {/* Icon Picker */}
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Emoji</label>
                 <div className="flex gap-2.5 flex-wrap">
@@ -373,65 +347,62 @@ export default function TargetsPage() {
                         icon === e ? 'border-[#15803D] bg-[#15803D]/5 scale-110' : 'border-[var(--border)] hover:bg-[var(--muted)]'
                       }`}
                     >
-                      <CategoryIcon 
-                        category="target" 
-                        icon={e} 
-                        size="lg" 
-                      />
+                      <CategoryIcon category="target" icon={e} size="lg" />
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Name */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Nama Impian</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.dreamName')}</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Liburan ke Bali, Beli iPhone"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[var(--accent)] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                  placeholder="Contoh: Beli iPhone 15 Pro, Dana Darurat"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
                 />
               </div>
 
-              {/* Target Amount */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Target Jumlah</label>
-                <input
-                  value={targetAmount ? parseInt(targetAmount, 10).toLocaleString('id-ID') : ''}
-                  onChange={(e) => setTargetAmount(e.target.value.replace(/[^0-9]/g, ''))}
-                  placeholder="0"
-                  inputMode="numeric"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[var(--accent)] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
-                />
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.amount')}</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--text-dim-2)]">Rp</span>
+                  <input
+                    value={targetAmount ? parseInt(targetAmount, 10).toLocaleString('id-ID') : ''}
+                    onChange={(e) => setTargetAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="0"
+                    inputMode="numeric"
+                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] pl-11 pr-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
+                  />
+                </div>
               </div>
 
-              {/* Current Amount */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Terkumpul Saat Ini</label>
-                <input
-                  value={currentAmount ? parseInt(currentAmount, 10).toLocaleString('id-ID') : ''}
-                  onChange={(e) => setCurrentAmount(e.target.value.replace(/[^0-9]/g, ''))}
-                  placeholder="0"
-                  inputMode="numeric"
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[var(--accent)] rounded-[16px] px-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
-                />
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.collectedSoFar')}</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--text-dim-2)]">Rp</span>
+                  <input
+                    value={collectedAmount ? parseInt(collectedAmount, 10).toLocaleString('id-ID') : ''}
+                    onChange={(e) => setCollectedAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="0"
+                    inputMode="numeric"
+                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] pl-11 pr-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
+                  />
+                </div>
               </div>
 
-              {/* Deadline */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Tenggat Waktu</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.deadline')}</label>
                 <input
                   type="date"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[var(--accent)] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
                 />
               </div>
 
-              {/* Color */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Warna</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.color')}</label>
                 <div className="flex gap-3 flex-wrap">
                   {['#15803D', '#0BA5EC', '#7F56D9', '#F04438', '#F79009', '#EE46BC'].map((c) => (
                     <button
@@ -449,17 +420,17 @@ export default function TargetsPage() {
 
             <div className="p-4 border-t border-[var(--border)] shrink-0">
               <button
-                onClick={isEditModalOpen ? handleUpdate : handleSave}
+                onClick={handleSave}
                 disabled={!name || !targetAmount || saving}
-                className="w-full py-4 rounded-[16px] bg-[var(--accent)] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50 transition-all active:scale-98 cursor-pointer"
+                className="w-full py-4 rounded-[16px] bg-[var(--accent)] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50 transition-all active:scale-95"
               >
-                {saving ? 'Menyimpan...' : 'Simpan Target'}
+                {saving ? t('common.loading') : t('target.saveTarget')}
               </button>
             </div>
           </div>
         </>
       )}
-      {/* ─── Global Alert ─── */}
+
       <Alert
         isOpen={alertConfig.isOpen}
         onClose={closeAlert}

@@ -47,6 +47,7 @@ type SecurityFormValues = z.infer<typeof securitySchema>;
 
 export default function ProfilePage() {
   const { user, updateUser, changePassword, logout } = useAuth();
+  const { t } = usePreferences();
   const navigate = useNavigate();
 
   // Modal visibility state
@@ -201,7 +202,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8 animate-fade-in pb-12 pt-6">
-      <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em] ml-1">Profil</h1>
+      <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.02em] ml-1">{t('profile.title')}</h1>
 
       {/* ─── Profile Header Card ─── */}
       <div className="flow-card p-6">
@@ -217,21 +218,21 @@ export default function ProfilePage() {
           <div className="flex-1 min-w-0">
             <h2 className="text-[18px] font-bold text-[var(--text)]">{formatName(user?.name)}</h2>
             <p className="text-[14px] font-medium text-[var(--text-dim-2)] opacity-70">{user?.email || 'arya@example.com'}</p>
-            <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-50 mt-1">Bergabung sejak Januari 2026</p>
+            <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-50 mt-1">{t('profile.joinedSince')} Januari 2026</p>
           </div>
-          <button onClick={() => setIsEditOpen(true)} className="text-[14px] font-bold text-[var(--accent)] hover:underline">Edit</button>
+          <button onClick={() => setIsEditOpen(true)} className="text-[14px] font-bold text-[var(--accent)] hover:underline">{t('common.edit')}</button>
         </div>
       </div>
 
       {/* ─── Informasi Akun ─── */}
       <div className="space-y-3">
-        <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">Informasi Akun</h3>
+        <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('profile.accountInfo')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
           <ProfileRow 
             icon={User} 
             color="bg-blue-50" 
             iconColor="text-blue-500"
-            label="Nama Lengkap" 
+            label={t('profile.fullName')} 
             value={formatName(user?.name)} 
             onClick={() => setIsEditOpen(true)}
           />
@@ -239,14 +240,14 @@ export default function ProfilePage() {
             icon={Mail} 
             color="bg-emerald-50" 
             iconColor="text-emerald-500"
-            label="Alamat Email" 
+            label={t('profile.email')} 
             value={user?.email || 'arya@example.com'} 
           />
           <ProfileRow 
             icon={Smartphone} 
             color="bg-orange-50" 
             iconColor="text-orange-500"
-            label="Nomor Telepon" 
+            label={t('profile.phone')} 
             value="+62 812-XXXX-XXXX" 
           />
         </div>
@@ -254,13 +255,13 @@ export default function ProfilePage() {
 
       {/* ─── Keamanan ─── */}
       <div className="space-y-3">
-        <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">Keamanan</h3>
+        <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('profile.security')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
           <ProfileRow 
             icon={KeyRound} 
             color="bg-violet-50" 
             iconColor="text-violet-500"
-            label="Ubah Kata Sandi" 
+            label={t('profile.changePassword')} 
             subtext="Terakhir diubah 3 bulan lalu"
             onClick={() => setIsSecurityOpen(true)}
           />
@@ -268,7 +269,7 @@ export default function ProfilePage() {
             icon={Lock} 
             color="bg-slate-50" 
             iconColor="text-slate-500"
-            label="PIN Aplikasi" 
+            label={t('profile.appPin')} 
             subtext="Aktif · 6 digit"
             onClick={() => setIsSecurityOpen(true)}
           />
@@ -276,7 +277,7 @@ export default function ProfilePage() {
             icon={Shield} 
             color="bg-emerald-50" 
             iconColor="text-emerald-500"
-            label="Verifikasi 2 Langkah" 
+            label={t('profile.twoFactor')} 
             subtext={is2FAEnabled ? "Aktif" : "Belum aktif"}
             onClick={() => {
               if (!is2FAEnabled) {
@@ -308,7 +309,7 @@ export default function ProfilePage() {
 
       {/* ─── Quick Links ─── */}
       <div className="space-y-3">
-        <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">Lainnya</h3>
+        <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('profile.others')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
           <Link to="/settings" className="block">
             <div className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer group">
@@ -319,7 +320,7 @@ export default function ProfilePage() {
                 </svg>
               </div>
               <div className="flex-1 min-w-0 pr-2">
-                <p className="text-[14px] font-bold text-[var(--text)]">Pengaturan Aplikasi</p>
+                <p className="text-[14px] font-bold text-[var(--text)]">{t('profile.appSettings')}</p>
                 <p className="text-[11px] font-medium text-[var(--text-dim-2)] opacity-60">Tampilan, bahasa, data & privasi</p>
               </div>
               <ChevronRight className="w-4 h-4 text-[var(--text-dim-2)] opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -334,7 +335,7 @@ export default function ProfilePage() {
         className="w-full h-14 rounded-2xl bg-white border border-[var(--border)] text-[15px] font-bold text-[#F04438] hover:bg-rose-50 transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
       >
         <LogOut className="w-4 h-4" />
-        Keluar
+        {t('common.logout')}
       </button>
 
       <div className="text-center">
