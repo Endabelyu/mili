@@ -93,7 +93,15 @@ export default function DashboardPage() {
   // Calculate Growth (MoM)
   const currentMonthFlow = currentMonthData?.balance ?? 0;
   const previousNetWorth = netWorth - currentMonthFlow;
-  const growth = previousNetWorth > 0 ? (currentMonthFlow / previousNetWorth) * 100 : (currentMonthFlow > 0 ? 100 : 0);
+  
+  let growth = 0;
+  if (previousNetWorth > 0) {
+    growth = (currentMonthFlow / previousNetWorth) * 100;
+  } else if (previousNetWorth === 0 && currentMonthFlow > 0) {
+    growth = 100;
+  } else {
+    growth = 0;
+  }
   const isPositive = growth > 0;
   const isNegative = growth < 0;
 
