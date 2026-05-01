@@ -62,6 +62,7 @@ export default function TargetsPage() {
   const [color, setColor] = useState('#15803D');
   const [icon, setIcon] = useState('category_savings');
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
+  const [showAllEmojis, setShowAllEmojis] = useState(false);
 
   // Alert Modal state
   const [alertConfig, setAlertConfig] = useState<{
@@ -128,6 +129,7 @@ export default function TargetsPage() {
     setSaving(false);
     setIsModalOpen(false);
     setIsEditModalOpen(false);
+    setShowAllEmojis(false);
   };
 
   const handleSave = () => {
@@ -343,60 +345,78 @@ export default function TargetsPage() {
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Emoji</label>
                 <div className="flex gap-2.5 flex-wrap">
-                  {TARGET_EMOJI_LIST.map((e: string) => {
-                    const emojiMap: Record<string, string> = {
-                      '🕋': 'Haji & Umrah',
-                      '🐑': 'Qurban',
-                      '🏠': 'Rumah & Properti',
-                      '💍': 'Pernikahan',
-                      '👶': 'Anak & Keluarga',
-                      '🎓': 'Pendidikan',
-                      '🚗': 'Kendaraan',
-                      '✈️': 'Liburan & Travel',
-                      '🛒': 'Belanja',
-                      '💻': 'Gadget & Kerja',
-                      '🏥': 'Kesehatan',
-                      '🎁': 'Hadiah & Sosial',
-                      '🆘': 'Dana Darurat',
-                      '💸': 'Pelunasan Hutang',
-                      '💰': 'Tabungan',
-                      '📈': 'Investasi',
-                      '🏢': 'Bisnis',
-                      '🕌': 'Ibadah',
-                      '🎨': 'Hobi & Kreatif',
-                      '⚽': 'Olahraga',
-                      '📚': 'Buku & Kursus',
-                      '🧘': 'Self Care',
-                      '🥘': 'Kuliner',
-                      '📽️': 'Hiburan',
-                      '👗': 'Fashion',
-                    };
+                  {(() => {
+                    const uniqueEmojis = Array.from(new Set(TARGET_EMOJI_LIST));
+                    const initialList = uniqueEmojis.slice(0, 9);
+                    if (icon && !initialList.includes(icon)) {
+                      initialList.push(icon);
+                    }
+                    const visibleList = showAllEmojis ? uniqueEmojis : initialList;
 
-                    const label = e.startsWith('category_') 
-                      ? e.replace('category_', '').replace(/_/g, ' ')
-                      : (emojiMap[e] || 'Target');
-                    
-                    const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
-                    
-                    return (
-                      <button
-                        key={e}
-                        type="button"
-                        onClick={() => setIcon(e)}
-                        title={formattedLabel}
-                        className={`w-[72px] h-[84px] rounded-[24px] flex flex-col items-center justify-center border transition-all ${
-                          icon === e ? 'border-[#15803D] bg-[#15803D]/5 scale-110 shadow-lg shadow-[#15803D]/10' : 'border-[var(--border)] hover:bg-[var(--muted)]'
-                        }`}
-                      >
-                        <CategoryIcon 
-                          category={formattedLabel} 
-                          icon={e} 
-                          size="lg" 
-                          label={formattedLabel}
-                        />
-                      </button>
-                    );
-                  })}
+                    return visibleList.map((e: string) => {
+                      const emojiMap: Record<string, string> = {
+                        '🕋': 'Haji & Umrah',
+                        '🐑': 'Qurban',
+                        '🏠': 'Rumah & Properti',
+                        '💍': 'Pernikahan',
+                        '👶': 'Anak & Keluarga',
+                        '🎓': 'Pendidikan',
+                        '🚗': 'Kendaraan',
+                        '✈️': 'Liburan & Travel',
+                        '🛒': 'Belanja',
+                        '💻': 'Gadget & Kerja',
+                        '🏥': 'Kesehatan',
+                        '🎁': 'Hadiah & Sosial',
+                        '🆘': 'Dana Darurat',
+                        '💸': 'Pelunasan Hutang',
+                        '💰': 'Tabungan',
+                        '📈': 'Investasi',
+                        '🏢': 'Bisnis',
+                        '🕌': 'Ibadah',
+                        '🎨': 'Hobi & Kreatif',
+                        '⚽': 'Olahraga',
+                        '📚': 'Buku & Kursus',
+                        '🧘': 'Self Care',
+                        '🥘': 'Kuliner',
+                        '📽️': 'Hiburan',
+                        '👗': 'Fashion',
+                      };
+
+                      const label = e.startsWith('category_') 
+                        ? e.replace('category_', '').replace(/_/g, ' ')
+                        : (emojiMap[e] || 'Target');
+                      
+                      const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                      
+                      return (
+                        <button
+                          key={e}
+                          type="button"
+                          onClick={() => setIcon(e)}
+                          title={formattedLabel}
+                          className={`w-[72px] h-[84px] rounded-[24px] flex flex-col items-center justify-center border transition-all ${
+                            icon === e ? 'border-[#15803D] bg-[#15803D]/5 scale-110 shadow-lg shadow-[#15803D]/10' : 'border-[var(--border)] hover:bg-[var(--muted)]'
+                          }`}
+                        >
+                          <CategoryIcon 
+                            category={formattedLabel} 
+                            icon={e} 
+                            size="lg" 
+                            label={formattedLabel}
+                          />
+                        </button>
+                      );
+                    });
+                  })()}
+                  {!showAllEmojis && TARGET_EMOJI_LIST.length > 9 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllEmojis(true)}
+                      className="w-[72px] h-[84px] rounded-[24px] flex flex-col items-center justify-center border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--text-dim-2)] font-bold transition-all text-xl"
+                    >
+                      +
+                    </button>
+                  )}
                 </div>
               </div>
 
