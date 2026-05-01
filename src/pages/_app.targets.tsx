@@ -7,6 +7,7 @@ import { targetsApi, type Target } from '../api/client';
 import { TARGET_EMOJI_LIST } from '../lib/constants';
 import { usePreferences } from '../hooks/usePreferences';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
+import { MobileDatePicker } from '../components/ui/MobileDatePicker';
 
 // ─── Circular Progress Component ──────────────────────────────────────────────
 function CircularProgress({ percentage, color, icon }: { percentage: number; color: string; icon: string }) {
@@ -439,11 +440,23 @@ export default function TargetsPage() {
 
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.deadline')}</label>
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none"
+                <MobileDatePicker
+                  value={deadline ? new Date(deadline) : undefined}
+                  onChange={(newDate) => {
+                    const offset = newDate.getTimezoneOffset();
+                    const adjusted = new Date(newDate.getTime() - offset * 60 * 1000);
+                    setDeadline(adjusted.toISOString().slice(0, 10));
+                  }}
+                  renderTrigger={(open) => (
+                    <div 
+                      onClick={open}
+                      className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none cursor-pointer min-h-[52px] flex items-center justify-between"
+                    >
+                      <span>
+                        {deadline ? new Date(deadline).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Pilih Tanggal'}
+                      </span>
+                    </div>
+                  )}
                 />
               </div>
 

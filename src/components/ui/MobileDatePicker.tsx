@@ -110,7 +110,9 @@ export function MobileDatePicker({
   const handleDateSelect = useCallback((date: Date) => {
     if (!isDateSelectable(date)) return;
     setTempDate(date);
-  }, [isDateSelectable]);
+    onChange(date);
+    setIsOpen(false);
+  }, [isDateSelectable, onChange]);
 
   // Handle confirm
   const handleConfirm = useCallback(() => {
@@ -281,6 +283,8 @@ export function MobileDatePicker({
                       onClick={() => {
                         setTempDate(date);
                         setViewDate(date);
+                        onChange(date);
+                        setIsOpen(false);
                       }}
                       className={`
                         flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium
