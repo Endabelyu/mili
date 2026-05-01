@@ -52,13 +52,10 @@ export function NewTransactionModal() {
       setDate(new Date().toISOString().slice(0, 10));
       setSelectedCategory(null);
       setToAccountId(null);
-      setEditingTxn(null);
       setShowDeleteConfirm(false);
       setDeleting(false);
     }, 300);
   };
-
-  const [editingTxn, setEditingTxn] = useState<Transaction | null>(null);
 
   // Fetch transaction if editing
   const { data: txnData, isError: isTxnError } = useQuery({
@@ -88,7 +85,6 @@ export function NewTransactionModal() {
       if (txnData.date) {
         setDate(new Date(txnData.date).toISOString().slice(0, 10));
       }
-      setEditingTxn(txnData);
     }
   }, [txnData, editId]);
 
