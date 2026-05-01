@@ -6,6 +6,7 @@ import { categoriesApi, transactionsApi, accountsApi, type Transaction } from '.
 import { queryKeys } from '../../lib/query-keys';
 import { usePreferences } from '../../hooks/usePreferences';
 import { CategoryIcon } from '../ui/CategoryIcon';
+import { MobileDatePicker } from '../ui/MobileDatePicker';
 
 
 // ─── Amount formatting helper ────────────────────────────────────────────────
@@ -464,22 +465,29 @@ export function NewTransactionModal() {
             </div>
 
 
-            <div className="flow-card p-4 relative cursor-pointer z-0">
-              <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">Tanggal</p>
-              <div className="relative flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[var(--text-dim-2)] shrink-0" />
-                <span className="text-[15px] font-medium text-[var(--text)]">
-                  {date ? new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Pilih Tanggal'}
-                </span>
-              </div>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                aria-label="Tanggal"
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-              />
-            </div>
+            <MobileDatePicker
+              value={date ? new Date(date) : undefined}
+              onChange={(newDate) => {
+                // Adjust for timezone offset to format consistently
+                const offset = newDate.getTimezoneOffset();
+                const adjusted = new Date(newDate.getTime() - offset * 60 * 1000);
+                setDate(adjusted.toISOString().slice(0, 10));
+              }}
+              renderTrigger={(open) => (
+                <div 
+                  className="flow-card p-4 relative cursor-pointer z-0"
+                  onClick={open}
+                >
+                  <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">Tanggal</p>
+                  <div className="relative flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-[var(--text-dim-2)] shrink-0" />
+                    <span className="text-[15px] font-medium text-[var(--text)]">
+                      {date ? new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Pilih Tanggal'}
+                    </span>
+                  </div>
+                </div>
+              )}
+            />
 
             <div className="flow-card p-4 relative z-0">
               <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">{t('txn.description')}</p>

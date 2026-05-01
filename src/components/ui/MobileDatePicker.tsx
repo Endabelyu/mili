@@ -11,6 +11,7 @@ interface MobileDatePickerProps {
   max?: Date;
   placeholder?: string;
   className?: string;
+  renderTrigger?: (open: () => void) => React.ReactNode;
 }
 
 export function MobileDatePicker({
@@ -23,6 +24,7 @@ export function MobileDatePicker({
   max,
   placeholder = 'Select date',
   className = '',
+  renderTrigger,
 }: MobileDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(value || new Date());
@@ -134,25 +136,29 @@ export function MobileDatePicker({
       )}
 
       {/* Input trigger */}
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className={`
-          w-full px-4 py-4
-          bg-white border rounded-xl
-          text-left text-base
-          transition-all duration-200
-          focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
-          active:scale-[0.99]
-          touch-manipulation min-h-[56px]
-          flex items-center gap-3
-          ${error ? 'border-red-300' : 'border-gray-200'}
-          ${!value ? 'text-gray-400' : 'text-gray-900'}
-        `}
-      >
-        <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
-        <span className="flex-1">{value ? formattedDate : placeholder}</span>
-      </button>
+      {renderTrigger ? (
+        renderTrigger(() => setIsOpen(true))
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className={`
+            w-full px-4 py-4
+            bg-white border rounded-xl
+            text-left text-base
+            transition-all duration-200
+            focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+            active:scale-[0.99]
+            touch-manipulation min-h-[56px]
+            flex items-center gap-3
+            ${error ? 'border-red-300' : 'border-gray-200'}
+            ${!value ? 'text-gray-400' : 'text-gray-900'}
+          `}
+        >
+          <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
+          <span className="flex-1">{value ? formattedDate : placeholder}</span>
+        </button>
+      )}
 
       {error && <p className="mt-1.5 text-sm text-red-500 ml-1">{error}</p>}
       {helper && !error && <p className="mt-1.5 text-sm text-gray-500 ml-1">{helper}</p>}
