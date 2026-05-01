@@ -167,7 +167,7 @@ export function MobileDatePicker({
 
       {/* Bottom Sheet Date Picker */}
       {isOpen && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[200]">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
