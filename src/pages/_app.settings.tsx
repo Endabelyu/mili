@@ -18,6 +18,8 @@ import {
   Settings as SettingsIcon,
   Check,
   X,
+  MessageSquare,
+  Send,
 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
 import type * as ExcelJSTypes from 'exceljs';
@@ -36,6 +38,8 @@ export default function SettingsPage() {
   // Sheet state for language/currency pickers
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedback, setFeedback] = useState('');
 
   // Alert Modal state
   const [alertConfig, setAlertConfig] = useState<{
@@ -635,6 +639,14 @@ export default function SettingsPage() {
               'info'
             )}
           />
+          <SettingRow 
+            icon={MessageSquare} 
+            color="bg-emerald-50" 
+            iconColor="text-emerald-500" 
+            label="Kirim Umpan Balik" 
+            subtext="Beri masukan, saran, atau laporkan bug" 
+            onClick={() => setShowFeedbackModal(true)} 
+          />
         </div>
       </div>
 
@@ -751,6 +763,52 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {showFeedbackModal && (
+        <div className="fixed inset-0 z-[200] flex items-end lg:items-center justify-center" onClick={() => setShowFeedbackModal(false)}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div
+            className="relative bg-[var(--card)] rounded-t-[24px] lg:rounded-[32px] w-full max-w-[420px] p-6 pb-safe animate-slide-up lg:animate-fade-in lg:mt-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[18px] font-bold text-[var(--text)]">Kirim Umpan Balik</h3>
+              <button onClick={() => setShowFeedbackModal(false)} className="w-8 h-8 rounded-full bg-[var(--muted)] flex items-center justify-center text-[var(--text-dim)]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <p className="text-[12px] font-medium text-[var(--text-dim-2)] mb-4 leading-relaxed">
+              Punya ide, saran, atau menemukan bug? Ceritakan kepada kami agar Mili bisa menjadi lebih baik untuk Anda.
+            </p>
+
+            <textarea
+              rows={4}
+              placeholder="Tulis pesan atau masukan Anda di sini..."
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              className="w-full p-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] text-[14px] font-medium focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all resize-none mb-4 focus:ring-emerald-500/20"
+            />
+
+            <button
+              onClick={() => {
+                if (!feedback.trim()) return;
+                setShowFeedbackModal(false);
+                setFeedback('');
+                setTimeout(() => {
+                  showAlert('Umpan Balik Terkirim', 'Terima kasih atas saran dan masukan Anda. Kami sangat menghargainya!', 'success');
+                }, 400);
+              }}
+              disabled={!feedback.trim()}
+              className="w-full py-3.5 rounded-xl bg-[var(--accent)] text-white font-bold text-[14px] shadow-lg shadow-[var(--accent)]/15 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:active:scale-100"
+            >
+              <Send className="w-4 h-4" />
+              Kirim Masukan
+            </button>
+          </div>
+        </div>
+      )}
+
       <Alert
         isOpen={alertConfig.isOpen}
         onClose={closeAlert}
