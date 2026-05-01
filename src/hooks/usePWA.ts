@@ -121,7 +121,10 @@ export function usePWA(): PWAState & PWAActions {
 
     let active = true;
     const handleControllerChange = () => {
-      if (active) setUpdateAvailable(true);
+      if (active) {
+        setUpdateAvailable(true);
+        window.location.reload();
+      }
     };
 
     navigator.serviceWorker.ready.then(() => {
@@ -134,6 +137,19 @@ export function usePWA(): PWAState & PWAActions {
       active = false;
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
+  }, []);
+
+  // Periodically check for updates every 5 minutes
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
+    const interval = setInterval(() => {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.update();
+      });
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
   }, []);
 
   // Check notification permission
