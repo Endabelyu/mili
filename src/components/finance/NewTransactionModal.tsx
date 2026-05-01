@@ -34,7 +34,6 @@ export function NewTransactionModal() {
   const [showAccountSelect, setShowAccountSelect] = useState(false);
   const [showToAccountSelect, setShowToAccountSelect] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
 
   const isOpen = searchParams.get('new_transaction') === 'true' || searchParams.get('edit_transaction_id') !== null;
   const editId = searchParams.get('edit_transaction_id');
@@ -465,26 +464,21 @@ export function NewTransactionModal() {
             </div>
 
 
-            <div 
-              className="flow-card p-4 relative z-0 cursor-pointer"
-              onClick={() => dateInputRef.current?.showPicker?.()}
-            >
+            <div className="flow-card p-4 relative cursor-pointer z-0">
               <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">Tanggal</p>
               <div className="relative flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-[var(--text-dim-2)] shrink-0" />
-                <input
-                  ref={dateInputRef}
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    dateInputRef.current?.showPicker?.();
-                  }}
-                  aria-label="Tanggal"
-                  className="w-full bg-transparent text-[15px] font-medium text-[var(--text)] focus:outline-none placeholder:text-[var(--text-dim-2)] placeholder:opacity-40 cursor-pointer"
-                />
+                <span className="text-[15px] font-medium text-[var(--text)]">
+                  {date ? new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Pilih Tanggal'}
+                </span>
               </div>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                aria-label="Tanggal"
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+              />
             </div>
 
             <div className="flow-card p-4 relative z-0">
