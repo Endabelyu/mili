@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Check, Home, Trash2, Plus, AlertCircle } from 'lucide-react';
+import { X, Check, Home, Trash2, Plus, AlertCircle, Calendar } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesApi, transactionsApi, accountsApi, type Transaction } from '../../api/client';
@@ -27,6 +27,7 @@ export function NewTransactionModal() {
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [toAccountId, setToAccountId] = useState<string | null>(null);
   const [description, setDescription] = useState(searchParams.get('description') || '');
+  const [date, setDate] = useState(searchParams.get('date') || new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -48,6 +49,7 @@ export function NewTransactionModal() {
     setTimeout(() => {
       setAmount('');
       setDescription('');
+      setDate(new Date().toISOString().slice(0, 10));
       setSelectedCategory(null);
       setToAccountId(null);
       setEditingTxn(null);
@@ -83,6 +85,9 @@ export function NewTransactionModal() {
       setSelectedAccount(txnData.accountId ?? null);
       setToAccountId(txnData.toAccountId ?? null);
       setDescription(txnData.description || '');
+      if (txnData.date) {
+        setDate(new Date(txnData.date).toISOString().slice(0, 10));
+      }
       setEditingTxn(txnData);
     }
   }, [txnData, editId]);
@@ -137,8 +142,10 @@ export function NewTransactionModal() {
   useEffect(() => {
     const urlAmount = searchParams.get('amount');
     const urlDesc = searchParams.get('description');
+    const urlDate = searchParams.get('date');
     if (urlAmount) setAmount(urlAmount);
     if (urlDesc) setDescription(urlDesc);
+    if (urlDate) setDate(urlDate);
   }, [searchParams]);
 
   // Auto-focus desktop input
@@ -239,7 +246,7 @@ export function NewTransactionModal() {
       accountId: selectedAccount || undefined,
       toAccountId: toAccountId || undefined,
       description: description || null,
-      date: editingTxn?.date ? new Date(editingTxn.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+      date: date || new Date().toISOString().slice(0, 10),
     };
 
     if (editId) {
@@ -460,6 +467,20 @@ export function NewTransactionModal() {
               )}
             </div>
 
+
+            <div className="flow-card p-4 relative z-0">
+              <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">Tanggal</p>
+              <div className="relative flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-[var(--text-dim-2)] shrink-0" />
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  aria-label="Tanggal"
+                  className="w-full bg-transparent text-[15px] font-medium text-[var(--text)] focus:outline-none placeholder:text-[var(--text-dim-2)] placeholder:opacity-40 cursor-pointer"
+                />
+              </div>
+            </div>
 
             <div className="flow-card p-4 relative z-0">
               <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">{t('txn.description')}</p>
