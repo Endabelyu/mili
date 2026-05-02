@@ -516,13 +516,40 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   // ── Currency formatter ──
   const formatMoney = useCallback((amount: number | string): string => {
-    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    let num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(num)) num = 0;
+
     const config = CURRENCY_CONFIG[currency];
+    const absNum = Math.abs(num);
+    const sign = num < 0 ? '-' : '';
+
+    if (currency === 'IDR') {
+      if (absNum >= 1_000_000_000_000) {
+        return `${sign}Rp ${(absNum / 1_000_000_000_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} T`;
+      }
+      if (absNum >= 1_000_000_000) {
+        return `${sign}Rp ${(absNum / 1_000_000_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} M`;
+      }
+      if (absNum >= 1_000_000) {
+        return `${sign}Rp ${(absNum / 1_000_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} jt`;
+      }
+    } else {
+      if (absNum >= 1_000_000_000_000) {
+        return `${sign}${config.symbol}${(absNum / 1_000_000_000_000).toLocaleString(config.locale, { maximumFractionDigits: 1 })}T`;
+      }
+      if (absNum >= 1_000_000_000) {
+        return `${sign}${config.symbol}${(absNum / 1_000_000_000).toLocaleString(config.locale, { maximumFractionDigits: 1 })}B`;
+      }
+      if (absNum >= 1_000_000) {
+        return `${sign}${config.symbol}${(absNum / 1_000_000).toLocaleString(config.locale, { maximumFractionDigits: 1 })}M`;
+      }
+    }
+
     return new Intl.NumberFormat(config.locale, {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: currency === 'JPY' ? 0 : 0,
-      maximumFractionDigits: currency === 'JPY' ? 0 : 0,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(num);
   }, [currency]);
 
