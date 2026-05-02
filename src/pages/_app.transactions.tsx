@@ -129,28 +129,34 @@ export default function TransactionsPage() {
       </div>
 
       {/* Hero Card - Summary */}
-      <div className="rounded-[32px] p-8 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm">
-        <div className="grid grid-cols-3 gap-8">
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2">
+      <div className="rounded-[32px] p-6 sm:p-8 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm animate-fade-in">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
+          <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full">
+            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
               <ArrowUpCircle className="w-3.5 h-3.5 text-[#059669]" />
               MASUK
             </p>
-            <p className="text-[22px] font-bold text-[#059669] tabular-nums">{formatMoney(income)}</p>
+            <p className="text-[20px] sm:text-[22px] font-bold text-[#059669] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
+              {formatMoney(income)}
+            </p>
           </div>
-          <div className="space-y-1.5 border-x border-[#0891B2]/10 px-8">
-            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2">
+          <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 sm:border-x border-[#0891B2]/10 pt-3 sm:pt-0 sm:px-8">
+            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
               <ArrowDownCircle className="w-3.5 h-3.5 text-[#E11D48]" />
               KELUAR
             </p>
-            <p className="text-[22px] font-bold text-[#E11D48] tabular-nums">{formatMoney(expenses)}</p>
+            <p className="text-[20px] sm:text-[22px] font-bold text-[#E11D48] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
+              {formatMoney(expenses)}
+            </p>
           </div>
-          <div className="space-y-1.5 pl-8">
-            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2">
+          <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 pt-3 sm:pt-0 sm:pl-8">
+            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
               <Wallet className="w-3.5 h-3.5 text-[#0891B2]" />
               SALDO
             </p>
-            <p className="text-[22px] font-bold text-[#0891B2] tabular-nums">{formatMoney(balance)}</p>
+            <p className="text-[20px] sm:text-[22px] font-bold text-[#0891B2] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
+              {formatMoney(balance)}
+            </p>
           </div>
         </div>
       </div>

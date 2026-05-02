@@ -7,7 +7,7 @@ const MENU_ITEMS = [
   { path: '/calendar', icon: Calendar, title: 'Kalender', subtitle: 'Riwayat per hari' },
   { path: '/analytics', icon: TrendingUp, title: 'Analitik', subtitle: 'Statistik & insight' },
   { path: '/budget', icon: DollarSign, title: 'Anggaran', subtitle: 'Anggaran per kategori' },
-  { path: '/scheduled', icon: Bell, title: 'Pengeluaran Terjadwal', subtitle: 'Tagihan berulang' },
+  { path: '/scheduled', icon: Bell, title: 'Transaksi Terjadwal', subtitle: 'Tagihan berulang' },
   { path: '/scan', icon: Scan, title: 'Scan Struk', subtitle: 'Pindai struk' },
   { path: '/notifications', icon: Bell, title: 'Notifikasi', subtitle: 'Pemberitahuan' },
   { path: '/profile', icon: User, title: 'Akun', subtitle: 'Kelola Akun' },
