@@ -115,7 +115,7 @@ export default function BudgetPage() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[20px] font-bold text-[var(--text)] leading-none">{totals.percentage}%</p>
+            <p className="text-[20px] font-bold text-[var(--text)] leading-none">{totals.percentage > 999 ? '>999%' : `${totals.percentage}%`}</p>
             <p className="text-[9px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mt-1">Sisa</p>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function BudgetPage() {
                       <div className="flex justify-between items-center mb-1">
                         <p className="text-[17px] font-bold text-[var(--text)] truncate">{label}</p>
                         <p className={`text-[17px] font-bold ${pct > 90 ? 'text-[#F04438]' : 'text-[var(--text)]'}`}>
-                          {pct}%
+                          {pct > 999 ? '>999%' : `${pct}%`}
                         </p>
                       </div>
                       <p className="text-[13px] font-bold text-[var(--text-dim-2)] opacity-70 mb-4">

@@ -165,18 +165,18 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
-              <div>
-                <p className="text-[10px] sm:text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1">{t('dashboard.income')}</p>
-                <p className="text-[14px] sm:text-[20px] font-bold text-[#059669] tabular-nums truncate">{formatMoney(income)}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+              <div className="flex sm:flex-col items-center justify-between sm:items-start w-full">
+                <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1 sm:mb-0 shrink-0">{t('dashboard.income')}</p>
+                <p className="text-[16px] sm:text-[20px] font-bold text-[#059669] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">{formatMoney(income)}</p>
               </div>
-              <div className="text-center border-x border-[#0891B2]/10 px-2">
-                <p className="text-[10px] sm:text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1">{t('dashboard.expense')}</p>
-                <p className="text-[14px] sm:text-[20px] font-bold text-[#E11D48] tabular-nums truncate">{formatMoney(expenses)}</p>
+              <div className="flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 sm:border-x border-[#0891B2]/10 pt-2 sm:pt-0 sm:px-4">
+                <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1 sm:mb-0 shrink-0">{t('dashboard.expense')}</p>
+                <p className="text-[16px] sm:text-[20px] font-bold text-[#E11D48] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">{formatMoney(expenses)}</p>
               </div>
-              <div className="text-right">
-                <p className="text-[10px] sm:text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1">{t('dashboard.balance')}</p>
-                <p className={`text-[14px] sm:text-[20px] font-bold tabular-nums truncate ${balance >= 0 ? 'text-[#059669]' : 'text-[#E11D48]'}`}>
+              <div className="flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 pt-2 sm:pt-0">
+                <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1 sm:mb-0 shrink-0">{t('dashboard.balance')}</p>
+                <p className={`text-[16px] sm:text-[20px] font-bold tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left ${balance >= 0 ? 'text-[#059669]' : 'text-[#E11D48]'}`}>
                   {formatMoney(balance)}
                 </p>
               </div>
@@ -290,7 +290,7 @@ export default function DashboardPage() {
                       />
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
-                        <p className="text-[12px] font-bold mt-0.5" style={{ color: color }}>{pct}%</p>
+                        <p className="text-[12px] font-bold mt-0.5" style={{ color: color }}>{pct > 999 ? '>999%' : `${pct}%`}</p>
                       </div>
                     </div>
                     <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden mb-3">
