@@ -155,10 +155,13 @@ export default function BudgetPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {budgets.map((budget: Budget) => {
+             {budgets.map((budget: Budget) => {
               const spent = parseFloat(String(budget.spent || 0));
               const limit = parseFloat(String(budget.limitAmount || 0));
-              const pct = budget.percentageUsed || 0;
+              const isOverBudget = spent > limit;
+              const pct = isOverBudget 
+                ? Math.round(((limit - spent) / limit) * 100) 
+                : (budget.percentageUsed || 0);
               const cat = budget.category;
               const color = cat?.color || '#15803D';
               const label = cat?.label || budget.categoryId;
@@ -178,8 +181,8 @@ export default function BudgetPage() {
                     <div className="flex-1 min-w-0 pr-4">
                       <div className="flex justify-between items-center mb-1">
                         <p className="text-[17px] font-bold text-[var(--text)] truncate">{label}</p>
-                        <p className={`text-[17px] font-bold ${pct > 90 ? 'text-[#F04438]' : 'text-[var(--text)]'}`}>
-                          {pct > 999 ? '>999%' : `${pct}%`}
+                        <p className={`text-[17px] font-bold ${isOverBudget ? 'text-[#F04438]' : 'text-[var(--text)]'}`}>
+                          {isOverBudget ? (pct < -999 ? '<-999%' : `${pct}%`) : (pct > 999 ? '>999%' : `${pct}%`)}
                         </p>
                       </div>
                       <p className="text-[13px] font-bold text-[var(--text-dim-2)] opacity-70 mb-4">

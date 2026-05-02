@@ -271,7 +271,10 @@ export default function DashboardPage() {
               {budgets.slice(0, 3).map((b: Budget) => {
                 const spent = parseFloat(String(b.spent || 0));
                 const limit = parseFloat(String(b.limitAmount || 0));
-                const pct = b.percentageUsed || 0;
+                const isOverBudget = spent > limit;
+                const pct = isOverBudget 
+                  ? Math.round(((limit - spent) / limit) * 100) 
+                  : (b.percentageUsed || 0);
                 const cat = b.category;
                 const label = cat?.label || b.categoryId;
                 const color = cat?.color || 'var(--accent)';
@@ -290,7 +293,9 @@ export default function DashboardPage() {
                       />
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-bold text-[var(--text)] truncate">{label}</p>
-                        <p className="text-[12px] font-bold mt-0.5" style={{ color: color }}>{pct > 999 ? '>999%' : `${pct}%`}</p>
+                        <p className="text-[12px] font-bold mt-0.5" style={{ color: isOverBudget ? 'var(--expense)' : color }}>
+                          {isOverBudget ? (pct < -999 ? '<-999%' : `${pct}%`) : (pct > 999 ? '>999%' : `${pct}%`)}
+                        </p>
                       </div>
                     </div>
                     <div className="h-1.5 w-full bg-[var(--muted)] rounded-full overflow-hidden mb-3">
