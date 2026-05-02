@@ -152,16 +152,18 @@ export const notificationsApi = {
 export interface ScheduledTransaction {
   id: string;
   userId: string;
-  type: 'income' | 'expense';
+  type: 'income' | 'expense' | 'transfer';
   amount: string | number;
   categoryId: string;
   accountId?: string | null;
+  toAccountId?: string | null;
   description?: string | null;
   frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
   nextRunDate: string | Date;
   status: 'active' | 'paused' | 'completed';
   category?: Category;
   account?: Account;
+  toAccount?: Account;
 }
 
 export const scheduledApi = {

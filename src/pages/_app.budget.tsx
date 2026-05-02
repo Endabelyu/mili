@@ -48,7 +48,7 @@ export default function BudgetPage() {
       totalSpent += parseFloat(String(b.spent));
     }
 
-    const remaining = Math.max(0, totalLimit - totalSpent);
+    const remaining = totalLimit - totalSpent;
     const percentage = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
 
     return { totalLimit, totalSpent, remaining, percentage };
@@ -131,7 +131,7 @@ export default function BudgetPage() {
           </div>
           <div className="space-y-1 col-span-2 pt-2 border-t border-[var(--border)]">
             <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Sisa Saldo</p>
-            <p className="text-[18px] font-bold text-[var(--income)] tabular-nums">{formatMoney(totals.remaining)}</p>
+            <p className={`text-[18px] font-bold ${totals.remaining >= 0 ? 'text-[var(--income)]' : 'text-[var(--expense)]'} tabular-nums`}>{formatMoney(totals.remaining)}</p>
           </div>
         </div>
       </div>

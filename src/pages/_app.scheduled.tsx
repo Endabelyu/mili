@@ -49,10 +49,11 @@ export default function ScheduledPage() {
   const closeAlert = () => setAlertConfig(prev => ({ ...prev, isOpen: false }));
 
   // Form State
-  const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [type, setType] = useState<'income' | 'expense' | 'transfer'>('expense');
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [accountId, setAccountId] = useState('');
+  const [toAccountId, setToAccountId] = useState('');
   const [description, setDescription] = useState('');
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
   const [nextRunDate, setNextRunDate] = useState('');
@@ -133,6 +134,7 @@ export default function ScheduledPage() {
     setAmount('');
     setCategoryId('');
     setAccountId('');
+    setToAccountId('');
     setDescription('');
     setFrequency('monthly');
     setNextRunDate('');
@@ -141,13 +143,23 @@ export default function ScheduledPage() {
   };
 
   const handleSave = () => {
-    if (!amount || !categoryId || !nextRunDate) return;
+    let finalCatId = categoryId;
+    if (type === 'transfer' && !finalCatId) {
+      const transferCat = categories.find((c: any) => c.id === 'transfer');
+      if (transferCat) {
+        finalCatId = transferCat.id;
+      } else if (categories.length > 0) {
+        finalCatId = categories[0].id;
+      }
+    }
+    if (!amount || !finalCatId || !nextRunDate) return;
     setSaving(true);
     const payload = {
       type,
       amount: parseFloat(amount),
-      categoryId,
+      categoryId: finalCatId,
       accountId: accountId || null,
+      toAccountId: type === 'transfer' ? (toAccountId || null) : null,
       description: description || null,
       frequency,
       nextRunDate,
@@ -162,10 +174,11 @@ export default function ScheduledPage() {
 
   const handleEdit = (item: ScheduledTransaction) => {
     setSelectedScheduled(item);
-    setType(item.type as 'income' | 'expense');
+    setType(item.type as 'income' | 'expense' | 'transfer');
     setAmount(String(item.amount));
     setCategoryId(item.categoryId);
     setAccountId(item.accountId || '');
+    setToAccountId(item.toAccountId || '');
     setDescription(item.description || '');
     setFrequency(item.frequency as 'daily' | 'weekly' | 'monthly' | 'yearly');
     setNextRunDate(new Date(item.nextRunDate).toISOString().split('T')[0]);
@@ -270,7 +283,11 @@ export default function ScheduledPage() {
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-1 text-[13px] font-medium text-[var(--text-dim-2)] opacity-70">
-                      <span className="truncate">{item.account?.name || 'Cash'}</span>
+                      <span className="truncate">
+                        {item.type === 'transfer' 
+                          ? `${item.account?.name || 'Cash'} → ${item.toAccount?.name || 'Account'}` 
+                          : item.account?.name || 'Cash'}
+                      </span>
                       <span>·</span>
                       <span className="whitespace-nowrap">Jatuh tempo {new Date(item.nextRunDate).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
                     </div>
@@ -286,8 +303,8 @@ export default function ScheduledPage() {
                     >
                       {t('scheduled.payNow')}
                     </button>
-                    <p className={`text-[17px] sm:text-[18px] font-bold tracking-tight ${item.type === 'income' ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
-                      {item.type === 'income' ? '+' : '−'}{formatMoney(parseFloat(String(item.amount)))}
+                    <p className={`text-[17px] sm:text-[18px] font-bold tracking-tight ${item.type === 'income' ? 'text-[var(--income)]' : item.type === 'transfer' ? 'text-[var(--accent)]' : 'text-[var(--text)]'}`}>
+                      {item.type === 'income' ? '+' : item.type === 'transfer' ? '' : '−'}{formatMoney(parseFloat(String(item.amount)))}
                     </p>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
@@ -337,7 +354,7 @@ export default function ScheduledPage() {
             <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
               {/* Type */}
               <div className="flex p-1 bg-[var(--muted)] rounded-[14px] w-fit mx-auto">
-                {(['expense', 'income'] as const).map((tp) => (
+                {(['expense', 'income', 'transfer'] as const).map((tp) => (
                   <button
                     key={tp}
                     type="button"
@@ -346,7 +363,7 @@ export default function ScheduledPage() {
                       type === tp ? 'bg-[var(--card)] text-[var(--text)] shadow-sm' : 'text-[var(--text-dim-2)]'
                     }`}
                   >
-                    {tp === 'expense' ? t('dashboard.expense') : t('dashboard.income')}
+                    {tp === 'expense' ? t('dashboard.expense') : tp === 'income' ? t('dashboard.income') : t('txn.transfer')}
                   </button>
                 ))}
               </div>
@@ -364,33 +381,55 @@ export default function ScheduledPage() {
               </div>
 
               {/* Category */}
-              <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('txn.category')}</label>
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
-                >
-                  <option value="">Pilih Kategori...</option>
-                  {filteredCategories.map((c: Category) => (
-                    <option key={c.id} value={c.id}>{c.label}</option>
-                  ))}
-                </select>
-              </div>
+              {type !== 'transfer' && (
+                <div className="space-y-3">
+                  <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('txn.category')}</label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                  >
+                    <option value="">Pilih Kategori...</option>
+                    {filteredCategories.map((c: Category) => (
+                      <option key={c.id} value={c.id}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-              {/* Account (Required) */}
-              <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('txn.account')}</label>
-                <select
-                  value={accountId}
-                  onChange={(e) => setAccountId(e.target.value)}
-                  className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
-                >
-                  <option value="">Pilih Rekening...</option>
-                  {accounts.map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
+              {/* Account fields */}
+              <div className={`grid ${type === 'transfer' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+                <div className="space-y-3">
+                  <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">
+                    {type === 'transfer' ? 'Dari Akun' : t('txn.account')}
+                  </label>
+                  <select
+                    value={accountId}
+                    onChange={(e) => setAccountId(e.target.value)}
+                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                  >
+                    <option value="">Pilih...</option>
+                    {accounts.map(a => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {type === 'transfer' && (
+                  <div className="space-y-3">
+                    <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">Ke Akun</label>
+                    <select
+                      value={toAccountId}
+                      onChange={(e) => setToAccountId(e.target.value)}
+                      className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
+                    >
+                      <option value="">Pilih...</option>
+                      {accounts.filter(a => a.id !== accountId).map(a => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* Frequency */}
