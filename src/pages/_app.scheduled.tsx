@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, RefreshCw, X, ArrowLeft, MoreVertical, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, X, ArrowLeft, Trash2 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
 import { scheduledApi, categoriesApi, accountsApi, type ScheduledTransaction, type Category } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
@@ -204,8 +204,8 @@ export default function ScheduledPage() {
         </button>
       </div>
 
-      <div className="rounded-[24px] bg-[var(--card)] p-6 border border-[var(--border)] shadow-sm">
-        <div className="grid grid-cols-3 gap-6">
+      <div className="rounded-[24px] bg-[var(--card)] p-5 sm:p-6 border border-[var(--border)] shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           <div className="space-y-1">
             <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">{t('dashboard.income')}</p>
             <p className="text-[18px] font-bold text-[var(--income)]">{formatMoney(scheduled.filter(s => s.type === 'income').reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0))}</p>
@@ -214,7 +214,7 @@ export default function ScheduledPage() {
             <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">{t('dashboard.expense')}</p>
             <p className="text-[18px] font-bold text-[var(--expense)]">{formatMoney(scheduled.filter(s => s.type === 'expense').reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0))}</p>
           </div>
-          <div className="space-y-1 border-l border-[var(--border)] pl-6">
+          <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-[var(--border)] pt-4 sm:pt-0 sm:pl-6">
             <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Total</p>
             <p className="text-[18px] font-bold text-[var(--text)]">{formatMoney(totalMonthly)}</p>
           </div>
@@ -254,43 +254,50 @@ export default function ScheduledPage() {
             {scheduled.map((item) => (
               <div 
                 key={item.id} 
-                className="flex items-center gap-4 px-6 py-5 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]"
+                onClick={() => handleEdit(item)}
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-5 sm:px-6 py-4 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)]/40 transition-all cursor-pointer group active:bg-[var(--border)]"
               >
-                <CategoryIcon 
-                  category={item.category?.label || item.categoryId} 
-                  size="lg" 
-                />
-                <div className="flex-1 min-w-0 pr-4" onClick={() => handleEdit(item)}>
-                  <div className="flex items-center gap-2">
-                    <p className="text-[17px] font-bold text-[var(--text)] truncate">{item.description || item.category?.label}</p>
-                    <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[var(--accent-tint)] text-[var(--accent)] uppercase tracking-wider">
-                      {FREQUENCIES(t).find(f => f.id === item.frequency)?.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-1 text-[13px] font-medium text-[var(--text-dim-2)] opacity-70">
-                    <span>{item.account?.name || 'Cash'}</span>
-                    <span>·</span>
-                    <span>Jatuh tempo {new Date(item.nextRunDate).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
+                <div className="flex items-center gap-4 flex-1 min-w-0 w-full">
+                  <CategoryIcon 
+                    category={item.category?.label || item.categoryId} 
+                    size="lg" 
+                  />
+                  <div className="flex-1 min-w-0 pr-2">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[16px] sm:text-[17px] font-bold text-[var(--text)] truncate">{item.description || item.category?.label}</p>
+                      <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-[var(--accent-tint)] text-[var(--accent)] uppercase tracking-wider shrink-0">
+                        {FREQUENCIES(t).find(f => f.id === item.frequency)?.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1 text-[13px] font-medium text-[var(--text-dim-2)] opacity-70">
+                      <span className="truncate">{item.account?.name || 'Cash'}</span>
+                      <span>·</span>
+                      <span className="whitespace-nowrap">Jatuh tempo {new Date(item.nextRunDate).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-3 shrink-0">
+                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 shrink-0 pt-3 sm:pt-0 border-t border-[var(--border)]/50 sm:border-t-0">
                   <div className="flex items-center gap-3">
                     <button 
-                      onClick={() => handlePost(item.id)}
+                      onClick={(e) => { e.stopPropagation(); handlePost(item.id); }}
                       disabled={saving}
-                      className="px-3 py-1.5 rounded-lg bg-[var(--accent)] text-white text-[11px] font-bold hover:opacity-90 active:scale-95"
+                      className="px-3.5 py-2 rounded-xl bg-[var(--accent)] text-white text-[11px] font-bold hover:opacity-95 active:scale-95 transition-all shadow-sm"
                     >
                       {t('scheduled.payNow')}
                     </button>
-                    <p className={`text-[18px] font-bold tracking-tight ${item.type === 'income' ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
+                    <p className={`text-[17px] sm:text-[18px] font-bold tracking-tight ${item.type === 'income' ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
                       {item.type === 'income' ? '+' : '−'}{formatMoney(parseFloat(String(item.amount)))}
                     </p>
-                    <div className="p-1.5 text-[var(--text-dim-2)] hover:bg-[var(--muted)] rounded-lg transition-all opacity-0 group-hover:opacity-100">
-                      <MoreVertical className="w-4 h-4" />
-                    </div>
                   </div>
-                  <StatusToggle active={item.status === 'active'} onToggle={() => {}} />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <StatusToggle 
+                      active={item.status === 'active'} 
+                      onToggle={() => {
+                        updateMutation.mutate({ id: item.id, status: item.status === 'active' ? 'paused' : 'active' });
+                      }} 
+                    />
+                  </div>
                 </div>
               </div>
             ))}
