@@ -15,7 +15,7 @@ import {
   Trash2,
   Star,
   Info,
-  Settings as SettingsIcon,
+
   Check,
   X,
   MessageSquare,
