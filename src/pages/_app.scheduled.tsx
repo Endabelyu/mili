@@ -113,8 +113,8 @@ export default function ScheduledPage() {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       setSaving(false);
     },
-    onError: (err: any) => {
-      alert(err.message || 'Failed to post transaction');
+    onError: (err: unknown) => {
+      alert(err instanceof Error ? err.message : 'Failed to post transaction');
       setSaving(false);
     },
   });
