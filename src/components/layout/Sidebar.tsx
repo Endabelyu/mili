@@ -12,7 +12,6 @@ import {
   Bell, 
   User, 
   Settings,
-  Shield,
   MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';

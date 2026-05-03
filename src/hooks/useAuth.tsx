@@ -34,7 +34,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: session.user.email,
         name: session.user.name ?? null,
         image: session.user.image ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         role: (session.user as any).role || 'user',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         lastSeenAt: (session.user as any).lastSeenAt || null,
       }
     : null;
