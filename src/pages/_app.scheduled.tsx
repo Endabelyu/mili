@@ -107,18 +107,16 @@ export default function ScheduledPage() {
   });
 
   const postMutation = useMutation({
-    mutationFn: (id: string) => 
-      fetch(`/api/scheduled/${id}/post`, { method: 'POST' }).then(res => res.json()),
-    onSuccess: (data) => {
-      if (data.error) {
-        alert(data.error);
-      } else {
-        queryClient.invalidateQueries({ queryKey: ['scheduled'] });
-        queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      }
+    mutationFn: (id: string) => scheduledApi.post(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scheduled'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       setSaving(false);
     },
-    onError: () => setSaving(false),
+    onError: (err: any) => {
+      alert(err.message || 'Failed to post transaction');
+      setSaving(false);
+    },
   });
 
   const handlePost = (id: string) => {

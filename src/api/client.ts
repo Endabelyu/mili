@@ -173,6 +173,7 @@ export const scheduledApi = {
   update: (id: string, data: Partial<ScheduledTransaction>) =>
     request<ScheduledTransaction>(`/api/scheduled/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (id: string) => request<void>(`/api/scheduled/${id}`, { method: 'DELETE' }),
+  post: (id: string) => request<{ success: boolean; item: ScheduledTransaction }>(`/api/scheduled/${id}/post`, { method: 'POST' }),
 };
 
 export const transactionsApi = {
