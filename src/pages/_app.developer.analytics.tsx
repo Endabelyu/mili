@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { StatCard } from '../components/finance/StatCard';
 import { Users, UserPlus, Activity, Search, Mail, Calendar, Shield } from 'lucide-react';
-import { analyticsApi, AnalyticsUser, AnalyticsSummary } from '../api/client';
+import { analyticsApi } from '../api/client';
+import type { AnalyticsUser, AnalyticsSummary } from '../api/client';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
@@ -76,22 +77,22 @@ export default function DeveloperAnalyticsPage() {
         <StatCard
           title="Total Users"
           value={summary?.totalUsers.toString() || '0'}
-          icon={<Users className="w-6 h-6" />}
-          color="var(--accent)"
+          icon={Users}
+          variant="primary"
           isLoading={isLoading}
         />
         <StatCard
           title="New Users (Month)"
           value={summary?.newUsersThisMonth.toString() || '0'}
-          icon={<UserPlus className="w-6 h-6" />}
-          color="var(--income)"
+          icon={UserPlus}
+          variant="income"
           isLoading={isLoading}
         />
         <StatCard
           title="Active Users (24h)"
           value={users.filter(u => u.lastSeenAt && dayjs().diff(dayjs(u.lastSeenAt), 'hour') < 24).length.toString()}
-          icon={<Activity className="w-6 h-6" />}
-          color="var(--primary)"
+          icon={Activity}
+          variant="default"
           isLoading={isLoading}
         />
       </div>

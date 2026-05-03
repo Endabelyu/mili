@@ -33,13 +33,13 @@ export function MoreMenuModal() {
 
   const { user } = useAuth();
 
-  const menuItems = [
-    ...MENU_ITEMS,
-    ...(user?.role === 'developer' ? [
-      { path: '/developer/analytics', icon: Shield, title: 'Dev Analytics', subtitle: 'System activity' },
-      { path: '/developer/feedbacks', icon: MessageSquare, title: 'Dev Feedbacks', subtitle: 'User feedback' },
-    ] : [])
-  ];
+  const menuItems = user?.role === 'developer' 
+    ? [
+        { path: '/developer/analytics', icon: Shield, title: 'Statistik', subtitle: 'Statistik Sistem' },
+        { path: '/developer/feedbacks', icon: MessageSquare, title: 'Umpan Balik', subtitle: 'User Feedback' },
+        ...MENU_ITEMS.map(item => ({ ...item, title: `${item.title} User` }))
+      ]
+    : MENU_ITEMS;
 
   if (!isOpen) return null;
 

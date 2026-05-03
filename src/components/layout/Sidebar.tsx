@@ -34,24 +34,31 @@ export function Sidebar() {
 
       {/* Nav Links */}
       <nav className="flex-1 px-4 pb-6 space-y-1 overflow-y-auto custom-scrollbar">
-        <SidebarLink to="/" icon={LayoutGrid} label="Dasbor" active={path === '/'} />
-        <SidebarLink to="/transactions" icon={Activity} label="Transaksi" active={path.startsWith('/transactions')} />
-        <SidebarLink to="/calendar" icon={Calendar} label="Kalender" active={path.startsWith('/calendar')} />
-        <SidebarLink to="/accounts" icon={Wallet} label="Akun" active={path.startsWith('/accounts')} />
-        <SidebarLink to="/targets" icon={Target} label="Target" active={path.startsWith('/targets')} />
-        <SidebarLink to="/analytics" icon={BarChart3} label="Analitik" active={path.startsWith('/analytics')} />
-        <SidebarLink to="/budget" icon={Receipt} label="Anggaran" active={path.startsWith('/budget')} />
-        <SidebarLink to="/scheduled" icon={Clock} label="Terjadwal" active={path.startsWith('/scheduled')} />
-        <SidebarLink to="/scan" icon={Scan} label="Scan Struk" active={path.startsWith('/scan')} />
-        <SidebarLink to="/notifications" icon={Bell} label="Notifikasi" active={path.startsWith('/notifications')} />
-        <SidebarLink to="/profile" icon={User} label="Profil" active={path.startsWith('/profile')} />
-        
-        {user?.role === 'developer' && (
-          <div className="pt-4 mt-4 border-t border-[var(--border)] space-y-1">
-            <p className="px-4 text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">Developer</p>
-            <SidebarLink to="/developer/analytics" icon={Shield} label="Dev Analytics" active={path === '/developer/analytics'} />
-            <SidebarLink to="/developer/feedbacks" icon={MessageSquare} label="Dev Feedbacks" active={path === '/developer/feedbacks'} />
-          </div>
+        {user?.role === 'developer' ? (
+          <>
+            <p className="px-4 mt-4 text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2 opacity-60">Portal Developer</p>
+            <SidebarLink to="/developer/analytics" icon={BarChart3} label="Statistik Pengguna" active={path === '/developer/analytics'} />
+            <SidebarLink to="/developer/feedbacks" icon={MessageSquare} label="Umpan Balik" active={path === '/developer/feedbacks'} />
+            
+            <div className="pt-4 mt-6 border-t border-[var(--border)]/50">
+              <p className="px-4 text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2 opacity-60">Akses Pengguna</p>
+              <SidebarLink to="/" icon={LayoutGrid} label="Dasbor User" active={path === '/'} />
+            </div>
+          </>
+        ) : (
+          <>
+            <SidebarLink to="/" icon={LayoutGrid} label="Dasbor" active={path === '/'} />
+            <SidebarLink to="/transactions" icon={Activity} label="Transaksi" active={path.startsWith('/transactions')} />
+            <SidebarLink to="/calendar" icon={Calendar} label="Kalender" active={path.startsWith('/calendar')} />
+            <SidebarLink to="/accounts" icon={Wallet} label="Akun" active={path.startsWith('/accounts')} />
+            <SidebarLink to="/targets" icon={Target} label="Target" active={path.startsWith('/targets')} />
+            <SidebarLink to="/analytics" icon={BarChart3} label="Analitik" active={path.startsWith('/analytics')} />
+            <SidebarLink to="/budget" icon={Receipt} label="Anggaran" active={path.startsWith('/budget')} />
+            <SidebarLink to="/scheduled" icon={Clock} label="Terjadwal" active={path.startsWith('/scheduled')} />
+            <SidebarLink to="/scan" icon={Scan} label="Scan Struk" active={path.startsWith('/scan')} />
+            <SidebarLink to="/notifications" icon={Bell} label="Notifikasi" active={path.startsWith('/notifications')} />
+            <SidebarLink to="/profile" icon={User} label="Profil" active={path.startsWith('/profile')} />
+          </>
         )}
       </nav>
 
