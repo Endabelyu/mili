@@ -11,6 +11,7 @@ import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 const loginSchema = z.object({
   email: z.string().email('Format email tidak valid'),
   password: z.string().min(1, 'Kata sandi wajib diisi'),
+  rememberMe: z.boolean().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -41,7 +42,7 @@ export default function LoginPage() {
     }
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      await login(data.email, data.password, data.rememberMe);
       navigate('/');
     } catch (err) {
       const e = err as Record<string, unknown>;
@@ -140,10 +141,10 @@ export default function LoginPage() {
             <div className="flex items-center">
               <input
                 id="remember-me"
-                name="remember-me"
                 type="checkbox"
                 className="h-4 w-4 rounded border-[var(--border)]"
                 style={{ accentColor: 'var(--accent)' }}
+                {...register('rememberMe')}
               />
               <label htmlFor="remember-me" className="ml-2 block text-[13px] text-[var(--text)]">
                 Ingat saya
