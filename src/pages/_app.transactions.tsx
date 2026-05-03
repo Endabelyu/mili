@@ -212,7 +212,7 @@ export default function TransactionsPage() {
               }`}
             >
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: acc.color || 'var(--accent)' }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: acc.color || 'var(--accent)' }} />
                 {acc.name}
               </div>
             </button>
