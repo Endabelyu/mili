@@ -27,6 +27,7 @@ const SettingsPage = React.lazy(() => import('./pages/_app.settings'));
 const RegisterPage = React.lazy(() => import('./pages/auth.register'));
 const ForgotPasswordPage = React.lazy(() => import('./pages/auth.forgot-password'));
 const DeveloperFeedbacksPage = React.lazy(() => import('./pages/_app.developer.feedbacks'));
+const DeveloperAnalyticsPage = React.lazy(() => import('./pages/_app.developer.analytics'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -36,6 +37,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     </div>
   );
   if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
+  return <AppLayout>{children}</AppLayout>;
+}
+
+function DeveloperRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return (
+    <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="animate-pulse text-gray-400">Loading...</div>
+    </div>
+  );
+  if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
+  if (user?.role !== 'developer') return <Navigate to="/" replace />;
   return <AppLayout>{children}</AppLayout>;
 }
 
@@ -119,7 +132,8 @@ export default function App() {
           <Route path="/profile/edit"      element={<ProtectedRoute><ProfileEditPage /></ProtectedRoute>} />
           <Route path="/profile/security"  element={<ProtectedRoute><ProfileSecurityPage /></ProtectedRoute>} />
           <Route path="/settings"          element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-          <Route path="/developer/feedbacks" element={<ProtectedRoute><DeveloperFeedbacksPage /></ProtectedRoute>} />
+          <Route path="/developer/feedbacks" element={<DeveloperRoute><DeveloperFeedbacksPage /></DeveloperRoute>} />
+          <Route path="/developer/analytics" element={<DeveloperRoute><DeveloperAnalyticsPage /></DeveloperRoute>} />
   
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
