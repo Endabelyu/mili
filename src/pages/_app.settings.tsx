@@ -629,7 +629,7 @@ export default function SettingsPage() {
         <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('settings.about')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
           <SettingRow icon={Shield} color="bg-slate-50" iconColor="text-slate-500" label={t('settings.privacy')} subtext={t('settings.privacyDesc')} />
-          <SettingRow icon={Star} color="bg-amber-50" iconColor="text-amber-500" label={t('settings.rate')} />
+          {/* <SettingRow icon={Star} color="bg-amber-50" iconColor="text-amber-500" label={t('settings.rate')} /> */}
           <SettingRow 
             icon={Info} 
             color="bg-blue-50" 

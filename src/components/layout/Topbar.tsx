@@ -126,7 +126,7 @@ export function Topbar() {
           </Link>
 
           {isDeveloper && (
-            <Link to="/developer/feedbacks" aria-label="Developer Feedbacks" className="hidden sm:block">
+            <Link to="/developer/feedbacks" aria-label="Developer Feedbacks">
               <TopbarButton icon={ShieldAlert} label="Developer Feedbacks" />
             </Link>
           )}
