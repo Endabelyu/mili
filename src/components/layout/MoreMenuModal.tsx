@@ -1,4 +1,4 @@
-import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User, Settings, LogOut } from 'lucide-react';
+import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User, Settings, LogOut, Shield, MessageSquare } from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -31,6 +31,16 @@ export function MoreMenuModal() {
     navigate('/auth/login');
   };
 
+  const { user } = useAuth();
+
+  const menuItems = [
+    ...MENU_ITEMS,
+    ...(user?.role === 'developer' ? [
+      { path: '/developer/analytics', icon: Shield, title: 'Dev Analytics', subtitle: 'System activity' },
+      { path: '/developer/feedbacks', icon: MessageSquare, title: 'Dev Feedbacks', subtitle: 'User feedback' },
+    ] : [])
+  ];
+
   if (!isOpen) return null;
 
   return (
@@ -56,7 +66,7 @@ export function MoreMenuModal() {
         {/* Grid */}
         <div className="px-6 pb-2 overflow-y-auto max-h-[60vh]">
           <div className="grid grid-cols-2 gap-4">
-            {MENU_ITEMS.map((item) => (
+            {menuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -84,6 +94,13 @@ export function MoreMenuModal() {
             <LogOut className="w-5 h-5" />
             Keluar dari Aplikasi
           </button>
+        </div>
+
+        <div className="pb-8 pt-2 border-t border-[var(--border)]/50">
+          <p className="text-[10px] font-medium text-[var(--text-dim-2)] text-center opacity-70">
+            &copy; {new Date().getFullYear()} Mili Finance • v2.0.0<br />
+            Hak Cipta Dilindungi.
+          </p>
         </div>
       </div>
     </>

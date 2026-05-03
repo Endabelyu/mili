@@ -11,7 +11,9 @@ import {
   Scan, 
   Bell, 
   User, 
-  Settings
+  Settings,
+  Shield,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { formatName } from '../../lib/utils';
@@ -43,6 +45,14 @@ export function Sidebar() {
         <SidebarLink to="/scan" icon={Scan} label="Scan Struk" active={path.startsWith('/scan')} />
         <SidebarLink to="/notifications" icon={Bell} label="Notifikasi" active={path.startsWith('/notifications')} />
         <SidebarLink to="/profile" icon={User} label="Profil" active={path.startsWith('/profile')} />
+        
+        {user?.role === 'developer' && (
+          <div className="pt-4 mt-4 border-t border-[var(--border)] space-y-1">
+            <p className="px-4 text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">Developer</p>
+            <SidebarLink to="/developer/analytics" icon={Shield} label="Dev Analytics" active={path === '/developer/analytics'} />
+            <SidebarLink to="/developer/feedbacks" icon={MessageSquare} label="Dev Feedbacks" active={path === '/developer/feedbacks'} />
+          </div>
+        )}
       </nav>
 
       {/* Bottom Actions */}
