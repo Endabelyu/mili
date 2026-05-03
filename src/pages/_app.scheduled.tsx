@@ -145,7 +145,7 @@ export default function ScheduledPage() {
   const handleSave = () => {
     let finalCatId = categoryId;
     if (type === 'transfer' && !finalCatId) {
-      const transferCat = categories.find((c: any) => c.id === 'transfer');
+      const transferCat = categories.find((c: Category) => c.id === 'transfer');
       if (transferCat) {
         finalCatId = transferCat.id;
       } else if (categories.length > 0) {
