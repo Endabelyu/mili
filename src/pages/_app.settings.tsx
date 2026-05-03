@@ -652,17 +652,14 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="flow-card p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
-            <SettingsIcon className="w-5 h-5 text-slate-500" />
-          </div>
-          <div>
-            <p className="text-[14px] font-bold leading-tight text-[var(--text)]">{t('settings.appVersion')}</p>
-            <p className="text-[12px] font-medium text-[var(--text-dim)] mt-0.5">{t('settings.alwaysUpdated')}</p>
-          </div>
+      <div className="flex flex-col items-center justify-center pt-8 pb-4 space-y-3">
+        <div className="flex gap-4 text-[11px] font-bold text-[var(--text-dim)] uppercase tracking-wider">
+          <button onClick={() => showAlert('Privasi', 'Kebijakan privasi Mili Finance.', 'info')} className="hover:text-[var(--text)] transition-colors">PRIVACY</button>
+          <button onClick={() => showAlert('Syarat', 'Syarat & ketentuan layanan Mili Finance.', 'info')} className="hover:text-[var(--text)] transition-colors">TERMS</button>
         </div>
-        <span className="text-[12px] font-bold text-[var(--income)] bg-[rgba(18,183,106,0.08)] px-2.5 py-1 rounded-lg">v2.0.0</span>
+        <p className="text-[11px] font-medium text-[var(--text-dim-2)] opacity-70">
+          &copy; {new Date().getFullYear()} Mili Finance • v2.0.0
+        </p>
       </div>
 
       {showLangPicker && (
