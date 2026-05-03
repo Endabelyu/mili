@@ -153,8 +153,15 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Memasukkan...' : 'Masuk'}
+          <Button type="submit" className="w-full flex items-center justify-center gap-2" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                Sedang proses masuk...
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              </>
+            ) : (
+              'Masuk'
+            )}
           </Button>
 
           <div className="relative flex items-center py-2">
