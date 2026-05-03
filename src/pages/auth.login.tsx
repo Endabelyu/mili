@@ -18,7 +18,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +35,10 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setError('');
+    // Clear the "registered" banner when the user attempts to log in
+    if (searchParams.has('registered')) {
+      setSearchParams({}, { replace: true });
+    }
     setIsLoading(true);
     try {
       await login(data.email, data.password);

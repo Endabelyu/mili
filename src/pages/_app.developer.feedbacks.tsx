@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { feedbacksApi } from '../api/client';
 import { authClient } from '../lib/auth-client';
-import { format } from 'date-fns';
-import { id as idLocale } from 'date-fns/locale';
+import dayjs from 'dayjs';
 import { Loader2, MessageSquare, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -68,7 +67,7 @@ export default function DeveloperFeedbacksPage() {
               <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[var(--accent)] text-white flex items-center justify-center font-bold text-[14px]">
-                    {fb.user.name.charAt(0).toUpperCase()}
+                    {(fb.user.name || fb.user.email).charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <p className="text-[14px] font-bold text-[var(--text)]">{fb.user.name}</p>
@@ -77,7 +76,7 @@ export default function DeveloperFeedbacksPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-[12px] font-medium text-[var(--text-dim)]">
-                    {format(new Date(fb.createdAt), 'dd MMM yyyy, HH:mm', { locale: idLocale })}
+                    {dayjs(fb.createdAt).format('DD MMM YYYY, HH:mm')}
                   </p>
                 </div>
               </div>
