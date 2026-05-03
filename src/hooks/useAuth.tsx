@@ -12,7 +12,7 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   updateUser: (data: { name?: string; image?: string }) => Promise<void>;
@@ -35,8 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     : null;
 
-  const login = async (email: string, password: string) => {
-    const { error } = await authClient.signIn.email({ email, password });
+  const login = async (email: string, password: string, rememberMe?: boolean) => {
+    const { error } = await authClient.signIn.email({ email, password, rememberMe });
     if (error) throw new Error(error.message || 'Invalid email or password');
     await refetch();
   };

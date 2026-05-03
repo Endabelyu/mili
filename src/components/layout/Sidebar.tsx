@@ -49,7 +49,7 @@ export function Sidebar() {
       <div className="p-4 border-t border-[var(--border)]">
         <SidebarLink to="/settings" icon={Settings} label="Pengaturan" active={path.startsWith('/settings')} />
         
-        <div className="flex items-center gap-3 px-4 py-3 mt-2">
+        <div className="flex items-center gap-3 px-4 py-3 mt-2 mb-2">
           <div className="w-9 h-9 rounded-full bg-[var(--muted)] overflow-hidden flex items-center justify-center border border-[var(--border)]">
              {user?.image ? (
                <img 
@@ -69,6 +69,12 @@ export function Sidebar() {
              <p className="text-[13px] font-bold text-[var(--text)] truncate">{formatName(user?.name)}</p>
              <button onClick={logout} className="text-[11px] font-bold text-[var(--expense)] hover:underline">Keluar</button>
           </div>
+        </div>
+
+        <div className="pt-2 border-t border-[var(--border)]/50">
+          <p className="text-[10px] font-medium text-[var(--text-dim-2)] text-center opacity-70">
+            &copy; {new Date().getFullYear()} Mili Finance.<br />Hak Cipta Dilindungi.
+          </p>
         </div>
       </div>
     </aside>

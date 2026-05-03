@@ -26,6 +26,7 @@ const ProfileSecurityPage = React.lazy(() => import('./pages/_app.profile_.secur
 const SettingsPage = React.lazy(() => import('./pages/_app.settings'));
 const RegisterPage = React.lazy(() => import('./pages/auth.register'));
 const ForgotPasswordPage = React.lazy(() => import('./pages/auth.forgot-password'));
+const DeveloperFeedbacksPage = React.lazy(() => import('./pages/_app.developer.feedbacks'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -118,6 +119,7 @@ export default function App() {
           <Route path="/profile/edit"      element={<ProtectedRoute><ProfileEditPage /></ProtectedRoute>} />
           <Route path="/profile/security"  element={<ProtectedRoute><ProfileSecurityPage /></ProtectedRoute>} />
           <Route path="/settings"          element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/developer/feedbacks" element={<ProtectedRoute><DeveloperFeedbacksPage /></ProtectedRoute>} />
   
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
