@@ -253,7 +253,7 @@ export default function SettingsPage() {
     }
 
     worksheet.addRow(['']);
-    worksheet.addRow(['Dokumen ini sah dihasilkan oleh Mili Finance System']).font = { italic: true, size: 10 };
+    worksheet.addRow(['Dokumen ini sah dihasilkan oleh Mili System']).font = { italic: true, size: 10 };
     worksheet.addRow([new Date().toLocaleString('id-ID')]).font = { size: 9 };
 
     // 9. Generate and Download
@@ -328,7 +328,7 @@ export default function SettingsPage() {
     const html = `
       <html>
         <head>
-          <title>Mili Finance - Laporan Keuangan</title>
+          <title>Mili - Laporan Keuangan</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
             body { font-family: 'Inter', sans-serif; padding: 60px; color: #0f172a; line-height: 1.5; background: #fff; }
@@ -486,7 +486,7 @@ export default function SettingsPage() {
           ` : ''}
 
           <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8;">
-            <div>Dokumen ini sah dihasilkan oleh Mili Finance System</div>
+            <div>Dokumen ini sah dihasilkan oleh Mili System</div>
             <div>${new Date().toLocaleString('id-ID')}</div>
           </div>
 
@@ -654,11 +654,11 @@ export default function SettingsPage() {
 
       <div className="flex flex-col items-center justify-center pt-8 pb-4 space-y-3">
         <div className="flex gap-4 text-[11px] font-bold text-[var(--text-dim)] uppercase tracking-wider">
-          <button onClick={() => showAlert('Privasi', 'Kebijakan privasi Mili Finance.', 'info')} className="hover:text-[var(--text)] transition-colors">PRIVACY</button>
-          <button onClick={() => showAlert('Syarat', 'Syarat & ketentuan layanan Mili Finance.', 'info')} className="hover:text-[var(--text)] transition-colors">TERMS</button>
+          <button onClick={() => showAlert('Privasi', 'Kebijakan privasi Mili.', 'info')} className="hover:text-[var(--text)] transition-colors">PRIVACY</button>
+          <button onClick={() => showAlert('Syarat', 'Syarat & ketentuan layanan Mili.', 'info')} className="hover:text-[var(--text)] transition-colors">TERMS</button>
         </div>
         <p className="text-[11px] font-medium text-[var(--text-dim-2)] opacity-70">
-          &copy; {new Date().getFullYear()} Mili Finance • v2.0.0
+          &copy; {new Date().getFullYear()} Mili • v2.0.0
         </p>
       </div>
 

@@ -98,7 +98,7 @@ export function MoreMenuModal() {
 
         <div className="pb-8 pt-2 border-t border-[var(--border)]/50">
           <p className="text-[10px] font-medium text-[var(--text-dim-2)] text-center opacity-70">
-            &copy; {new Date().getFullYear()} Mili Finance • v2.0.0<br />
+            &copy; {new Date().getFullYear()} Mili • v2.0.0<br />
             Hak Cipta Dilindungi.
           </p>
         </div>
