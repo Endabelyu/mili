@@ -254,3 +254,24 @@ export const feedbacksApi = {
   list: () =>
     request<{ items: FeedbackItem[] }>('/api/feedbacks').then(res => res.items),
 };
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+export interface AnalyticsUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  lastSeenAt: string | null;
+  createdAt: string;
+}
+
+export interface AnalyticsSummary {
+  totalUsers: number;
+  newUsersThisMonth: number;
+  growth: Array<{ month: string, count: number }>;
+}
+
+export const analyticsApi = {
+  summary: () => request<AnalyticsSummary>('/api/analytics/summary'),
+  users: () => request<AnalyticsUser[]>('/api/analytics/users'),
+};

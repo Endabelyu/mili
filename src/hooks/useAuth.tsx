@@ -6,13 +6,15 @@ interface User {
   email: string;
   name: string | null;
   image: string | null;
+  role: string;
+  lastSeenAt: string | null;
 }
 
 interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<User>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   updateUser: (data: { name?: string; image?: string }) => Promise<void>;
@@ -32,13 +34,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: session.user.email,
         name: session.user.name ?? null,
         image: session.user.image ?? null,
+        role: (session.user as any).role || 'user',
+        lastSeenAt: (session.user as any).lastSeenAt || null,
       }
     : null;
 
   const login = async (email: string, password: string, rememberMe?: boolean) => {
-    const { error } = await authClient.signIn.email({ email, password, rememberMe });
+    const { data, error } = await authClient.signIn.email({ email, password, rememberMe });
     if (error) throw new Error(error.message || 'Invalid email or password');
     await refetch();
+    return data.user as unknown as User;
   };
 
   const register = async (data: { email: string; password: string; name: string }) => {

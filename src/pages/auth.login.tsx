@@ -42,8 +42,12 @@ export default function LoginPage() {
     }
     setIsLoading(true);
     try {
-      await login(data.email, data.password, data.rememberMe);
-      navigate('/');
+      const user = await login(data.email, data.password, data.rememberMe);
+      if (user.role === 'developer') {
+        navigate('/developer/analytics');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       const e = err as Record<string, unknown>;
       const body = e?.body as Record<string, unknown> | undefined;
