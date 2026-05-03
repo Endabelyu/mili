@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../lib/query-keys';
-import { transactionsApi, reportsApi, type Transaction } from '../api/client';
+import { transactionsApi, reportsApi, accountsApi, type Transaction } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
 import { ArrowLeft, MoreHorizontal, Filter, ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
 
@@ -34,6 +34,7 @@ function groupByDate(items: Transaction[]) {
 export default function TransactionsPage() {
   const [view, setView] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('daily');
   const [filter, setFilter] = useState<'all' | 'income' | 'expense' | 'transfer'>('all');
+  const [accountFilter, setAccountFilter] = useState<string>('all');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const search = searchParams.get('search') || undefined;
@@ -41,8 +42,14 @@ export default function TransactionsPage() {
 
   // Fetch real transactions
   const { data: txnsData, isLoading: txnsLoading } = useQuery({
-    queryKey: queryKeys.transactions.list({ limit: 50, search, type: filter === 'all' ? undefined : filter }),
-    queryFn: () => transactionsApi.list({ limit: 50, search, type: filter === 'all' ? undefined : filter }),
+    queryKey: queryKeys.transactions.list({ limit: 50, search, type: filter === 'all' ? undefined : filter, account: accountFilter === 'all' ? undefined : accountFilter }),
+    queryFn: () => transactionsApi.list({ limit: 50, search, type: filter === 'all' ? undefined : filter, account: accountFilter === 'all' ? undefined : accountFilter }),
+  });
+
+  // Fetch accounts for filter
+  const { data: accountsData } = useQuery({
+    queryKey: queryKeys.accounts.all,
+    queryFn: () => accountsApi.list(),
   });
 
   // Fetch real summary
@@ -180,6 +187,38 @@ export default function TransactionsPage() {
           </button>
         ))}
       </div>
+
+      {/* Account Filter Pills */}
+      {accountsData && accountsData.length > 0 && (
+        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
+          <button
+            onClick={() => setAccountFilter('all')}
+            className={`px-4 py-1.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all active:scale-95 border ${
+              accountFilter === 'all' 
+                ? 'bg-[var(--accent)] text-white border-[var(--accent)]' 
+                : 'bg-transparent text-[var(--text-dim-2)] border-[var(--border)] hover:bg-[var(--muted)]'
+            }`}
+          >
+            Semua Akun
+          </button>
+          {accountsData.map((acc) => (
+            <button
+              key={acc.id}
+              onClick={() => setAccountFilter(acc.id)}
+              className={`px-4 py-1.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all active:scale-95 border ${
+                accountFilter === acc.id 
+                  ? 'bg-[var(--accent)] text-white border-[var(--accent)]' 
+                  : 'bg-transparent text-[var(--text-dim-2)] border-[var(--border)] hover:bg-[var(--muted)]'
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: acc.color || 'var(--accent)' }} />
+                {acc.name}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
       {view === 'monthly' && (
         <div className="animate-fade-in">

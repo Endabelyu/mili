@@ -176,7 +176,7 @@ export const scheduledApi = {
 };
 
 export const transactionsApi = {
-  list: (params?: { limit?: number; page?: number; type?: string; category?: string; search?: string; month?: string }) =>
+  list: (params?: { limit?: number; page?: number; type?: string; category?: string; account?: string; search?: string; month?: string }) =>
     request<{ items: Transaction[], pagination: { page: number; limit: number; total: number; totalPages: number } }>('/api/transactions', { params }),
   get: (id: string) =>
     request<Transaction>(`/api/transactions/${id}`),
