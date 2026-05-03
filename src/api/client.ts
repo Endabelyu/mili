@@ -234,3 +234,22 @@ export const ocrApi = {
       timeoutMs: 30_000, // OCR can take a while
     }),
 };
+
+// ─── Feedbacks ───────────────────────────────────────────────────────────────
+export interface FeedbackItem {
+  id: string;
+  message: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export const feedbacksApi = {
+  create: (data: { message: string }) =>
+    request<void>('/api/feedbacks', { method: 'POST', body: JSON.stringify(data) }),
+  list: () =>
+    request<{ items: FeedbackItem[] }>('/api/feedbacks').then(res => res.items),
+};

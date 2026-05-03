@@ -27,7 +27,7 @@ import type * as ExcelJSTypes from 'exceljs';
 // import * as ExcelJS from 'exceljs';
 
 import { useQuery } from '@tanstack/react-query';
-import { transactionsApi, accountsApi, budgetsApi } from '../api/client';
+import { transactionsApi, accountsApi, budgetsApi, feedbacksApi } from '../api/client';
 import { authClient } from '../lib/auth-client';
 
 export default function SettingsPage() {
@@ -40,6 +40,7 @@ export default function SettingsPage() {
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   // Alert Modal state
   const [alertConfig, setAlertConfig] = useState<{
@@ -791,19 +792,29 @@ export default function SettingsPage() {
             />
 
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (!feedback.trim()) return;
-                setShowFeedbackModal(false);
-                setFeedback('');
-                setTimeout(() => {
+                setIsSubmittingFeedback(true);
+                try {
+                  await feedbacksApi.create({ message: feedback });
+                  setShowFeedbackModal(false);
+                  setFeedback('');
                   showAlert('Umpan Balik Terkirim', 'Terima kasih atas saran dan masukan Anda. Kami sangat menghargainya!', 'success');
-                }, 400);
+                } catch (error) {
+                  showAlert('Gagal', 'Gagal mengirim umpan balik. Silakan coba lagi.', 'error');
+                } finally {
+                  setIsSubmittingFeedback(false);
+                }
               }}
-              disabled={!feedback.trim()}
+              disabled={!feedback.trim() || isSubmittingFeedback}
               className="w-full py-3.5 rounded-xl bg-[var(--accent)] text-white font-bold text-[14px] shadow-lg shadow-[var(--accent)]/15 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:active:scale-100"
             >
-              <Send className="w-4 h-4" />
-              Kirim Masukan
+              {isSubmittingFeedback ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+              {isSubmittingFeedback ? 'Mengirim...' : 'Kirim Masukan'}
             </button>
           </div>
         </div>
