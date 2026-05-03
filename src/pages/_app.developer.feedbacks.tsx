@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { feedbacksApi } from '../api/client';
 import { authClient } from '../lib/auth-client';
 import dayjs from 'dayjs';
-import { Loader2, MessageSquare, ShieldAlert } from 'lucide-react';
+import { Loader2, MessageSquare, ShieldAlert, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
@@ -81,6 +81,14 @@ export default function DeveloperFeedbacksPage() {
                 </div>
               </div>
               <div className="pt-2">
+                <div className="flex items-center gap-1 mb-3">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star 
+                      key={star} 
+                      className={`w-4 h-4 ${star <= (fb.rating || 5) ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-[var(--border)]'}`} 
+                    />
+                  ))}
+                </div>
                 <p className="text-[14px] text-[var(--text)] leading-relaxed whitespace-pre-wrap">
                   {fb.message}
                 </p>

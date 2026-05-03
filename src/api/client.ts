@@ -239,6 +239,7 @@ export const ocrApi = {
 export interface FeedbackItem {
   id: string;
   message: string;
+  rating: number;
   createdAt: string;
   user: {
     id: string;
@@ -248,7 +249,7 @@ export interface FeedbackItem {
 }
 
 export const feedbacksApi = {
-  create: (data: { message: string }) =>
+  create: (data: { message: string, rating: number }) =>
     request<void>('/api/feedbacks', { method: 'POST', body: JSON.stringify(data) }),
   list: () =>
     request<{ items: FeedbackItem[] }>('/api/feedbacks').then(res => res.items),

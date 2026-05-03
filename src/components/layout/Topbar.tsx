@@ -11,7 +11,8 @@ import {
   Wallet, 
   Activity, 
   ShoppingBag, 
-  Youtube 
+  Youtube,
+  ShieldAlert
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
@@ -19,6 +20,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationsApi } from '../../api/client';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useAuth } from '../../hooks/useAuth';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Zap,
@@ -33,6 +35,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
 export function Topbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth();
+  const isDeveloper = user?.email === 'endabelyuproject@gmail.com';
 
   const debouncedSearch = useDebounce(searchQuery, 400);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -120,6 +124,12 @@ export function Topbar() {
           <Link to="?scan=true" aria-label="Scan Struk" className="hidden sm:block">
             <TopbarButton icon={Scan} label="Scan Struk" />
           </Link>
+
+          {isDeveloper && (
+            <Link to="/developer/feedbacks" aria-label="Developer Feedbacks" className="hidden sm:block">
+              <TopbarButton icon={ShieldAlert} label="Developer Feedbacks" />
+            </Link>
+          )}
           
           <div className="relative" ref={dropdownRef}>
             <div onClick={() => setNotifOpen(!notifOpen)}>

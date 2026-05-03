@@ -40,6 +40,7 @@ export default function SettingsPage() {
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [rating, setRating] = useState(5);
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   // Alert Modal state
@@ -783,6 +784,18 @@ export default function SettingsPage() {
               Punya ide, saran, atau menemukan bug? Ceritakan kepada kami agar Mili bisa menjadi lebih baik untuk Anda.
             </p>
 
+            <div className="flex items-center justify-center gap-2 mb-6">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className={`transition-all ${star <= rating ? 'text-[#F59E0B] scale-110' : 'text-[var(--border)] hover:text-[#F59E0B]/50'}`}
+                >
+                  <Star className="w-8 h-8" fill={star <= rating ? 'currentColor' : 'none'} />
+                </button>
+              ))}
+            </div>
+
             <textarea
               rows={4}
               placeholder="Tulis pesan atau masukan Anda di sini..."
@@ -796,9 +809,10 @@ export default function SettingsPage() {
                 if (!feedback.trim()) return;
                 setIsSubmittingFeedback(true);
                 try {
-                  await feedbacksApi.create({ message: feedback });
+                  await feedbacksApi.create({ message: feedback, rating });
                   setShowFeedbackModal(false);
                   setFeedback('');
+                  setRating(5);
                   showAlert('Umpan Balik Terkirim', 'Terima kasih atas saran dan masukan Anda. Kami sangat menghargainya!', 'success');
                 } catch (error) {
                   showAlert('Gagal', 'Gagal mengirim umpan balik. Silakan coba lagi.', 'error');
