@@ -17,7 +17,10 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   UPDATE_BUDGET: { label: 'Edit Budget', color: '#F79009' },
   DELETE_BUDGET: { label: 'Hapus Budget', color: '#F04438' },
   SUBMIT_FEEDBACK: { label: 'Kirim Feedback', color: '#0BA5EC' },
+  USER_LOGIN: { label: 'Masuk (Login)', color: '#9E77ED' },
+  USER_REGISTER: { label: 'Daftar Baru', color: '#D444F1' },
 };
+
 
 const ALL_ACTIONS = Object.keys(ACTION_LABELS);
 
