@@ -251,9 +251,9 @@ export interface FeedbackItem {
 
 export const feedbacksApi = {
   create: (data: { message: string, rating: number }) =>
-    request<void>('/api/feedbacks', { method: 'POST', body: JSON.stringify(data) }),
+    request<void>('/api/v1/feedbacks', { method: 'POST', body: JSON.stringify(data) }),
   list: () =>
-    request<{ items: FeedbackItem[] }>('/api/feedbacks').then(res => res.items),
+    request<{ items: FeedbackItem[] }>('/api/v1/feedbacks').then(res => res.items),
 };
 
 // ─── Analytics ───────────────────────────────────────────────────────────────
@@ -262,6 +262,7 @@ export interface AnalyticsUser {
   email: string;
   name: string;
   role: string;
+  banned?: boolean;
   lastSeenAt: string | null;
   createdAt: string;
 }
@@ -273,6 +274,8 @@ export interface AnalyticsSummary {
 }
 
 export const analyticsApi = {
-  summary: () => request<AnalyticsSummary>('/api/analytics/summary'),
-  users: () => request<AnalyticsUser[]>('/api/analytics/users'),
+  summary: () => request<AnalyticsSummary>('/api/v1/analytics/summary'),
+  users: () => request<AnalyticsUser[]>('/api/v1/analytics/users'),
+  ban: (id: string) => request<{ success: boolean; banned: boolean }>(`/api/v1/analytics/users/${id}/ban`, { method: 'PUT' }),
+  delete: (id: string) => request<{ success: boolean }>(`/api/v1/analytics/users/${id}`, { method: 'DELETE' }),
 };

@@ -47,6 +47,38 @@ export default function DeveloperAnalyticsPage() {
     return matchesSearch && matchesRole;
   });
 
+  const handleToggleBan = async (user: AnalyticsUser) => {
+    if (!confirm(`Are you sure you want to ${user.banned ? 'unban' : 'ban'} user "${user.name || user.email}"?`)) return;
+    try {
+      const res = await analyticsApi.ban(user.id);
+      if (res.success) {
+        setUsers(prev => prev.map(u => u.id === user.id ? { ...u, banned: res.banned } : u));
+      }
+    } catch (err) {
+      alert('Failed to toggle ban status');
+      console.error(err);
+    }
+  };
+
+  const handleDeleteUser = async (user: AnalyticsUser) => {
+    if (!confirm(`CRITICAL WARNING: Are you sure you want to PERMANENTLY DELETE user "${user.name || user.email}"? This action cannot be undone and will delete all their financial data.`)) return;
+    try {
+      const res = await analyticsApi.delete(user.id);
+      if (res.success) {
+        setUsers(prev => prev.filter(u => u.id !== user.id));
+        if (summary) {
+          setSummary({
+            ...summary,
+            totalUsers: Math.max(0, summary.totalUsers - 1)
+          });
+        }
+      }
+    } catch (err) {
+      alert('Failed to delete user');
+      console.error(err);
+    }
+  };
+
   const getStatusColor = (lastSeenAt: string | null) => {
     if (!lastSeenAt) return 'bg-gray-500';
     const lastSeen = dayjs(lastSeenAt);
@@ -184,6 +216,7 @@ export default function DeveloperAnalyticsPage() {
                 <th className="px-6 py-4 text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider">Role</th>
                 <th className="px-6 py-4 text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider">Activity</th>
                 <th className="px-6 py-4 text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider">Joined</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
@@ -204,22 +237,60 @@ export default function DeveloperAnalyticsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                      user.role === 'developer' ? 'bg-[var(--accent)]/10 text-[var(--accent)]' : 'bg-[var(--muted)] text-[var(--text-dim)]'
-                    }`}>
-                      {user.role}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                        user.role === 'developer' ? 'bg-[var(--accent)]/10 text-[var(--accent)]' : 'bg-[var(--muted)] text-[var(--text-dim)]'
+                      }`}>
+                        {user.role}
+                      </span>
+                      {user.banned && (
+                        <span className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse">
+                          Banned
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${getStatusColor(user.lastSeenAt)}`} />
-                      <span className="text-xs text-[var(--text-dim)]">
-                        {user.lastSeenAt ? dayjs(user.lastSeenAt).fromNow() : 'Never'}
-                      </span>
+                      <div className={`w-2 h-2 rounded-full ${getStatusColor(user.lastSeenAt)} shrink-0`} />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-semibold text-[var(--text)]">
+                          {user.lastSeenAt ? dayjs(user.lastSeenAt).fromNow() : 'Never'}
+                        </span>
+                        {user.lastSeenAt && (
+                          <span className="text-[10px] text-[var(--text-dim-2)] font-medium mt-0.5 whitespace-nowrap">
+                            {dayjs(user.lastSeenAt).format('D MMM YYYY, HH:mm')}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-xs text-[var(--text-dim)] whitespace-nowrap">
                     {dayjs(user.createdAt).format('MMM D, YYYY')}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      {user.role !== 'developer' && (
+                        <>
+                          <button
+                            onClick={() => handleToggleBan(user)}
+                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                              user.banned
+                                ? 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20'
+                                : 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20'
+                            }`}
+                          >
+                            {user.banned ? 'Unban' : 'Ban'}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user)}
+                            className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
