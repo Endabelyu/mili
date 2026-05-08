@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
-import { Home, List, Wallet, MoreHorizontal, Plus, BarChart3, MessageSquare } from 'lucide-react';
+import { Home, List, Wallet, MoreHorizontal, Plus, BarChart3, MessageSquare, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export function BottomNav() {
@@ -31,7 +31,7 @@ export function BottomNav() {
 
       {/* Nav Bar */}
       <div
-        className={`grid ${user?.role === 'developer' || user?.email === 'endabelyuproject@gmail.com' ? 'grid-cols-4' : 'grid-cols-5'} border-t border-[var(--border)] bg-[var(--bg)]`}
+        className={`grid grid-cols-5 border-t border-[var(--border)] bg-[var(--bg)]`}
         style={{
           padding: '8px 8px calc(8px + env(safe-area-inset-bottom, 0px))',
         }}
@@ -40,6 +40,7 @@ export function BottomNav() {
           <>
             <NavTab to="/developer/analytics" icon={BarChart3} label="Statistik" active={path === '/developer/analytics'} />
             <NavTab to="/developer/feedbacks" icon={MessageSquare} label="Umpan Balik" active={path === '/developer/feedbacks'} />
+            <NavTab to="/developer/activities" icon={ClipboardList} label="Log" active={path === '/developer/activities'} />
             <NavTab to="/" icon={Home} label="User View" active={path === '/'} />
             <Link to="?menu=true" className="flex flex-col items-center justify-center gap-1 py-1.5">
               <div className="flex items-center justify-center">

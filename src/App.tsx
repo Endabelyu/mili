@@ -28,6 +28,8 @@ const RegisterPage = React.lazy(() => import('./pages/auth.register'));
 const ForgotPasswordPage = React.lazy(() => import('./pages/auth.forgot-password'));
 const DeveloperFeedbacksPage = React.lazy(() => import('./pages/_app.developer.feedbacks'));
 const DeveloperAnalyticsPage = React.lazy(() => import('./pages/_app.developer.analytics'));
+const DeveloperActivitiesPage = React.lazy(() => import('./pages/_app.developer.activities'));
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -134,6 +136,8 @@ export default function App() {
           <Route path="/settings"          element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           <Route path="/developer/feedbacks" element={<DeveloperRoute><DeveloperFeedbacksPage /></DeveloperRoute>} />
           <Route path="/developer/analytics" element={<DeveloperRoute><DeveloperAnalyticsPage /></DeveloperRoute>} />
+          <Route path="/developer/activities" element={<DeveloperRoute><DeveloperActivitiesPage /></DeveloperRoute>} />
+
   
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />

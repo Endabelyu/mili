@@ -273,9 +273,29 @@ export interface AnalyticsSummary {
   growth: Array<{ month: string, count: number }>;
 }
 
+export interface ActivityLogItem {
+  id: string;
+  action: string;
+  description: string;
+  metadata: Record<string, unknown> | null;
+  ipAddress: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    role: string | null;
+    banned: boolean | null;
+  };
+}
+
 export const analyticsApi = {
   summary: () => request<AnalyticsSummary>('/api/v1/analytics/summary'),
   users: () => request<AnalyticsUser[]>('/api/v1/analytics/users'),
+  activities: (action?: string) => 
+    request<{ items: ActivityLogItem[] }>('/api/v1/analytics/activities', {
+      params: action ? { action } : undefined,
+    }).then(res => res.items),
   ban: (id: string) => request<{ success: boolean; banned: boolean }>(`/api/v1/analytics/users/${id}/ban`, { method: 'PUT' }),
   delete: (id: string) => request<{ success: boolean }>(`/api/v1/analytics/users/${id}`, { method: 'DELETE' }),
 };

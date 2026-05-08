@@ -12,7 +12,8 @@ import {
   Bell, 
   User, 
   Settings,
-  MessageSquare
+  MessageSquare,
+  ClipboardList
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { formatName } from '../../lib/utils';
@@ -38,6 +39,7 @@ export function Sidebar() {
             <p className="px-4 mt-4 text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2 opacity-60">Portal Developer</p>
             <SidebarLink to="/developer/analytics" icon={BarChart3} label="Statistik Pengguna" active={path === '/developer/analytics'} />
             <SidebarLink to="/developer/feedbacks" icon={MessageSquare} label="Umpan Balik" active={path === '/developer/feedbacks'} />
+            <SidebarLink to="/developer/activities" icon={ClipboardList} label="Log Aktivitas" active={path === '/developer/activities'} />
             
             <div className="pt-4 mt-6 border-t border-[var(--border)]/50">
               <p className="px-4 text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2 opacity-60">Akses Pengguna</p>

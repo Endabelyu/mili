@@ -1,4 +1,4 @@
-import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User, Settings, LogOut, Shield, MessageSquare } from 'lucide-react';
+import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User, Settings, LogOut, Shield, MessageSquare, ClipboardList } from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -37,9 +37,11 @@ export function MoreMenuModal() {
     ? [
         { path: '/developer/analytics', icon: Shield, title: 'Statistik', subtitle: 'Statistik Sistem' },
         { path: '/developer/feedbacks', icon: MessageSquare, title: 'Umpan Balik', subtitle: 'User Feedback' },
+        { path: '/developer/activities', icon: ClipboardList, title: 'Log Aktivitas', subtitle: 'Aktivitas Pengguna' },
         ...MENU_ITEMS.map(item => ({ ...item, title: `${item.title} User` }))
       ]
     : MENU_ITEMS;
+
 
   if (!isOpen) return null;
 
