@@ -170,13 +170,19 @@ export default function DeveloperActivitiesPage() {
                   <tr key={item.id} className="border-b border-[var(--border)]/50 hover:bg-[var(--card-hover)] transition-colors">
                     {/* Time */}
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-[var(--text-dim)]">
-                        <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                        <span className="text-xs" title={dayjs(item.createdAt).format('DD MMM YYYY HH:mm:ss')}>
-                          {dayjs(item.createdAt).fromNow()}
-                        </span>
+                      <div className="flex items-start gap-1.5 text-[var(--text)]">
+                        <Clock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-[var(--text-dim)]" />
+                        <div>
+                          <span className="text-xs font-semibold" title={dayjs(item.createdAt).format('DD MMMM YYYY HH:mm:ss')}>
+                            {dayjs(item.createdAt).format('DD MMM YYYY, HH:mm:ss')}
+                          </span>
+                          <span className="block text-[10px] text-[var(--text-dim)] font-normal mt-0.5">
+                            {dayjs(item.createdAt).fromNow()}
+                          </span>
+                        </div>
                       </div>
                     </td>
+
 
                     {/* User */}
                     <td className="px-4 py-3">
