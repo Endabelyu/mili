@@ -296,7 +296,7 @@ export default function TransactionsPage() {
 // ─── Transaction Row Component ───────────────────────────────────────────────
 function TransactionRow({ categoryLabel, categoryIcon, label, amount, isIncome, formatMoney, onClick }: {
   categoryLabel: string; categoryIcon?: string | null; label: string; amount: number; isIncome?: boolean;
-  formatMoney: (n: number) => string;
+  formatMoney: (amount: number | string, options?: { short?: boolean }) => string;
   onClick: () => void;
 }) {
   return (
