@@ -13,7 +13,7 @@ interface PreferencesContextType {
   // Currency
   currency: Currency;
   setCurrency: (cur: Currency) => void;
-  formatMoney: (amount: number | string) => string;
+  formatMoney: (amount: number | string, options?: { short?: boolean }) => string;
 
   // Dark mode
   isDark: boolean;
@@ -515,15 +515,16 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, [language]);
 
   // ── Currency formatter ──
-  const formatMoney = useCallback((amount: number | string): string => {
+  const formatMoney = useCallback((amount: number | string, options?: { short?: boolean }): string => {
     let num = typeof amount === 'string' ? parseFloat(amount) : amount;
     if (isNaN(num)) num = 0;
 
     const config = CURRENCY_CONFIG[currency];
     const absNum = Math.abs(num);
     const sign = num < 0 ? '-' : '';
+    const isShort = options?.short ?? true;
 
-    if (currency === 'IDR') {
+    if (currency === 'IDR' && isShort) {
       if (absNum >= 1_000_000_000_000) {
         return `${sign}Rp ${(absNum / 1_000_000_000_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} T`;
       }
@@ -533,7 +534,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       if (absNum >= 1_000_000) {
         return `${sign}Rp ${(absNum / 1_000_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} jt`;
       }
-    } else {
+    } else if (currency !== 'IDR' && isShort) {
       if (absNum >= 1_000_000_000_000) {
         return `${sign}${config.symbol}${(absNum / 1_000_000_000_000).toLocaleString(config.locale, { maximumFractionDigits: 1 })}T`;
       }
