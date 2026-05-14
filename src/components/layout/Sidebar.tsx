@@ -24,7 +24,7 @@ export function Sidebar() {
   const path = location.pathname;
 
   return (
-    <aside className="hidden lg:flex flex-col w-[260px] border-r border-[var(--border)] bg-[var(--card)] h-screen fixed top-0 left-0 z-50">
+    <aside className="hidden lg:flex flex-col w-[260px] border-r border-[var(--border)] bg-[var(--card)] h-screen sticky top-0 left-0 z-50">
       {/* Brand */}
       <div className="px-4 pt-8 ">
         <div className="flex items-center justify-start">

@@ -38,11 +38,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--text)] selection:bg-[var(--accent-tint)] flex flex-col lg:flex-row relative w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--text)] selection:bg-[var(--accent-tint)] flex flex-col lg:grid lg:grid-cols-[260px_1fr] relative w-full overflow-x-hidden">
       <Sidebar />
       
       {/* App Shell */}
-      <div className="flex flex-col min-h-screen flex-1 relative pb-24 lg:pb-0 lg:pl-[260px]">
+      <div className="flex flex-col min-h-screen relative pb-24 lg:pb-0 min-w-0">
         <Topbar />
         
         {/* Main Content */}
