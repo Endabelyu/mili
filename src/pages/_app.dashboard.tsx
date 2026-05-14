@@ -116,16 +116,18 @@ export default function DashboardPage() {
         <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-60 mt-1 uppercase tracking-[0.15em]">Mengalirkan Ketenangan Finansial</p>
       </div>
 
+<div className='flex md:flex-row flex-col gap-4'>
+
       {/* ─── Net Worth Hero Card (Slimmer) ─── */}
-      <div className="relative rounded-[28px] p-6 border-[2px] border-[#0891B2]/30 bg-[#CFFAFE]/20 text-[#0E7490] overflow-hidden shadow-sm">
+      <div className="relative rounded-[28px] p-6 border-[2px] border-[#0891B2]/30 bg-[#CFFAFE]/20 text-[#0E7490] overflow-hidden shadow-sm md:w-1/2">
         <div className="relative z-10 flex justify-between items-start">
           <div>
             <p className="text-[11px] font-bold text-[#0E7490]/60 tracking-[0.05em] uppercase">{t('dashboard.netWorth')}</p>
-            <p className="text-[28px] sm:text-[36px] font-bold tracking-[-0.03em] mt-1 tabular-nums text-[#0891B2]">{formatMoney(netWorth)}</p>
+            <p className="text-[28px] sm:text-[36px] font-bold tracking-[-0.03em] mt-1 tabular-nums text-[#0891B2]">{formatMoney(netWorth, { short: false })}</p>
             <div className="flex flex-wrap gap-4 mt-3 text-[11px] font-bold">
-              <span className="text-[#0E7490]/50">{t('dashboard.assets')} <span className="text-[#0E7490] tabular-nums">{formatMoney(totalAssets)}</span></span>
+              <span className="text-[#0E7490]/50">{t('dashboard.assets')} <span className="text-[#0E7490] tabular-nums">{formatMoney(totalAssets, { short: false })}</span></span>
               {totalLiabilities > 0 && (
-                <span className="text-[#0E7490]/50">{t('dashboard.liabilities')} <span className="text-[#0E7490] tabular-nums">{formatMoney(totalLiabilities)}</span></span>
+                <span className="text-[#0E7490]/50">{t('dashboard.liabilities')} <span className="text-[#0E7490] tabular-nums">{formatMoney(totalLiabilities, { short: false })}</span></span>
               )}
             </div>
           </div>
@@ -149,7 +151,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── Monthly Cash Flow (Slimmer) ─── */}
-      <div className="rounded-[24px] p-5 border-[2px] border-[#0891B2]/20 bg-[#ECFEFF] shadow-sm">
+      <div className="rounded-[24px] p-5 border-[2px] border-[#0891B2]/20 bg-[#ECFEFF] shadow-sm md:w-1/2">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-[13px] font-bold text-[#0E7490] tracking-[-0.01em] uppercase tracking-wider">{t('dashboard.cashFlow')}</h2>
           <span className="text-[11px] font-bold text-[#0E7490] opacity-50 uppercase tracking-widest">{currentMonthName}</span>
@@ -168,16 +170,16 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
               <div className="flex sm:flex-col items-center justify-between sm:items-start w-full">
                 <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1 sm:mb-0 shrink-0">{t('dashboard.income')}</p>
-                <p className="text-[16px] sm:text-[20px] font-bold text-[#059669] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">{formatMoney(income)}</p>
+                <p className="text-[16px] sm:text-[20px] font-bold text-[#059669] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">{formatMoney(income, { short: false })}</p>
               </div>
               <div className="flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 sm:border-x border-[#0891B2]/10 pt-2 sm:pt-0 sm:px-4">
                 <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1 sm:mb-0 shrink-0">{t('dashboard.expense')}</p>
-                <p className="text-[16px] sm:text-[20px] font-bold text-[#E11D48] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">{formatMoney(expenses)}</p>
+                <p className="text-[16px] sm:text-[20px] font-bold text-[#E11D48] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">{formatMoney(expenses, { short: false })}</p>
               </div>
               <div className="flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 pt-2 sm:pt-0">
                 <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase mb-1 sm:mb-0 shrink-0">{t('dashboard.balance')}</p>
                 <p className={`text-[16px] sm:text-[20px] font-bold tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left ${balance >= 0 ? 'text-[#059669]' : 'text-[#E11D48]'}`}>
-                  {formatMoney(balance)}
+                  {formatMoney(balance, { short: false })}
                 </p>
               </div>
             </div>
@@ -194,6 +196,7 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+</div>
 
       {/* ─── Pinned Targets & Budgets (Real Data) ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -236,8 +239,8 @@ export default function DashboardPage() {
                     color={t.color} 
                     label={t.name} 
                     progress={progress} 
-                    collected={formatMoney(parseFloat(String(t.currentAmount)))} 
-                    target={formatMoney(parseFloat(String(t.targetAmount)))} 
+                    collected={formatMoney(parseFloat(String(t.currentAmount)), { short: false })} 
+                    target={formatMoney(parseFloat(String(t.targetAmount)), { short: false })} 
                   />
                 );
               })}
@@ -305,8 +308,8 @@ export default function DashboardPage() {
                       />
                     </div>
                     <div className="flex justify-between items-center text-[11px] font-bold">
-                      <span className="text-[var(--text-dim)]">{formatMoney(spent)}</span>
-                      <span className="text-[var(--text-dim-2)] opacity-60">{formatMoney(limit)}</span>
+                      <span className="text-[var(--text-dim)]">{formatMoney(spent, { short: false })}</span>
+                      <span className="text-[var(--text-dim-2)] opacity-60">{formatMoney(limit, { short: false })}</span>
                     </div>
                   </div>
                 );
@@ -344,7 +347,7 @@ export default function DashboardPage() {
                       size="lg" 
                       label={cat.label}
                     />
-                    <p className="text-[12px] font-bold text-[var(--text)] mt-1 tabular-nums">{formatMoney(cat.amount)}</p>
+                    <p className="text-[12px] font-bold text-[var(--text)] mt-1 tabular-nums">{formatMoney(cat.amount, { short: false })}</p>
                   </div>
                 ))}
               </div>
@@ -385,7 +388,7 @@ export default function DashboardPage() {
                     categoryLabel={item.category?.label || item.categoryId}
                     categoryIcon={item.category?.icon}
                     label={item.description || item.category?.label || 'Tagihan'} 
-                    amount={formatMoney(parseFloat(String(item.amount)))} 
+                    amount={formatMoney(parseFloat(String(item.amount)), { short: false })} 
                     due={dueStr} 
                   />
                 );
@@ -440,7 +443,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <span className={`text-[15px] font-bold tabular-nums ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
-                    {isIncome ? '+' : '−'}{formatMoney(Math.abs(parseFloat(String(tx.amount))))}
+                    {isIncome ? '+' : '−'}{formatMoney(Math.abs(parseFloat(String(tx.amount))), { short: false })}
                   </span>
                 </div>
               );

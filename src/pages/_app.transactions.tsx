@@ -95,7 +95,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10 animate-fade-in">
+    <div className="space-y-6 pb-10 animate-fade-in w-full max-w-full overflow-x-hidden">
       {/* Removed Redundant Top Navigation as per User Request */}
 
       <div className="flex items-center justify-between pt-4">
@@ -136,15 +136,15 @@ export default function TransactionsPage() {
       </div>
 
       {/* Hero Card - Summary */}
-      <div className="rounded-[32px] p-6 sm:p-8 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm animate-fade-in">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
+      <div className="rounded-[32px] p-6 sm:p-8 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm animate-fade-in overflow-hidden w-full max-w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-4 lg:gap-8">
           <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full">
             <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
               <ArrowUpCircle className="w-3.5 h-3.5 text-[#059669]" />
               MASUK
             </p>
             <p className="text-[20px] sm:text-[22px] font-bold text-[#059669] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
-              {formatMoney(income)}
+              {formatMoney(income, { short: false })}
             </p>
           </div>
           <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 sm:border-x border-[#0891B2]/10 pt-3 sm:pt-0 sm:px-8">
@@ -153,7 +153,7 @@ export default function TransactionsPage() {
               KELUAR
             </p>
             <p className="text-[20px] sm:text-[22px] font-bold text-[#E11D48] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
-              {formatMoney(expenses)}
+              {formatMoney(expenses, { short: false })}
             </p>
           </div>
           <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 pt-3 sm:pt-0 sm:pl-8">
@@ -162,14 +162,14 @@ export default function TransactionsPage() {
               SALDO
             </p>
             <p className="text-[20px] sm:text-[22px] font-bold text-[#0891B2] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
-              {formatMoney(balance)}
+              {formatMoney(balance, { short: false })}
             </p>
           </div>
         </div>
       </div>
 
       {/* Filter Pills */}
-      <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
+      <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1 w-full">
         {[
           { id: 'all', label: 'Semua' },
           { id: 'income', label: 'Pemasukan' },
@@ -190,7 +190,7 @@ export default function TransactionsPage() {
 
       {/* Account Filter Pills */}
       {accountsData && accountsData.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
+        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1 w-full">
           <button
             onClick={() => setAccountFilter('all')}
             className={`px-4 py-1.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all active:scale-95 border ${
@@ -238,7 +238,7 @@ export default function TransactionsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between mb-1.5">
                         <span className="text-[13px] font-bold text-[var(--text)]">{cat.label}</span>
-                        <span className="text-[13px] font-bold text-[var(--text)] tabular-nums">{formatMoney(cat.amount)}</span>
+                        <span className="text-[13px] font-bold text-[var(--text)] tabular-nums">{formatMoney(cat.amount, { short: false })}</span>
                       </div>
                       <div className="w-full h-1.5 bg-[var(--muted)] rounded-full overflow-hidden">
                         <div className="h-full rounded-full" style={{ width: `${cat.percentage}%`, backgroundColor: cat.color }} />
@@ -315,7 +315,7 @@ function TransactionRow({ categoryLabel, categoryIcon, label, amount, isIncome, 
       </div>
       <div className="text-right shrink-0">
         <p className={`text-[15px] sm:text-[16px] font-bold tabular-nums ${isIncome ? 'text-[var(--income)]' : 'text-[var(--text)]'}`}>
-          {isIncome ? '+' : '−'}{formatMoney(Math.abs(amount))}
+          {isIncome ? '+' : '−'}{formatMoney(Math.abs(amount), { short: false })}
         </p>
         <button className="lg:opacity-0 lg:group-hover:opacity-100 mt-1">
           <MoreHorizontal className="w-4 h-4 text-[var(--text-dim-2)]" />
