@@ -5,8 +5,6 @@
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-// Debug log for production configuration tracking
-console.log('[API] Base URL:', BASE_URL);
 if (!BASE_URL) {
   console.warn('[API] WARNING: VITE_API_URL is undefined! This will cause mangled relative URLs.');
 }
