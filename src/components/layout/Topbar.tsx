@@ -64,11 +64,13 @@ export function Topbar() {
   const markReadMutation = useMutation({
     mutationFn: (id: string) => notificationsApi.markRead(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onError: () => {},
   });
 
   const markAllReadMutation = useMutation({
     mutationFn: () => notificationsApi.markAllRead(),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onError: () => {},
   });
 
   const hasUnread = notifications.some(n => n.unread);

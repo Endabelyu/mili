@@ -103,7 +103,7 @@ export default function SettingsPage() {
     try {
     const ExcelJS = await import('exceljs');
     const workbook = new (ExcelJS.Workbook || (ExcelJS as unknown as { default: { Workbook: new () => ExcelJSTypes.Workbook } }).default.Workbook)();
-    const worksheet = workbook.addWorksheet('Laporan Keuangan');
+    const worksheet = workbook.addWorksheet(t('settings.reportTitle'));
 
     // 1. Setup Columns
     worksheet.columns = [
@@ -134,7 +134,7 @@ export default function SettingsPage() {
     // 3. Document Title
     worksheet.addRow(['Mili / Finance']).font = { size: 18, bold: true, color: { argb: BRAND_COLOR } };
     worksheet.addRow(['LAPORAN KEUANGAN KONSOLIDASI']).font = { size: 14, bold: true };
-    worksheet.addRow([`Laporan Untuk: ${session?.user?.name || 'User'}`]).font = { italic: true };
+    worksheet.addRow([`${t('settings.reportFor')}: ${session?.user?.name || 'User'}`]).font = { italic: true };
     worksheet.addRow([`Periode: ${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`]);
     worksheet.addRow(['']);
 
@@ -151,7 +151,7 @@ export default function SettingsPage() {
       assetTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
       worksheet.mergeCells(`A${assetTitle.number}:F${assetTitle.number}`);
 
-      const assetHead = worksheet.addRow(['Nama Akun', 'Tipe', 'Saldo']);
+      const assetHead = worksheet.addRow([t('settings.accountName'), t('settings.accountType'), t('settings.balance')]);
       assetHead.eachCell(cell => Object.assign(cell, SUB_HEADER_STYLE));
 
       (accounts || []).forEach(a => {
@@ -173,18 +173,18 @@ export default function SettingsPage() {
     summaryTitleRow.eachCell(cell => Object.assign(cell, HEADER_STYLE));
     worksheet.mergeCells(`A${summaryTitleRow.number}:F${summaryTitleRow.number}`);
 
-    const sumHead = worksheet.addRow(['Keterangan', '', 'Jumlah']);
+    const sumHead = worksheet.addRow([t('settings.description'), '', t('settings.amount')]);
     sumHead.eachCell(cell => Object.assign(cell, SUB_HEADER_STYLE));
 
-    const incRow = worksheet.addRow(['Total Pemasukan', '', totalIncome]);
+    const incRow = worksheet.addRow([t('settings.totalIncome'), '', totalIncome]);
     incRow.getCell(3).numFmt = '#,##0';
     incRow.getCell(3).font = { color: { argb: INCOME_COLOR }, bold: true };
 
-    const expRow = worksheet.addRow(['Total Pengeluaran', '', totalExpense]);
+    const expRow = worksheet.addRow([t('settings.totalExpense'), '', totalExpense]);
     expRow.getCell(3).numFmt = '#,##0';
     expRow.getCell(3).font = { color: { argb: EXPENSE_COLOR }, bold: true };
 
-    const balRow = worksheet.addRow(['Saldo Bersih', '', balance]);
+    const balRow = worksheet.addRow([t('settings.netBalance'), '', balance]);
     balRow.getCell(3).numFmt = '#,##0';
     balRow.getCell(3).font = { bold: true };
     worksheet.addRow(['']);
@@ -195,7 +195,7 @@ export default function SettingsPage() {
       budgetTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
       worksheet.mergeCells(`A${budgetTitle.number}:F${budgetTitle.number}`);
 
-      const budgetHead = worksheet.addRow(['Kategori', 'Batas', 'Terpakai', 'Persentase']);
+      const budgetHead = worksheet.addRow([t('settings.category'), t('settings.limit'), t('settings.used'), t('settings.percentage')]);
       budgetHead.eachCell(cell => Object.assign(cell, SUB_HEADER_STYLE));
 
       (budgets || []).forEach(b => {
@@ -226,7 +226,7 @@ export default function SettingsPage() {
       ledgerTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
       worksheet.mergeCells(`A${ledgerTitle.number}:F${ledgerTitle.number}`);
 
-      const ledgerHead = worksheet.addRow(['Tanggal', 'Kategori', 'Keterangan', 'Masuk', 'Keluar', 'Saldo']);
+      const ledgerHead = worksheet.addRow([t('settings.date'), t('settings.category'), t('settings.description'), t('settings.incoming'), t('settings.outgoing'), t('settings.balance')]);
       ledgerHead.eachCell(cell => Object.assign(cell, SUB_HEADER_STYLE));
 
       let rb = 0;
@@ -254,7 +254,7 @@ export default function SettingsPage() {
     }
 
     worksheet.addRow(['']);
-    worksheet.addRow(['Dokumen ini sah dihasilkan oleh Mili System']).font = { italic: true, size: 10 };
+    worksheet.addRow([t('settings.docGenerated')]).font = { italic: true, size: 10 };
     worksheet.addRow([new Date().toLocaleString('id-ID')]).font = { size: 9 };
 
     // 9. Generate and Download
@@ -267,9 +267,9 @@ export default function SettingsPage() {
     link.click();
     URL.revokeObjectURL(url);
     
-    setTimeout(() => showAlert('Sukses', 'Data berhasil diekspor ke format Excel (.xlsx) Premium.', 'success'), 500);
+    setTimeout(() => showAlert(t('common.success'), t('settings.exportSuccess'), 'success'), 500);
     } catch {
-      showAlert('Gagal Ekspor', 'Terjadi kesalahan saat mengekspor data. Silakan coba lagi.', 'error');
+      showAlert(t('settings.exportFailed'), t('settings.exportError'), 'error');
     }
   };
 
@@ -278,11 +278,11 @@ export default function SettingsPage() {
   const handleExportCSV = () => {
     setShowExportPicker(false);
     if (transactions.length === 0) {
-      showAlert('Gagal Ekspor', 'Tidak ada data transaksi untuk diekspor.', 'error');
+      showAlert(t('settings.exportFailed'), t('settings.exportNoData'), 'error');
       return;
     }
 
-    const headers = ['Tanggal', 'Kategori', 'Keterangan', 'Pemasukan', 'Pengeluaran', 'Saldo'];
+    const headers = [t('settings.date'), t('settings.category'), t('settings.description'), t('settings.income'), t('settings.expense'), t('settings.balance')];
     let runningBalance = 0;
     const sorted = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -312,7 +312,7 @@ export default function SettingsPage() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    setTimeout(() => showAlert('Sukses', 'Data berhasil diekspor ke format Excel (CSV).', 'success'), 500);
+    setTimeout(() => showAlert(t('common.success'), t('settings.exportSuccess'), 'success'), 500);
   };
 
   const handleExportPDF = () => {
@@ -320,7 +320,7 @@ export default function SettingsPage() {
     
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      showAlert('Blokir Pop-up', 'Mohon izinkan pop-up untuk mengunduh PDF.', 'warning');
+      showAlert(t('settings.popupBlocked'), t('settings.popupBlockedDesc'), 'warning');
       return;
     }
 
@@ -375,8 +375,8 @@ export default function SettingsPage() {
           <div class="header">
             <div class="brand">Mili<span>/</span>Finance</div>
             <div class="report-title">
-              <h1>Laporan Keuangan Konsolidasi</h1>
-              <p style="color: #64748b; font-size: 11px; margin-top: 2px;">Laporan Untuk: ${session?.user?.name || 'User'}</p>
+              <h1>${t('settings.reportTitle')}</h1>
+              <p style="color: #64748b; font-size: 11px; margin-top: 2px;">${t('settings.reportFor')}: ${session?.user?.name || 'User'}</p>
               <p>${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
@@ -623,7 +623,7 @@ export default function SettingsPage() {
         <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('settings.dataPrivacy')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
           <SettingRow icon={Download} color="bg-slate-50" iconColor="text-slate-500" label={t('settings.exportData')} value={t('settings.exportDataDesc')} onClick={() => setShowExportPicker(true)} />
-          <SettingRow icon={Upload} color="bg-orange-50" iconColor="text-orange-500" label={t('settings.importData')} value={t('settings.importDataDesc')} onClick={() => showAlert('Dalam Pengembangan', 'Fitur Impor Data sedang dalam tahap pengembangan.', 'info')} />
+          <SettingRow icon={Upload} color="bg-orange-50" iconColor="text-orange-500" label={t('settings.importData')} value={t('settings.importDataDesc')} onClick={() => showAlert(t('settings.inDevelopment'), t('settings.importDev'), 'info')} />
           <SettingToggleRow icon={Cloud} color="bg-emerald-50" iconColor="text-emerald-500" label={t('settings.autoBackup')} subtext={t('settings.autoBackupDesc')} defaultChecked={true} />
           <SettingRow icon={Trash2} color="bg-rose-50" iconColor="text-rose-500" label={t('settings.deleteAll')} labelColor="text-rose-600" subtext={t('settings.deleteAllDesc')} onClick={handleDeleteAll} />
         </div>
@@ -640,8 +640,8 @@ export default function SettingsPage() {
             iconColor="text-blue-500" 
             label={t('settings.aboutApp')} 
             onClick={() => showAlert(
-              'Filosofi Mili', 
-              'Mili berasal dari bahasa Jawa yang artinya "mengalir" — sering muncul dalam frasa "banyu mili" (air mengalir). Dalam budaya Jawa, ini adalah simbol rezeki yang terus mengalir tanpa henti — tidak dipaksakan, tidak dibendung, tapi bergerak alami menuju tempatnya. Seperti motif Pamor Banyu Mili pada keris pusaka, Mili hadir untuk membawa kelancaran rezeki dan ketenangan hidup bagi Anda.', 
+              t('settings.miliPhilosophy'),
+              t('settings.miliPhilosophyDesc'),
               'info'
             )}
           />
@@ -649,8 +649,8 @@ export default function SettingsPage() {
             icon={MessageSquare} 
             color="bg-emerald-50" 
             iconColor="text-emerald-500" 
-            label="Kirim Umpan Balik" 
-            subtext="Beri masukan, saran, atau laporkan bug" 
+            label={t('settings.sendFeedback')}
+            subtext={t('settings.feedbackSubtext')} 
             onClick={() => setShowFeedbackModal(true)} 
           />
         </div>
@@ -658,8 +658,8 @@ export default function SettingsPage() {
 
       <div className="flex flex-col items-center justify-center pt-8 pb-4 space-y-3">
         <div className="flex gap-4 text-[11px] font-bold text-[var(--text-dim)] uppercase tracking-wider">
-          <button onClick={() => showAlert('Privasi', 'Kebijakan privasi Mili.', 'info')} className="hover:text-[var(--text)] transition-colors">PRIVACY</button>
-          <button onClick={() => showAlert('Syarat', 'Syarat & ketentuan layanan Mili.', 'info')} className="hover:text-[var(--text)] transition-colors">TERMS</button>
+          <button onClick={() => showAlert(t('settings.privacyTitle'), t('settings.privacyPolicy'), 'info')} className="hover:text-[var(--text)] transition-colors">PRIVACY</button>
+          <button onClick={() => showAlert(t('settings.termsTitle'), t('settings.termsPolicy'), 'info')} className="hover:text-[var(--text)] transition-colors">TERMS</button>
         </div>
         <p className="text-[11px] font-medium text-[var(--text-dim-2)] opacity-70">
           &copy; {new Date().getFullYear()} Mili • v2.0.0
@@ -799,7 +799,7 @@ export default function SettingsPage() {
 
             <textarea
               rows={4}
-              placeholder="Tulis pesan atau masukan Anda di sini..."
+              placeholder={t('settings.feedbackPlaceholder')}
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               className="w-full p-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] text-[14px] font-medium focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all resize-none mb-4 focus:ring-emerald-500/20"
@@ -829,7 +829,7 @@ export default function SettingsPage() {
               ) : (
                 <Send className="w-4 h-4" />
               )}
-              {isSubmittingFeedback ? 'Mengirim...' : 'Kirim Masukan'}
+              {isSubmittingFeedback ? t('settings.feedbackSubmitting') : t('settings.feedbackSubmit')}
             </button>
           </div>
         </div>
