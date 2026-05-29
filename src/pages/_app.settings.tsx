@@ -100,6 +100,7 @@ export default function SettingsPage() {
 
   const handleExportExcel = async () => {
     setShowExportPicker(false);
+    try {
     const ExcelJS = await import('exceljs');
     const workbook = new (ExcelJS.Workbook || (ExcelJS as unknown as { default: { Workbook: new () => ExcelJSTypes.Workbook } }).default.Workbook)();
     const worksheet = workbook.addWorksheet('Laporan Keuangan');
@@ -267,6 +268,9 @@ export default function SettingsPage() {
     URL.revokeObjectURL(url);
     
     setTimeout(() => showAlert('Sukses', 'Data berhasil diekspor ke format Excel (.xlsx) Premium.', 'success'), 500);
+    } catch {
+      showAlert('Gagal Ekspor', 'Terjadi kesalahan saat mengekspor data. Silakan coba lagi.', 'error');
+    }
   };
 
 

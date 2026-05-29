@@ -252,7 +252,7 @@ export function CommandPalette() {
             <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded border border-[var(--border)] bg-[var(--card)]">↑↓</kbd> Navigate</span>
             <span className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded border border-[var(--border)] bg-[var(--card)]">↵</kbd> Select</span>
           </div>
-          <p className="text-[10px] font-bold text-[var(--text-dim-2)] opacity-40 uppercase tracking-widest">Saku Command Palette</p>
+          <p className="text-[10px] font-bold text-[var(--text-dim-2)] opacity-40 uppercase tracking-widest">Mili Command Palette</p>
         </div>
       </div>
 

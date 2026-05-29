@@ -9,6 +9,7 @@ import { usePreferences } from '../hooks/usePreferences';
 import type { Account } from '../types';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 import { StatusToggle } from '../components/ui/StatusToggle';
+import { Alert } from '../components/ui/Alert';
 
 // ─── Donut Chart Component ───────────────────────────────────────────────────
 interface Segment {
@@ -93,6 +94,13 @@ export default function AccountsPage() {
   const nameRef = useRef<HTMLInputElement>(null);
   const balanceRef = useRef<HTMLInputElement>(null);
 
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean; title: string; message: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    isConfirm?: boolean; onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '', type: 'info' });
+  const closeAlert = () => setAlertConfig(prev => ({ ...prev, isOpen: false }));
+
   const { data: accounts = [], isLoading } = useQuery({
     queryKey: queryKeys.accounts.all,
     queryFn: () => accountsApi.list(),
@@ -116,8 +124,12 @@ export default function AccountsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
       handleCloseModal();
+      setAlertConfig({ isOpen: true, title: t('common.success'), message: t('accounts.createSuccess'), type: 'success' });
     },
-    onError: () => setSaving(false),
+    onError: () => {
+      setSaving(false);
+      setAlertConfig({ isOpen: true, title: t('common.error'), message: t('accounts.createError'), type: 'error' });
+    },
   });
 
   const updateMutation = useMutation({
@@ -126,8 +138,12 @@ export default function AccountsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
       handleCloseModal();
+      setAlertConfig({ isOpen: true, title: t('common.success'), message: t('accounts.updateSuccess'), type: 'success' });
     },
-    onError: () => setSaving(false),
+    onError: () => {
+      setSaving(false);
+      setAlertConfig({ isOpen: true, title: t('common.error'), message: t('accounts.updateError'), type: 'error' });
+    },
   });
 
   const deleteMutation = useMutation({
@@ -135,8 +151,12 @@ export default function AccountsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
       handleCloseModal();
+      setAlertConfig({ isOpen: true, title: t('common.success'), message: t('accounts.deleteSuccess'), type: 'success' });
     },
-    onError: () => setSaving(false),
+    onError: () => {
+      setSaving(false);
+      setAlertConfig({ isOpen: true, title: t('common.error'), message: t('accounts.deleteError'), type: 'error' });
+    },
   });
 
   const handleSave = () => {
@@ -162,10 +182,14 @@ export default function AccountsPage() {
 
   const handleDelete = () => {
     if (!editingAccount) return;
-    if (window.confirm(`${t('acc.deleteConfirm')} "${editingAccount.name}"?`)) {
-      setSaving(true);
-      deleteMutation.mutate(editingAccount.id);
-    }
+    setAlertConfig({
+      isOpen: true,
+      title: t('acc.deleteAccount'),
+      message: `${t('acc.deleteConfirm')} "${editingAccount.name}"?`,
+      type: 'error',
+      isConfirm: true,
+      onConfirm: () => { closeAlert(); setSaving(true); deleteMutation.mutate(editingAccount!.id); },
+    });
   };
 
   const handleEdit = (acc: Account) => {
@@ -525,6 +549,17 @@ export default function AccountsPage() {
           </div>
         </>
       )}
+
+      <Alert
+        isOpen={alertConfig.isOpen}
+        onClose={closeAlert}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        isConfirm={alertConfig.isConfirm}
+        onConfirm={alertConfig.onConfirm}
+        confirmLabel={t('common.delete')}
+      />
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Target as TargetIcon, X, Check, Edit2, Trash2, Clock, ArrowLeft } from 'lucide-react';
+import { Plus, Target as TargetIcon, X, Check, Edit2, Trash2, Clock, ArrowLeft, Link } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
-import { targetsApi, type Target } from '../api/client';
+import { targetsApi, categoriesApi, type Target } from '../api/client';
 import { TARGET_EMOJI_LIST } from '../lib/constants';
 import { usePreferences } from '../hooks/usePreferences';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
@@ -61,8 +61,15 @@ export default function TargetsPage() {
   const [deadline, setDeadline] = useState('');
   const [color, setColor] = useState('#15803D');
   const [icon, setIcon] = useState('category_savings');
+  const [categoryId, setCategoryId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const [showAllEmojis, setShowAllEmojis] = useState(false);
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoriesApi.list(),
+  });
+  const incomeCategories = categories.filter(c => c.type === 'income' || c.type === 'both');
 
   // Alert Modal state
   const [alertConfig, setAlertConfig] = useState<{
@@ -125,6 +132,7 @@ export default function TargetsPage() {
     setDeadline('');
     setColor('#15803D');
     setIcon('category_savings');
+    setCategoryId(null);
     setSelectedTarget(null);
     setSaving(false);
     setIsModalOpen(false);
@@ -138,10 +146,11 @@ export default function TargetsPage() {
     const payload = {
       name,
       targetAmount: parseFloat(targetAmount),
-      currentAmount: parseFloat(currentAmount || '0'),
+      currentAmount: categoryId ? 0 : parseFloat(currentAmount || '0'),
       deadline: deadline || null,
       color,
       icon,
+      categoryId: categoryId ?? null,
     };
     createMutation.mutate(payload);
   };
@@ -152,10 +161,11 @@ export default function TargetsPage() {
     const payload = {
       name,
       targetAmount: parseFloat(targetAmount),
-      currentAmount: parseFloat(currentAmount || '0'),
+      currentAmount: categoryId ? 0 : parseFloat(currentAmount || '0'),
       deadline: deadline || null,
       color,
       icon,
+      categoryId: categoryId ?? null,
     };
     updateMutation.mutate(payload);
   };
@@ -168,6 +178,7 @@ export default function TargetsPage() {
     setDeadline(target.deadline ? new Date(target.deadline).toISOString().split('T')[0] : '');
     setColor(target.color);
     setIcon(target.icon);
+    setCategoryId(target.categoryId ?? null);
     setIsEditModalOpen(true);
   };
 
@@ -286,9 +297,18 @@ export default function TargetsPage() {
                           {target.deadline ? new Date(target.deadline).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : t('target.noDeadline')}
                         </span>
                       </div>
+                      {target.categoryId && (() => {
+                        const cat = categories.find(c => c.id === target.categoryId);
+                        return cat ? (
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <Link className="w-3 h-3 text-[var(--income)] opacity-70" />
+                            <span className="text-[11px] font-semibold text-[var(--income)] opacity-80">{cat.icon} {cat.label}</span>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
 
-                    <div className="absolute top-6 right-6 flex items-center gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-6 right-6 flex items-center gap-2.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
                       <button onClick={() => openEditModal(target)} className="p-2.5 rounded-xl bg-[var(--muted)] text-[var(--text-dim-2)] hover:text-[var(--accent)] transition-all">
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -444,19 +464,52 @@ export default function TargetsPage() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.collectedSoFar')}</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--text-dim-2)]">Rp</span>
-                  <input
-                    value={currentAmount ? parseInt(currentAmount, 10).toLocaleString('id-ID') : ''}
-                    onChange={(e) => setCurrentAmount(e.target.value.replace(/[^0-9]/g, ''))}
-                    placeholder="0"
-                    inputMode="numeric"
-                    className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] pl-11 pr-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
-                  />
+              {!categoryId && (
+                <div className="space-y-3">
+                  <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.collectedSoFar')}</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[var(--text-dim-2)]">Rp</span>
+                    <input
+                      value={currentAmount ? parseInt(currentAmount, 10).toLocaleString('id-ID') : ''}
+                      onChange={(e) => setCurrentAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="0"
+                      inputMode="numeric"
+                      className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] pl-11 pr-4 py-3.5 text-[15px] font-bold text-[var(--text)] outline-none tabular-nums"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {incomeCategories.length > 0 && (
+                <div className="space-y-3">
+                  <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">
+                    Otomatis dari Kategori
+                  </label>
+                  <p className="text-[12px] text-[var(--text-dim-2)] -mt-1">
+                    Progres dihitung otomatis dari total pemasukan kategori ini
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCategoryId(null)}
+                      className={`px-3 py-1.5 rounded-xl text-[13px] font-semibold border transition-all ${!categoryId ? 'bg-[#15803D] text-white border-[#15803D]' : 'bg-[var(--muted)] text-[var(--text-dim-2)] border-transparent'}`}
+                    >
+                      Manual
+                    </button>
+                    {incomeCategories.map(cat => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setCategoryId(cat.id)}
+                        className={`px-3 py-1.5 rounded-xl text-[13px] font-semibold border transition-all flex items-center gap-1.5 ${categoryId === cat.id ? 'bg-[#15803D] text-white border-[#15803D]' : 'bg-[var(--muted)] text-[var(--text-dim-2)] border-transparent'}`}
+                      >
+                        <span>{cat.icon}</span>
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.deadline')}</label>

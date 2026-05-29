@@ -257,8 +257,8 @@ export default function TransactionsPage() {
           {dateGroups.length === 0 ? (
             <div className="flow-card p-12 text-center">
               <p className="text-[48px] mb-4">📭</p>
-              <p className="text-[16px] font-bold text-[var(--text)] mb-1">Belum ada transaksi</p>
-              <p className="text-[13px] font-medium text-[var(--text-dim)]">Mulai catat pengeluaran dan pemasukan Anda</p>
+              <p className="text-[16px] font-bold text-[var(--text)] mb-1">{t('dashboard.noTransactions')}</p>
+              <p className="text-[13px] font-medium text-[var(--text-dim)]">{t('transactions.noTransactionsDesc')}</p>
             </div>
           ) : (
             dateGroups.map((group) => (

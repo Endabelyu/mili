@@ -13,7 +13,7 @@ import { CategoryIcon } from '../components/ui/CategoryIcon';
 dayjs.locale('id');
 
 export default function CalendarPage() {
-  const { formatMoney } = usePreferences();
+  const { formatMoney, t } = usePreferences();
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
@@ -197,7 +197,7 @@ export default function CalendarPage() {
         ) : (
           <div className="text-center py-10 px-6 bg-[var(--card)] rounded-[24px] border border-[var(--border)]">
             <CalendarIcon className="w-12 h-12 text-[var(--text-dim-2)] mx-auto mb-3 opacity-20" />
-            <p className="text-[14px] font-bold text-[var(--text-dim-2)]">Tidak ada transaksi di bulan ini</p>
+            <p className="text-[14px] font-bold text-[var(--text-dim-2)]">{t('calendar.noTransactions')}</p>
           </div>
         )}
       </div>

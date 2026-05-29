@@ -3,7 +3,7 @@
 /* ── FONTS ────────────────────────────────────────────────── */
 /* Plus Jakarta Sans — OFL licensed, loaded via index.html    */
 
-/* ── BASE & DESIGN TOKENS (Saku-aligned) ──────────────────── */
+/* ── BASE & DESIGN TOKENS (Mili-aligned) ──────────────────── */
 @layer base {
   :root {
     /* ─ Background ─ */
@@ -80,7 +80,7 @@
 
 /* ── COMPONENT UTILITIES ──────────────────────────────────── */
 @layer components {
-  /* ─ Card (Saku-aligned: 16px radius, subtle border) ─ */
+  /* ─ Card (Mili-aligned: 16px radius, subtle border) ─ */
   .flow-card {
     background: var(--card);
     border-radius: 16px;
@@ -158,7 +158,7 @@
     flex-shrink: 0;
   }
 
-  /* ─ Buttons (Saku-aligned radii) ─ */
+  /* ─ Buttons (Mili-aligned radii) ─ */
   .btn,
   .btn-primary,
   .btn-secondary,
@@ -213,7 +213,7 @@
     color: var(--text);
   }
 
-  /* ─ Link Button (Saku pattern) ─ */
+  /* ─ Link Button (Mili pattern) ─ */
   .link-btn {
     background: transparent;
     border: none;
@@ -229,7 +229,7 @@
     background: var(--accent-tint);
   }
 
-  /* ─ Icon Button (Saku pattern) ─ */
+  /* ─ Icon Button (Mili pattern) ─ */
   .icon-btn {
     width: 36px;
     height: 36px;
@@ -246,7 +246,7 @@
   }
   .icon-btn:hover { background: var(--border); }
 
-  /* ─ Inputs (Saku-aligned: muted bg, 10px radius) ─ */
+  /* ─ Inputs (Mili-aligned: muted bg, 10px radius) ─ */
   .input {
     display: block;
     width: 100%;
@@ -283,7 +283,7 @@
     transition: background-color 5000s ease-in-out 0s;
   }
 
-  /* ─ Tabs (Saku underline style) ─ */
+  /* ─ Tabs (Mili underline style) ─ */
   .tabs {
     display: flex;
     gap: 4px;
@@ -309,7 +309,7 @@
     border-bottom-color: var(--accent);
   }
 
-  /* ─ Scrollbar (Saku) ─ */
+  /* ─ Scrollbar (Mili) ─ */
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {

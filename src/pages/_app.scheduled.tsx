@@ -59,6 +59,7 @@ export default function ScheduledPage() {
   const [nextRunDate, setNextRunDate] = useState('');
 
   const [selectedScheduled, setSelectedScheduled] = useState<ScheduledTransaction | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
 
   const { data: scheduled = [] } = useQuery({
     queryKey: ['scheduled'],
@@ -75,6 +76,8 @@ export default function ScheduledPage() {
     queryFn: () => accountsApi.list(),
   });
 
+  const filteredScheduled = statusFilter === 'all' ? scheduled : scheduled.filter(s => s.status === statusFilter);
+
   const createMutation = useMutation({
     mutationFn: (data: Omit<ScheduledTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'status'>) =>
       scheduledApi.create(data as Omit<ScheduledTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>),
@@ -83,7 +86,10 @@ export default function ScheduledPage() {
       setIsModalOpen(false);
       resetForm();
     },
-    onError: () => setSaving(false),
+    onError: (err: unknown) => {
+      setAlertConfig({ isOpen: true, title: 'Gagal', message: err instanceof Error ? err.message : 'Gagal menyimpan jadwal', type: 'error' });
+      setSaving(false);
+    },
   });
 
   const updateMutation = useMutation({
@@ -94,7 +100,10 @@ export default function ScheduledPage() {
       setIsModalOpen(false);
       resetForm();
     },
-    onError: () => setSaving(false),
+    onError: (err: unknown) => {
+      setAlertConfig({ isOpen: true, title: 'Gagal', message: err instanceof Error ? err.message : 'Gagal memperbarui jadwal', type: 'error' });
+      setSaving(false);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -103,7 +112,10 @@ export default function ScheduledPage() {
       queryClient.invalidateQueries({ queryKey: ['scheduled'] });
       resetForm();
     },
-    onError: () => setSaving(false),
+    onError: (err: unknown) => {
+      setAlertConfig({ isOpen: true, title: 'Gagal', message: err instanceof Error ? err.message : 'Gagal menghapus jadwal', type: 'error' });
+      setSaving(false);
+    },
   });
 
   const postMutation = useMutation({
@@ -114,16 +126,20 @@ export default function ScheduledPage() {
       setSaving(false);
     },
     onError: (err: unknown) => {
-      alert(err instanceof Error ? err.message : 'Failed to post transaction');
+      setAlertConfig({ isOpen: true, title: 'Gagal', message: err instanceof Error ? err.message : 'Gagal memposting transaksi', type: 'error' });
       setSaving(false);
     },
   });
 
   const handlePost = (id: string) => {
-    if (window.confirm(t('scheduled.postConfirm'))) {
-      setSaving(true);
-      postMutation.mutate(id);
-    }
+    setAlertConfig({
+      isOpen: true,
+      title: t('scheduled.postConfirm'),
+      message: '',
+      type: 'warning',
+      isConfirm: true,
+      onConfirm: () => { closeAlert(); setSaving(true); postMutation.mutate(id); },
+    });
   };
 
   const resetForm = () => {
@@ -185,10 +201,14 @@ export default function ScheduledPage() {
 
   const handleDelete = () => {
     if (!selectedScheduled) return;
-    if (window.confirm(`${t('scheduled.deleteConfirm')} "${selectedScheduled.description || selectedScheduled.category?.label}"?`)) {
-      setSaving(true);
-      deleteMutation.mutate(selectedScheduled.id);
-    }
+    setAlertConfig({
+      isOpen: true,
+      title: t('scheduled.deleteSchedule'),
+      message: `${t('scheduled.deleteConfirm')} "${selectedScheduled.description || selectedScheduled.category?.label}"?`,
+      type: 'error',
+      isConfirm: true,
+      onConfirm: () => { closeAlert(); setSaving(true); deleteMutation.mutate(selectedScheduled.id); },
+    });
   };
 
   const totalMonthly = scheduled.reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0);
@@ -233,11 +253,12 @@ export default function ScheduledPage() {
       </div>
 
       <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
-        {[{ id: 'all', label: t('scheduled.allSchedules') }, { id: 'active', label: t('scheduled.active') }, { id: 'paused', label: t('scheduled.paused') }].map((item, i) => (
+        {([{ id: 'all', label: t('scheduled.allSchedules') }, { id: 'active', label: t('scheduled.active') }, { id: 'paused', label: t('scheduled.paused') }] as { id: 'all' | 'active' | 'paused'; label: string }[]).map((item) => (
           <button
             key={item.id}
+            onClick={() => setStatusFilter(item.id)}
             className={`px-6 py-2.5 rounded-2xl text-[14px] font-bold whitespace-nowrap transition-all active:scale-95 ${
-              i === 0 ? 'bg-[var(--text)] text-[var(--bg)] shadow-lg' : 'bg-[var(--muted)] text-[var(--text-dim-2)] hover:bg-[var(--border)]'
+              statusFilter === item.id ? 'bg-[var(--text)] text-[var(--bg)] shadow-lg' : 'bg-[var(--muted)] text-[var(--text-dim-2)] hover:bg-[var(--border)]'
             }`}
           >
             {item.label}
@@ -246,7 +267,7 @@ export default function ScheduledPage() {
       </div>
 
       <div className="space-y-4">
-        {scheduled.length === 0 ? (
+        {filteredScheduled.length === 0 ? (
           <div className="text-center py-20 px-6 bg-[var(--card)] rounded-[32px] border border-[var(--border)]">
             <div className="w-20 h-20 rounded-3xl bg-[var(--accent-tint)] text-[var(--accent)] flex items-center justify-center mx-auto mb-6">
               <RefreshCw className="w-10 h-10" />
@@ -262,7 +283,7 @@ export default function ScheduledPage() {
           </div>
         ) : (
           <div className="flow-card">
-            {scheduled.map((item) => (
+            {filteredScheduled.map((item) => (
               <div 
                 key={item.id} 
                 onClick={() => handleEdit(item)}
@@ -287,7 +308,7 @@ export default function ScheduledPage() {
                           : item.account?.name || 'Cash'}
                       </span>
                       <span>·</span>
-                      <span className="whitespace-nowrap">Jatuh tempo {new Date(item.nextRunDate).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
+                      <span className="whitespace-nowrap">{t('scheduled.dueDate')} {new Date(item.nextRunDate).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })}</span>
                     </div>
                   </div>
                 </div>
@@ -446,7 +467,7 @@ export default function ScheduledPage() {
 
               {/* Next Run Date */}
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('scheduled.startDate')}</label>
+                <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{type === 'expense' ? t('scheduled.startDateBill') : t('scheduled.startDate')}</label>
                 <input
                   type="date"
                   value={nextRunDate}
@@ -473,7 +494,7 @@ export default function ScheduledPage() {
                 disabled={!amount || !categoryId || !accountId || !nextRunDate || saving}
                 className="w-full py-4 rounded-[16px] bg-[#15803D] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
               >
-                {saving ? t('common.loading') : selectedScheduled ? t('scheduled.saveSchedule') : t('scheduled.saveSchedule')}
+                {saving ? t('common.loading') : selectedScheduled ? t('scheduled.editSchedule') : t('scheduled.saveSchedule')}
               </button>
             </div>
           </div>

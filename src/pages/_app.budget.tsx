@@ -144,13 +144,13 @@ export default function BudgetPage() {
             <div className="w-20 h-20 rounded-3xl bg-[#15803D]/10 text-[#15803D] flex items-center justify-center mx-auto mb-6">
               <Target className="w-10 h-10" />
             </div>
-            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">Belum ada anggaran</h3>
-            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[320px] mx-auto leading-relaxed">Buat anggaran untuk memantau pengeluaran Anda per kategori setiap bulannya.</p>
-            <button 
+            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">{t('budget.noBudgets')}</h3>
+            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[320px] mx-auto leading-relaxed">{t('budget.noBudgetsDesc')}</p>
+            <button
               onClick={() => { setSelectedBudget(null); setIsModalOpen(true); }}
               className="px-8 py-4 rounded-2xl bg-[var(--text)] text-[var(--bg)] font-bold text-[15px] shadow-xl transition-all active:scale-95"
             >
-              Set Anggaran Pertama
+              {t('budget.setFirstBudget')}
             </button>
           </div>
         ) : (

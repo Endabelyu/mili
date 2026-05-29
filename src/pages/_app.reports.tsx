@@ -124,8 +124,8 @@ export default function AnalyticsPage() {
             <h2 className="text-[14px] font-bold text-[#0E7490] tracking-[0.05em] uppercase mb-1">Denyut Finansial</h2>
             <p className="text-[13px] text-[#0E7490]/70 font-medium max-w-[320px]">
               {totalAmount > 0 
-                ? `Alur ${activeTab === 'expense' ? 'pengeluaran' : 'pemasukan'} Anda bulan ini terlihat ${totalAmount > 1000000 ? 'deras' : 'stabil'}. Mari pastikan semuanya tetap bermuara pada tabungan.` 
-                : 'Belum ada arus kas yang tercatat bulan ini. Mari mulai mencatat untuk melihat alur rezeki Anda.'}
+                ? `Alur ${activeTab === 'expense' ? t('reports.cashFlowExpense') : t('reports.cashFlowIncome')} ${t('reports.cashFlowSuffix')} ${totalAmount > 1000000 ? t('reports.cashFlowHigh') : t('reports.cashFlowNormal')}. ${t('reports.cashFlowTip')}` 
+                : t('reports.noCashFlow')}
             </p>
           </div>
           <div className="text-right shrink-0">
@@ -277,7 +277,7 @@ export default function AnalyticsPage() {
           {categories.length === 0 ? (
             <div className="text-center py-8 text-[var(--text-dim)]">
               <p className="text-[24px] mb-2">📊</p>
-              <p className="text-[13px] font-bold mb-1">Belum ada data</p>
+              <p className="text-[13px] font-bold mb-1">{t('reports.noData')}</p>
             </div>
           ) : (
             categories.map((cat, i) => {

@@ -341,7 +341,7 @@ export default function ProfilePage() {
       </button>
 
       <div className="text-center">
-        <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-40">Saku v1.2.0 • PWA</p>
+        <p className="text-[12px] font-bold text-[var(--text-dim-2)] opacity-40">Mili v2.0.0 • PWA</p>
       </div>
 
       {/* ─── Edit Profile Modal ─── */}

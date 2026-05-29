@@ -121,6 +121,7 @@ export interface Target {
   color: string;
   icon: string;
   status: 'active' | 'completed' | 'paused';
+  categoryId?: string | null;
 }
 
 export const targetsApi = {

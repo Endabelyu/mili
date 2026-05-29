@@ -224,8 +224,8 @@ export default function DashboardPage() {
             </div>
           ) : targets.length === 0 ? (
             <div className="text-center py-10 px-6 bg-[var(--card)] rounded-[20px] border border-[var(--border)]">
-              <p className="text-[13px] font-bold text-[var(--text)] mb-1">Belum ada target</p>
-              <p className="text-[11px] text-[var(--text-dim-2)]">Mulai tentukan mimpi finansial Anda sekarang.</p>
+              <p className="text-[13px] font-bold text-[var(--text)] mb-1">{t('dashboard.noTargets')}</p>
+              <p className="text-[11px] text-[var(--text-dim-2)]">{t('dashboard.noTargetsDesc')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -266,8 +266,8 @@ export default function DashboardPage() {
             </div>
           ) : budgets.length === 0 ? (
             <div className="text-center py-10 px-6 bg-[var(--card)] rounded-[20px] border border-[var(--border)]">
-              <p className="text-[13px] font-bold text-[var(--text)] mb-1">Belum ada anggaran</p>
-              <p className="text-[11px] text-[var(--text-dim-2)]">Buat anggaran per kategori untuk mengontrol belanja.</p>
+              <p className="text-[13px] font-bold text-[var(--text)] mb-1">{t('dashboard.noBudgets')}</p>
+              <p className="text-[11px] text-[var(--text-dim-2)]">{t('dashboard.noBudgetsDesc')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -286,7 +286,7 @@ export default function DashboardPage() {
                   <div 
                     key={b.id} 
                     className="flow-card p-5 cursor-pointer hover:shadow-lg transition-all active:scale-[0.98]"
-                    onClick={() => window.location.href = '/budget'}
+                    onClick={() => navigate('/budget')}
                   >
                     <div className="flex items-center gap-3 mb-4">
                       <CategoryIcon 
@@ -335,8 +335,8 @@ export default function DashboardPage() {
               </div>
             ) : topCategories.length === 0 ? (
               <div className="text-center py-6 text-[var(--text-dim)]">
-                <p className="text-[13px] font-bold mb-1">Belum ada data pengeluaran</p>
-                <p className="text-[11px]">Catat pengeluaran untuk melihat kategori teratas.</p>
+                <p className="text-[13px] font-bold mb-1">{t('dashboard.noExpenseData')}</p>
+                <p className="text-[11px]">{t('dashboard.noExpenseDataDesc')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-6">
@@ -374,8 +374,8 @@ export default function DashboardPage() {
               </div>
             ) : scheduled.length === 0 ? (
               <div className="text-center py-11 text-[var(--text-dim)]">
-                <p className="text-[13px] font-bold mb-1">Belum ada tagihan mendatang</p>
-                <p className="text-[11px]">Tambahkan transaksi terjadwal.</p>
+                <p className="text-[13px] font-bold mb-1">{t('dashboard.noScheduled')}</p>
+                <p className="text-[11px]">{t('dashboard.noScheduledDesc')}</p>
               </div>
             ) : (
               scheduled.slice(0, 3).map((item: ScheduledTransaction) => {
@@ -420,7 +420,7 @@ export default function DashboardPage() {
           ) : recentTransactions.length === 0 ? (
             <div className="text-center py-8 text-[var(--text-dim)]">
               <p className="text-[24px] mb-2">💸</p>
-              <p className="text-[13px] font-bold mb-1">Belum ada transaksi</p>
+              <p className="text-[13px] font-bold mb-1">{t('dashboard.noTransactions')}</p>
             </div>
           ) : (
             recentTransactions.map((tx: Transaction) => {
