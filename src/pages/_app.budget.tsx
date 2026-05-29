@@ -213,7 +213,7 @@ export default function BudgetPage() {
           >
             <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
               <h2 className="text-[18px] font-bold text-[var(--text)]">
-                {selectedBudget ? 'Edit Anggaran' : 'Tambah Anggaran'}
+                {selectedBudget ? t('budget.editBudget') : t('budget.addBudget')}
               </h2>
               <button 
                 onClick={() => setIsModalOpen(false)}

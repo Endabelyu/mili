@@ -272,7 +272,7 @@ export default function ProfilePage() {
             color="bg-slate-50" 
             iconColor="text-slate-500"
             label={t('profile.appPin')} 
-            subtext="Aktif · 6 digit"
+            subtext={t('profile.twoFAActive')}
             onClick={() => setIsSecurityOpen(true)}
           />
           <ProfileRow 
@@ -280,12 +280,12 @@ export default function ProfilePage() {
             color="bg-emerald-50" 
             iconColor="text-emerald-500"
             label={t('profile.twoFactor')} 
-            subtext={is2FAEnabled ? "Aktif" : "Belum aktif"}
+            subtext={is2FAEnabled ? t('profile.active') : t('profile.inactive')}
             onClick={() => {
               if (!is2FAEnabled) {
                 showConfirm(
-                  'Aktifkan 2FA?', 
-                  'Aktifkan Verifikasi 2 Langkah untuk keamanan tambahan?',
+                  t('profile.enable2FA'),
+                  t('profile.enable2FADesc'),
                   () => {
                     setIs2FAEnabled(true);
                     closeAlert();
@@ -419,13 +419,13 @@ export default function ProfilePage() {
                     disabled={isEditLoading}
                     className={`w-full ${editSuccess ? 'bg-[var(--income)] hover:bg-[#15803D]' : ''}`}
                   >
-                    {isEditLoading ? 'Menyimpan...' : editSuccess ? (
+                    {isEditLoading ? t('common.saving') : editSuccess ? (
                       <span className="flex items-center justify-center">
                         <Check className="w-5 h-5 mr-2" />
-                        Tersimpan!
+                        {t('profile.saved')}
                       </span>
                     ) : (
-                      'Simpan Perubahan'
+                      t('profile.saveChanges')
                     )}
                   </Button>
                 </div>

@@ -586,7 +586,7 @@ export default function TargetsPage() {
         type={alertConfig.type}
         isConfirm={alertConfig.isConfirm}
         onConfirm={alertConfig.onConfirm}
-        confirmLabel="Hapus"
+        confirmLabel={t('common.delete')}
       />
     </div>
   );

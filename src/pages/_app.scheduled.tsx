@@ -87,7 +87,7 @@ export default function ScheduledPage() {
       resetForm();
     },
     onError: (err: unknown) => {
-      setAlertConfig({ isOpen: true, title: 'Gagal', message: err instanceof Error ? err.message : 'Gagal menyimpan jadwal', type: 'error' });
+      setAlertConfig({ isOpen: true, title: t('common.error'), message: err instanceof Error ? err.message : t('scheduled.saveError'), type: 'error' });
       setSaving(false);
     },
   });
@@ -101,7 +101,7 @@ export default function ScheduledPage() {
       resetForm();
     },
     onError: (err: unknown) => {
-      setAlertConfig({ isOpen: true, title: 'Gagal', message: err instanceof Error ? err.message : 'Gagal memperbarui jadwal', type: 'error' });
+      setAlertConfig({ isOpen: true, title: t('common.error'), message: err instanceof Error ? err.message : t('scheduled.updateError'), type: 'error' });
       setSaving(false);
     },
   });
@@ -113,7 +113,7 @@ export default function ScheduledPage() {
       resetForm();
     },
     onError: (err: unknown) => {
-      setAlertConfig({ isOpen: true, title: 'Gagal', message: err instanceof Error ? err.message : 'Gagal menghapus jadwal', type: 'error' });
+      setAlertConfig({ isOpen: true, title: t('common.error'), message: err instanceof Error ? err.message : t('scheduled.deleteError'), type: 'error' });
       setSaving(false);
     },
   });
@@ -126,7 +126,7 @@ export default function ScheduledPage() {
       setSaving(false);
     },
     onError: (err: unknown) => {
-      setAlertConfig({ isOpen: true, title: 'Gagal', message: err instanceof Error ? err.message : 'Gagal memposting transaksi', type: 'error' });
+      setAlertConfig({ isOpen: true, title: t('common.error'), message: err instanceof Error ? err.message : t('scheduled.postError'), type: 'error' });
       setSaving(false);
     },
   });
@@ -509,7 +509,7 @@ export default function ScheduledPage() {
         type={alertConfig.type}
         isConfirm={alertConfig.isConfirm}
         onConfirm={alertConfig.onConfirm}
-        confirmLabel="Hapus"
+        confirmLabel={t('common.delete')}
       />
     </div>
   );
