@@ -68,7 +68,9 @@ export default function DashboardPage() {
   });
 
   const recentTransactions = txnsData?.items || [];
-  const targets = targetsData || [];
+  const allTargets = targetsData || [];
+  const pinnedTargets = allTargets.filter((t: Target) => t.pinned);
+  const targets = pinnedTargets.length > 0 ? pinnedTargets : allTargets.slice(0, 3);
   const budgets = budgetsData || [];
   const scheduled = scheduledData || [];
   const topCategories = catData?.slice(0, 3) || [];
@@ -229,7 +231,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {targets.slice(0, 3).map((t: Target) => {
+              {targets.map((t: Target) => {
                 const progress = Math.min(Math.round((parseFloat(String(t.currentAmount)) / parseFloat(String(t.targetAmount))) * 100), 100);
                 return (
                   <TargetCard 

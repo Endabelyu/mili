@@ -119,7 +119,9 @@ export interface Target {
   color: string;
   icon: string;
   status: 'active' | 'completed' | 'paused';
-  categoryId?: string | null;
+  accountId?: string | null;
+  accountName?: string | null;
+  pinned?: boolean;
 }
 
 export const targetsApi = {

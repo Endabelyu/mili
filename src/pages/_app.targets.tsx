@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Target as TargetIcon, X, Check, Edit2, Trash2, Clock, ArrowLeft, Link } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
-import { targetsApi, categoriesApi, type Target } from '../api/client';
+import { targetsApi, accountsApi, type Target } from '../api/client';
 import { TARGET_EMOJI_LIST } from '../lib/constants';
 import { usePreferences } from '../hooks/usePreferences';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
@@ -61,15 +61,15 @@ export default function TargetsPage() {
   const [deadline, setDeadline] = useState('');
   const [color, setColor] = useState('#15803D');
   const [icon, setIcon] = useState('category_savings');
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [accountId, setAccountId] = useState<string | null>(null);
+  const [pinned, setPinned] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const [showAllEmojis, setShowAllEmojis] = useState(false);
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoriesApi.list(),
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: () => accountsApi.list(),
   });
-  const incomeCategories = categories.filter(c => c.type === 'income' || c.type === 'both');
 
   // Alert Modal state
   const [alertConfig, setAlertConfig] = useState<{
@@ -132,7 +132,8 @@ export default function TargetsPage() {
     setDeadline('');
     setColor('#15803D');
     setIcon('category_savings');
-    setCategoryId(null);
+    setAccountId(null);
+    setPinned(false);
     setSelectedTarget(null);
     setSaving(false);
     setIsModalOpen(false);
@@ -146,11 +147,12 @@ export default function TargetsPage() {
     const payload = {
       name,
       targetAmount: parseFloat(targetAmount),
-      currentAmount: categoryId ? 0 : parseFloat(currentAmount || '0'),
+      currentAmount: accountId ? 0 : parseFloat(currentAmount || '0'),
       deadline: deadline || null,
       color,
       icon,
-      categoryId: categoryId ?? null,
+      accountId: accountId ?? null,
+      pinned,
     };
     createMutation.mutate(payload);
   };
@@ -161,11 +163,12 @@ export default function TargetsPage() {
     const payload = {
       name,
       targetAmount: parseFloat(targetAmount),
-      currentAmount: categoryId ? 0 : parseFloat(currentAmount || '0'),
+      currentAmount: accountId ? 0 : parseFloat(currentAmount || '0'),
       deadline: deadline || null,
       color,
       icon,
-      categoryId: categoryId ?? null,
+      accountId: accountId ?? null,
+      pinned,
     };
     updateMutation.mutate(payload);
   };
@@ -178,7 +181,8 @@ export default function TargetsPage() {
     setDeadline(target.deadline ? new Date(target.deadline).toISOString().split('T')[0] : '');
     setColor(target.color);
     setIcon(target.icon);
-    setCategoryId(target.categoryId ?? null);
+    setAccountId(target.accountId ?? null);
+    setPinned(target.pinned ?? false);
     setIsEditModalOpen(true);
   };
 
@@ -297,15 +301,12 @@ export default function TargetsPage() {
                           {target.deadline ? new Date(target.deadline).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : t('target.noDeadline')}
                         </span>
                       </div>
-                      {target.categoryId && (() => {
-                        const cat = categories.find(c => c.id === target.categoryId);
-                        return cat ? (
-                          <div className="mt-1 flex items-center gap-1.5">
-                            <Link className="w-3 h-3 text-[var(--income)] opacity-70" />
-                            <span className="text-[11px] font-semibold text-[var(--income)] opacity-80">{cat.icon} {cat.label}</span>
-                          </div>
-                        ) : null;
-                      })()}
+                      {target.accountId && target.accountName && (
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <Link className="w-3 h-3 text-[var(--income)] opacity-70" />
+                          <span className="text-[11px] font-semibold text-[var(--income)] opacity-80">🏦 {target.accountName}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="absolute top-6 right-6 flex items-center gap-2.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
@@ -464,7 +465,7 @@ export default function TargetsPage() {
                 </div>
               </div>
 
-              {!categoryId && (
+              {!accountId && (
                 <div className="space-y-3">
                   <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.collectedSoFar')}</label>
                   <div className="relative">
@@ -480,31 +481,31 @@ export default function TargetsPage() {
                 </div>
               )}
 
-              {incomeCategories.length > 0 && (
+              {accounts.length > 0 && (
                 <div className="space-y-3">
                   <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">
-                    Otomatis dari Kategori
+                    {t('target.linkedAccount')}
                   </label>
                   <p className="text-[12px] text-[var(--text-dim-2)] -mt-1">
-                    Progres dihitung otomatis dari total pemasukan kategori ini
+                    {t('target.linkedAccountDesc')}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => setCategoryId(null)}
-                      className={`px-3 py-1.5 rounded-xl text-[13px] font-semibold border transition-all ${!categoryId ? 'bg-[#15803D] text-white border-[#15803D]' : 'bg-[var(--muted)] text-[var(--text-dim-2)] border-transparent'}`}
+                      onClick={() => setAccountId(null)}
+                      className={`px-3 py-1.5 rounded-xl text-[13px] font-semibold border transition-all ${!accountId ? 'bg-[#15803D] text-white border-[#15803D]' : 'bg-[var(--muted)] text-[var(--text-dim-2)] border-transparent'}`}
                     >
                       Manual
                     </button>
-                    {incomeCategories.map(cat => (
+                    {accounts.map(acc => (
                       <button
-                        key={cat.id}
+                        key={acc.id}
                         type="button"
-                        onClick={() => setCategoryId(cat.id)}
-                        className={`px-3 py-1.5 rounded-xl text-[13px] font-semibold border transition-all flex items-center gap-1.5 ${categoryId === cat.id ? 'bg-[#15803D] text-white border-[#15803D]' : 'bg-[var(--muted)] text-[var(--text-dim-2)] border-transparent'}`}
+                        onClick={() => setAccountId(acc.id)}
+                        className={`px-3 py-1.5 rounded-xl text-[13px] font-semibold border transition-all flex items-center gap-1.5 ${accountId === acc.id ? 'bg-[#15803D] text-white border-[#15803D]' : 'bg-[var(--muted)] text-[var(--text-dim-2)] border-transparent'}`}
                       >
-                        <span>{cat.icon}</span>
-                        {cat.label}
+                        <span>🏦</span>
+                        {acc.name}
                       </button>
                     ))}
                   </div>
@@ -532,6 +533,20 @@ export default function TargetsPage() {
                   )}
                 />
               </div>
+
+              <button
+                type="button"
+                onClick={() => setPinned(p => !p)}
+                className={`w-full flex items-center justify-between px-4 py-3.5 rounded-[16px] border-2 transition-all ${pinned ? 'border-[#15803D] bg-[#15803D]/5' : 'border-[var(--border)] bg-[var(--muted)]'}`}
+              >
+                <div className="flex flex-col items-start gap-0.5">
+                  <span className="text-[14px] font-bold text-[var(--text)]">{t('target.pinToDashboard')}</span>
+                  <span className="text-[12px] text-[var(--text-dim-2)]">{t('target.pinToDashboardDesc')}</span>
+                </div>
+                <div className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${pinned ? 'bg-[#15803D]' : 'bg-[var(--border)]'}`}>
+                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${pinned ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </div>
+              </button>
 
               <div className="space-y-3">
                 <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">{t('target.color')}</label>

@@ -130,6 +130,10 @@ const translations: Record<Language, Record<string, string>> = {
     'target.noTargetsDesc': 'Tentukan impian finansial Anda sekarang dan capai perlahan bersama Mili.',
     'target.deleteConfirm': 'Apakah Anda yakin ingin menghapus target ini?',
     'target.pinned': 'Target Disematkan',
+    'target.linkedAccount': 'Tautkan ke Kantong',
+    'target.linkedAccountDesc': 'Progres otomatis dari saldo kantong yang dipilih',
+    'target.pinToDashboard': 'Sematkan ke Dashboard',
+    'target.pinToDashboardDesc': 'Tampilkan target ini di halaman utama',
 
     // Transactions
     'txn.daily': 'Harian',
@@ -315,6 +319,10 @@ const translations: Record<Language, Record<string, string>> = {
     'dashboard.noScheduledDesc': 'Add a scheduled transaction.',
     'dashboard.noTransactions': 'No transactions yet',
     'dashboard.pinnedBudgets': 'Pinned Budgets',
+    'target.linkedAccount': 'Link to Account',
+    'target.linkedAccountDesc': 'Progress auto-calculated from selected account balance',
+    'target.pinToDashboard': 'Pin to Dashboard',
+    'target.pinToDashboardDesc': 'Show this target on the home screen',
 
     // Accounts
     'acc.title': 'Accounts',
