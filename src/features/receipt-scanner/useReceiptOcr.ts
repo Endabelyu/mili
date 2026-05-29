@@ -68,10 +68,8 @@ export function useReceiptOcr() {
 
     try {
       const { data: { text } } = await Tesseract.recognize(file, 'ind+eng', {
-        logger: m => console.log('[Tesseract]', m),
+        logger: () => {},
       });
-
-      console.log('[Scan Gratis] OCR text:', text);
       const heuristic = analyzeReceipt(text);
       const receiptData = toReceiptData(heuristic);
 

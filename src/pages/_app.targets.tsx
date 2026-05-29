@@ -122,7 +122,8 @@ export default function TargetsPage() {
     mutationFn: (id: string) => targetsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['targets'] });
-    }
+    },
+    onError: () => {},
   });
 
   const resetForm = () => {

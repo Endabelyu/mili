@@ -507,12 +507,12 @@ export default function SettingsPage() {
 
   const handleDeleteAll = () => {
     showConfirm(
-      'Hapus Semua Data?', 
-      'Apakah Anda yakin ingin menghapus semua data? Tindakan ini tidak bisa dibatalkan.',
+      t('settings.deleteAllTitle'),
+      t('settings.deleteAllConfirm'),
       () => {
         closeAlert();
         setTimeout(() => {
-          showAlert('Sukses', 'Data sedang diproses untuk dihapus... (Simulasi sukses)', 'success');
+          showAlert(t('common.success'), t('settings.deleteAllSuccess'), 'success');
         }, 500);
       },
       'error'
@@ -814,9 +814,9 @@ export default function SettingsPage() {
                   setShowFeedbackModal(false);
                   setFeedback('');
                   setRating(5);
-                  showAlert('Umpan Balik Terkirim', 'Terima kasih atas saran dan masukan Anda. Kami sangat menghargainya!', 'success');
+                  showAlert(t('settings.feedbackSent'), t('settings.feedbackSentDesc'), 'success');
                 } catch (error) {
-                  showAlert('Gagal', 'Gagal mengirim umpan balik. Silakan coba lagi.', 'error');
+                  showAlert(t('common.error'), t('settings.feedbackError'), 'error');
                 } finally {
                   setIsSubmittingFeedback(false);
                 }

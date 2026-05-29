@@ -184,6 +184,13 @@ const translations: Record<Language, Record<string, string>> = {
     'scheduled.updateError': 'Gagal memperbarui jadwal',
     'scheduled.deleteError': 'Gagal menghapus jadwal',
     'scheduled.postError': 'Gagal memposting transaksi',
+    'notifications.title': 'Notifikasi',
+    'notifications.unread': 'belum dibaca',
+    'notifications.markAll': 'Tandai semua dibaca',
+    'notifications.new': 'Baru',
+    'notifications.noNew': 'Tidak ada notifikasi baru',
+    'notifications.previous': 'Sebelumnya',
+
     'calendar.noTransactions': 'Tidak ada transaksi di bulan ini',
     'reports.noData': 'Belum ada data',
     'reports.noCashFlow': 'Belum ada arus kas yang tercatat bulan ini. Mari mulai mencatat untuk melihat alur rezeki Anda.',
@@ -263,6 +270,12 @@ const translations: Record<Language, Record<string, string>> = {
     'settings.aboutApp': 'Tentang Mili',
     'settings.appVersion': 'Versi Aplikasi',
     'settings.alwaysUpdated': 'Selalu diperbarui',
+    'settings.deleteAllTitle': 'Hapus Semua Data?',
+    'settings.deleteAllConfirm': 'Apakah Anda yakin ingin menghapus semua data? Tindakan ini tidak bisa dibatalkan.',
+    'settings.deleteAllSuccess': 'Data sedang diproses untuk dihapus...',
+    'settings.feedbackSent': 'Umpan Balik Terkirim',
+    'settings.feedbackSentDesc': 'Terima kasih atas saran dan masukan Anda. Kami sangat menghargainya!',
+    'settings.feedbackError': 'Gagal mengirim umpan balik. Silakan coba lagi.',
 
     // Scan
     'scan.positionReceipt': 'Posisikan struk di dalam bingkai',
@@ -434,6 +447,13 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.inactive': 'Inactive',
     'profile.enable2FA': 'Enable 2FA?',
     'profile.enable2FADesc': 'Enable Two-Step Verification for extra security?',
+    'notifications.title': 'Notifications',
+    'notifications.unread': 'unread',
+    'notifications.markAll': 'Mark all as read',
+    'notifications.new': 'New',
+    'notifications.noNew': 'No new notifications',
+    'notifications.previous': 'Previous',
+
     'scheduled.saveError': 'Failed to save schedule',
     'scheduled.updateError': 'Failed to update schedule',
     'scheduled.deleteError': 'Failed to delete schedule',
@@ -517,6 +537,12 @@ const translations: Record<Language, Record<string, string>> = {
     'settings.aboutApp': 'About Mili',
     'settings.appVersion': 'App Version',
     'settings.alwaysUpdated': 'Always up to date',
+    'settings.deleteAllTitle': 'Delete All Data?',
+    'settings.deleteAllConfirm': 'Are you sure you want to delete all data? This action cannot be undone.',
+    'settings.deleteAllSuccess': 'Data is being processed for deletion...',
+    'settings.feedbackSent': 'Feedback Sent',
+    'settings.feedbackSentDesc': 'Thank you for your feedback. We really appreciate it!',
+    'settings.feedbackError': 'Failed to send feedback. Please try again.',
 
     // Scan
     'scan.positionReceipt': 'Position the receipt in the frame',

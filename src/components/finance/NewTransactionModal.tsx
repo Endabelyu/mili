@@ -179,6 +179,7 @@ export function NewTransactionModal() {
         setTimeout(() => inputRef.current?.focus(), 100);
       }
     },
+    onError: () => {},
   });
 
   const handleAddCategory = () => {
