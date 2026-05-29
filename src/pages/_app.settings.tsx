@@ -133,21 +133,21 @@ export default function SettingsPage() {
 
     // 3. Document Title
     worksheet.addRow(['Mili / Finance']).font = { size: 18, bold: true, color: { argb: BRAND_COLOR } };
-    worksheet.addRow(['LAPORAN KEUANGAN KONSOLIDASI']).font = { size: 14, bold: true };
+    worksheet.addRow([t('settings.consolidatedReport')]).font = { size: 14, bold: true };
     worksheet.addRow([`${t('settings.reportFor')}: ${session?.user?.name || 'User'}`]).font = { italic: true };
-    worksheet.addRow([`Periode: ${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`]);
+    worksheet.addRow([`${t('settings.period')}: ${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`]);
     worksheet.addRow(['']);
 
     // 4. TOTAL ASSETS (TOP)
     const totalAssetAmount = (accounts || []).reduce((acc, a) => acc + parseFloat(String(a.balance)), 0);
-    worksheet.addRow(['TOTAL KEKAYAAN (ASET)']).font = { bold: true, size: 12 };
+    worksheet.addRow([t('settings.totalWealth')]).font = { bold: true, size: 12 };
     const totalAssetRow = worksheet.addRow([`Rp ${totalAssetAmount.toLocaleString('id-ID')}`]);
     totalAssetRow.font = { bold: true, size: 24, color: { argb: BRAND_COLOR } };
     worksheet.addRow(['']);
 
     // 5. Assets Section (SYNC COLORS)
     if (exportOptions.includeAssets) {
-      const assetTitle = worksheet.addRow(['RINGKASAN ASET & SALDO']);
+      const assetTitle = worksheet.addRow([t('settings.assetSummary')]);
       assetTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
       worksheet.mergeCells(`A${assetTitle.number}:F${assetTitle.number}`);
 
@@ -169,7 +169,7 @@ export default function SettingsPage() {
     const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(String(t.amount)), 0);
     const balance = totalIncome - totalExpense;
 
-    const summaryTitleRow = worksheet.addRow(['RINGKASAN ARUS KAS (INCOME/EXPENSE)']);
+    const summaryTitleRow = worksheet.addRow([t('settings.cashFlowSummary')]);
     summaryTitleRow.eachCell(cell => Object.assign(cell, HEADER_STYLE));
     worksheet.mergeCells(`A${summaryTitleRow.number}:F${summaryTitleRow.number}`);
 
@@ -191,7 +191,7 @@ export default function SettingsPage() {
 
     // 7. Budgets Section (SYNC COLORS)
     if (exportOptions.includeBudgets) {
-      const budgetTitle = worksheet.addRow(['PEMANTAUAN ANGGARAN']);
+      const budgetTitle = worksheet.addRow([t('settings.budgetMonitoring')]);
       budgetTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
       worksheet.mergeCells(`A${budgetTitle.number}:F${budgetTitle.number}`);
 
@@ -222,7 +222,7 @@ export default function SettingsPage() {
 
     // 8. Transactions Ledger (SYNC COLORS)
     if (exportOptions.includeTransactions) {
-      const ledgerTitle = worksheet.addRow(['RINCIAN BUKU KAS (LEDGER)']);
+      const ledgerTitle = worksheet.addRow([t('settings.ledgerDetail')]);
       ledgerTitle.eachCell(cell => Object.assign(cell, HEADER_STYLE));
       worksheet.mergeCells(`A${ledgerTitle.number}:F${ledgerTitle.number}`);
 
@@ -382,12 +382,12 @@ export default function SettingsPage() {
           </div>
 
           <div class="total-wealth">
-            <label>Total Kekayaan (Aset)</label>
+            <label>${t('settings.totalWealth')}</label>
             <div class="amount">Rp ${totalAssetAmount.toLocaleString('id-ID')}</div>
           </div>
 
           ${exportOptions.includeAssets ? `
-            <div class="section-title">Ringkasan Aset & Saldo</div>
+            <div class="section-title">${t('settings.assetSummary')}</div>
             <div class="asset-grid">
               ${(accounts || []).map(a => `
                 <div class="asset-card" style="border-left: 4px solid ${a.color || '#e2e8f0'}">
@@ -401,31 +401,31 @@ export default function SettingsPage() {
             </div>
           ` : ''}
 
-          <div class="section-title">Ringkasan Arus Kas</div>
+          <div class="section-title">${t('settings.cashFlowSummary')}</div>
           <div class="summary-grid">
             <div class="summary-card">
-              <label>Total Pemasukan</label>
+              <label>${t('settings.totalIncome')}</label>
               <div class="val income">Rp ${totalIncome.toLocaleString('id-ID')}</div>
             </div>
             <div class="summary-card">
-              <label>Total Pengeluaran</label>
+              <label>${t('settings.totalExpense')}</label>
               <div class="val expense">Rp ${totalExpense.toLocaleString('id-ID')}</div>
             </div>
             <div class="summary-card">
-              <label>Saldo Bersih</label>
+              <label>${t('settings.netBalance')}</label>
               <div class="val">Rp ${balance.toLocaleString('id-ID')}</div>
             </div>
           </div>
 
           ${exportOptions.includeBudgets ? `
-            <div class="section-title">Pemantauan Anggaran</div>
+            <div class="section-title">${t('settings.budgetMonitoring')}</div>
             <table>
               <thead>
                 <tr>
-                  <th>Kategori</th>
-                  <th class="text-right">Batas</th>
-                  <th class="text-right">Terpakai</th>
-                  <th>Progres</th>
+                  <th>${t('settings.category')}</th>
+                  <th class="text-right">${t('settings.limit')}</th>
+                  <th class="text-right">${t('settings.used')}</th>
+                  <th>${t('settings.percentage')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -452,15 +452,15 @@ export default function SettingsPage() {
           ` : ''}
 
           ${exportOptions.includeTransactions ? `
-            <div class="section-title">Rincian Buku Kas (Ledger)</div>
+            <div class="section-title">${t('settings.ledgerDetail')}</div>
             <table>
               <thead>
                 <tr>
-                  <th>Tanggal</th>
-                  <th>Keterangan</th>
-                  <th class="text-right">Masuk</th>
-                  <th class="text-right">Keluar</th>
-                  <th class="text-right">Saldo</th>
+                  <th>${t('settings.date')}</th>
+                  <th>${t('settings.description')}</th>
+                  <th class="text-right">${t('settings.incoming')}</th>
+                  <th class="text-right">${t('settings.outgoing')}</th>
+                  <th class="text-right">${t('settings.balance')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -490,7 +490,7 @@ export default function SettingsPage() {
           ` : ''}
 
           <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8;">
-            <div>Dokumen ini sah dihasilkan oleh Mili System</div>
+            <div>${t('settings.docGenerated')}</div>
             <div>${new Date().toLocaleString('id-ID')}</div>
           </div>
 

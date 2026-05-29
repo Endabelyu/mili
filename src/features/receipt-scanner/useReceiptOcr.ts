@@ -13,6 +13,7 @@ import Tesseract from 'tesseract.js';
 import type { ReceiptData } from './types';
 import { analyzeReceipt, toReceiptData } from './receiptParser';
 import { ocrApi } from '../../api/client';
+import { usePreferences } from '../../hooks/usePreferences';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -47,6 +48,7 @@ function compressImage(file: File, maxWidth = 800): Promise<string> {
 }
 
 export function useReceiptOcr() {
+  const { t } = usePreferences();
   const [status, setStatus] = useState<ScanStatus>('idle');
   const [result, setResult] = useState<ReceiptData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export function useReceiptOcr() {
       setStatus('success');
     } catch (err) {
       console.error('[Scan Gratis] Error:', err);
-      setError('Gagal membaca struk. Coba foto yang lebih jelas.');
+      setError(t('scan.readError'));
       setStatus('error');
     }
   }
@@ -99,7 +101,7 @@ export function useReceiptOcr() {
       });
 
       if (res.status === 429) {
-        setError('Batas Scan AI harian tercapai. Gunakan Scan Gratis.');
+        setError(t('scan.aiLimitReached'));
         setStatus('error');
         return;
       }

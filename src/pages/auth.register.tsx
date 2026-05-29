@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { usePreferences } from '../hooks/usePreferences';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
@@ -26,6 +27,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
   const { register: authRegister, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = usePreferences();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +56,7 @@ export default function RegisterPage() {
       const e = err as Record<string, unknown>;
       const body = e?.body as Record<string, unknown> | undefined;
       setError(
-        (body?.message as string) || (e instanceof Error ? e.message : 'Gagal mendaftar. Email mungkin sudah digunakan.')
+        (body?.message as string) || (e instanceof Error ? e.message : t('auth.registerFailed'))
       );
     } finally {
       setIsLoading(false);

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { usePreferences } from '../hooks/usePreferences';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Mail, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
@@ -16,6 +17,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
   const { forgetPassword } = useAuth();
+  const { t } = usePreferences();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -38,7 +40,7 @@ export default function ForgotPasswordPage() {
       const e = err as Record<string, unknown>;
       const body = e?.body as Record<string, unknown> | undefined;
       setError(
-        (body?.message as string) || (e instanceof Error ? e.message : 'Gagal mengirim email reset kata sandi')
+        (body?.message as string) || (e instanceof Error ? e.message : t('auth.forgotPasswordFailed'))
       );
     } finally {
       setIsLoading(false);
