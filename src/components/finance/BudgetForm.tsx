@@ -268,10 +268,10 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
             id="limitAmount"
             name="limitAmount"
             type="number"
-            step="0.01"
-            min="0.01"
-            placeholder="0.00"
-            defaultValue={budget?.limitAmount ? parseFloat(budget.limitAmount.toString()).toFixed(2) : ''}
+            step={currency === 'IDR' ? '1000' : '0.01'}
+            min={currency === 'IDR' ? '1000' : '0.01'}
+            placeholder={currency === 'IDR' ? '0' : '0.00'}
+            defaultValue={budget?.limitAmount ? (currency === 'IDR' ? Math.round(parseFloat(budget.limitAmount.toString())).toString() : parseFloat(budget.limitAmount.toString()).toFixed(2)) : ''}
             className={`
               pl-11 pr-4 py-2.5 text-lg font-semibold
               ${errors.limitAmount ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''}

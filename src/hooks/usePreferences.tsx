@@ -770,19 +770,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     const config = CURRENCY_CONFIG[currency];
     const absNum = Math.abs(num);
     const sign = num < 0 ? '-' : '';
-    const isShort = options?.short ?? true;
+    const isShort = options?.short ?? false;
 
-    if (currency === 'IDR' && isShort) {
-      if (absNum >= 1_000_000_000_000) {
-        return `${sign}Rp ${(absNum / 1_000_000_000_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} T`;
-      }
-      if (absNum >= 1_000_000_000) {
-        return `${sign}Rp ${(absNum / 1_000_000_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} M`;
-      }
-      if (absNum >= 1_000_000) {
-        return `${sign}Rp ${(absNum / 1_000_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} jt`;
-      }
-    } else if (currency !== 'IDR' && isShort) {
+    if (currency !== 'IDR' && isShort) {
       if (absNum >= 1_000_000_000_000) {
         return `${sign}${config.symbol}${(absNum / 1_000_000_000_000).toLocaleString(config.locale, { maximumFractionDigits: 1 })}T`;
       }
