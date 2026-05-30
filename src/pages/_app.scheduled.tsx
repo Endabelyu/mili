@@ -275,8 +275,12 @@ export default function ScheduledPage() {
             <div className="w-20 h-20 rounded-3xl bg-[var(--accent-tint)] text-[var(--accent)] flex items-center justify-center mx-auto mb-6">
               <RefreshCw className="w-10 h-10" />
             </div>
-            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">{t('scheduled.noSchedules')}</h3>
-            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[320px] mx-auto leading-relaxed">{t('scheduled.noSchedulesDesc')}</p>
+            <h3 className="text-[20px] font-bold text-[var(--text)] mb-3">
+              {statusFilter === 'active' ? t('scheduled.noActiveSchedules') : statusFilter === 'paused' ? t('scheduled.noPausedSchedules') : t('scheduled.noSchedules')}
+            </h3>
+            <p className="text-[14px] text-[var(--text-dim-2)] mb-8 max-w-[320px] mx-auto leading-relaxed">
+              {statusFilter === 'all' ? t('scheduled.noSchedulesDesc') : ''}
+            </p>
             <button 
               onClick={() => setIsModalOpen(true)}
               className="px-8 py-4 rounded-2xl bg-[var(--text)] text-[var(--bg)] font-bold text-[15px] shadow-xl transition-all active:scale-95"
