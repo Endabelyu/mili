@@ -28,6 +28,7 @@ import type * as ExcelJSTypes from 'exceljs';
 
 import { useQuery } from '@tanstack/react-query';
 import { transactionsApi, accountsApi, budgetsApi, feedbacksApi } from '../api/client';
+import type { Transaction } from '../types';
 import { authClient } from '../lib/auth-client';
 
 export default function SettingsPage() {
@@ -79,12 +80,24 @@ export default function SettingsPage() {
     includeTransactions: true
   });
 
-  // Query Data for Exports
-  const { data: txnsData } = useQuery({
-    queryKey: ['transactions', 'all'],
-    queryFn: () => transactionsApi.list({ limit: 1000 }),
+  // Fetch ALL transactions via pagination loop (no silent truncation)
+  const { data: allTransactions = [] } = useQuery({
+    queryKey: ['transactions', 'export-all'],
+    queryFn: async () => {
+      const items: Transaction[] = [];
+      let page = 1;
+      let totalPages = 1;
+      do {
+        const res = await transactionsApi.list({ page, limit: 200 });
+        items.push(...res.items);
+        totalPages = res.pagination.totalPages;
+        page++;
+      } while (page <= totalPages);
+      return items;
+    },
+    staleTime: 5 * 60_000,
   });
-  const transactions = txnsData?.items || [];
+  const transactions = allTransactions;
 
   const { data: accountsData } = useQuery({
     queryKey: ['accounts'],
