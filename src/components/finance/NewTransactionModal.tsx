@@ -128,6 +128,8 @@ export function NewTransactionModal() {
     return categories.filter(c => c.type === type || c.type === 'both');
   }, [categories, type]);
 
+  const [categorySearch, setCategorySearch] = useState('');
+
   const searchedCategories = useMemo(() => {
     if (!categorySearch.trim()) return filteredCategories;
     const q = categorySearch.toLowerCase();
@@ -174,7 +176,6 @@ export function NewTransactionModal() {
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCatLabel, setNewCatLabel] = useState('');
   const [newCatEmoji, setNewCatEmoji] = useState('📦');
-  const [categorySearch, setCategorySearch] = useState('');
 
   const addCategoryMutation = useMutation({
     mutationFn: (data: { label: string; color: string; icon: string; type: string }) => categoriesApi.create(data),
