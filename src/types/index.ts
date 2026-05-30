@@ -5,6 +5,7 @@ export interface Category {
   icon: string | null;
   color: string | null;
   type: string;
+  isOwn?: boolean;
 }
 
 export interface Account {
