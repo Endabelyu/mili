@@ -4,6 +4,7 @@ import { ConfirmDialog } from '@app/components/ui';
 import type { Budget, Category } from '@app/types';
 import { formatCurrency } from '@app/lib/utils';
 import { CategoryIcon } from '@app/components/ui/CategoryIcon';
+import { usePreferences } from '@app/hooks/usePreferences';
 
 interface BudgetWithSpending extends Budget {
   category: Category;
@@ -20,6 +21,7 @@ interface BudgetCardProps {
 }
 
 export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardProps) {
+  const { t } = usePreferences();
   const limit = parseFloat(String(budget.limitAmount));
   const spent = parseFloat(String(budget.spent));
   const percentage = Math.min(budget.percentageUsed, 100);
@@ -121,10 +123,10 @@ export function BudgetCard({ budget, onEdit, onDelete, isDeleting }: BudgetCardP
 
       <ConfirmDialog
         isOpen={showConfirm}
-        title="Hapus Budget?"
-        message={`Anda yakin ingin menghapus budget untuk kategori "${budget.category?.label}"?`}
-        confirmLabel="Hapus"
-        cancelLabel="Batal"
+        title={t('budget.deleteBudget')}
+        message={t('budget.deleteConfirm')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         variant="danger"
         onConfirm={handleConfirmDelete}
         onCancel={() => setShowConfirm(false)}

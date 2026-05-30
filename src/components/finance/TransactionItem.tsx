@@ -4,6 +4,7 @@ import type { Transaction, Category } from '../../types';
 import { formatCurrency } from '../../lib/utils';
 import { CategoryIcon } from '../ui/CategoryIcon';
 import { Alert } from '../ui/Alert';
+import { usePreferences } from '../../hooks/usePreferences';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -14,6 +15,7 @@ interface TransactionItemProps {
 }
 
 export function TransactionItem({ transaction, category, onEdit, onDelete, style }: TransactionItemProps) {
+  const { t } = usePreferences();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -117,12 +119,12 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
       <Alert
         isOpen={showConfirm}
         onClose={() => setShowConfirm(false)}
-        title="Hapus Transaksi?"
-        message="Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak bisa dibatalkan."
+        title={t('txn.deleteTransaction')}
+        message={t('txn.deleteConfirm')}
         type="error"
         isConfirm={true}
         onConfirm={confirmDelete}
-        confirmLabel="Hapus"
+        confirmLabel={t('common.delete')}
       />
     </div>
   );

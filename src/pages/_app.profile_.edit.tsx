@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { type MetaFunction, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { usePreferences } from '../hooks/usePreferences';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { User, ArrowLeft, Check, Sparkles } from 'lucide-react';
@@ -21,6 +22,7 @@ type EditProfileFormValues = z.infer<typeof editProfileSchema>;
 export default function EditProfilePage() {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
+  const { t } = usePreferences();
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -128,10 +130,10 @@ export default function EditProfilePage() {
              {isLoading ? 'Menyimpan...' : success ? (
                <span className="flex items-center justify-center">
                  <Check className="w-5 h-5 mr-2" />
-                 Tersimpan!
+                 {t('profile.saved')}
                </span>
              ) : (
-               'Simpan Perubahan'
+               t('profile.saveChanges')
              )}
            </Button>
         </div>

@@ -34,6 +34,7 @@ export function NewTransactionModal() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showAccountSelect, setShowAccountSelect] = useState(false);
   const [showToAccountSelect, setShowToAccountSelect] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isOpen = searchParams.get('new_transaction') === 'true' || searchParams.get('edit_transaction_id') !== null;
@@ -127,8 +128,6 @@ export function NewTransactionModal() {
     }
     return categories.filter(c => c.type === type || c.type === 'both');
   }, [categories, type]);
-
-  const [categorySearch, setCategorySearch] = useState('');
 
   const searchedCategories = useMemo(() => {
     if (!categorySearch.trim()) return filteredCategories;
@@ -607,7 +606,7 @@ export function NewTransactionModal() {
               ) : (
                 <Check className="w-5 h-5" strokeWidth={3} />
               )}
-              {saving ? t('common.loading') : editId ? (t('txn.updateTransaction') || 'Simpan Perubahan') : t('txn.saveTransaction')}
+              {saving ? t('common.loading') : editId ? t('txn.updateTransaction') : t('txn.saveTransaction')}
             </button>
           </div>
         </div>

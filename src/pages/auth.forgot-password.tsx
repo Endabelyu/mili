@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
 
               <div className="space-y-3">
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Mengirim...' : 'Kirim Tautan Reset'}
+                  {isLoading ? t('auth.sending') : t('auth.sendResetLink')}
                 </Button>
                 
                 <Link to="/auth/login" className="flex items-center justify-center text-[13px] font-medium text-[var(--text-dim)] hover:text-[var(--text)] transition-colors py-2">
