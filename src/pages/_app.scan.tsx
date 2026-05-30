@@ -66,6 +66,25 @@ export default function ScanReceiptPage() {
     return () => stopCamera();
   }, []);
 
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0);
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], 'receipt-capture.jpg', { type: 'image/jpeg' });
+      const imageUrl = URL.createObjectURL(blob);
+      setSelectedImage(imageUrl);
+      setSelectedFile(file);
+      stopCamera();
+    }, 'image/jpeg', 0.9);
+  };
+
   const isScanning = status === 'scanning';
   const hasResult = status === 'success' && result;
   const hasImage = !!selectedImage;
@@ -166,7 +185,13 @@ export default function ScanReceiptPage() {
                     Galeri
                   </div>
                 </div>
-                <button className="flex-1 h-16 rounded-[24px] bg-[#15803D] flex items-center justify-center gap-3 text-[16px] font-bold text-white transition-all active:scale-[0.96] shadow-xl shadow-[#15803D25] hover:bg-[#0E9355]">
+                <button
+                  onClick={capturePhoto}
+                  disabled={!!cameraError}
+                  className={`flex-1 h-16 rounded-[24px] flex items-center justify-center gap-3 text-[16px] font-bold text-white transition-all active:scale-[0.96] shadow-xl ${
+                    cameraError ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#15803D] shadow-[#15803D25] hover:bg-[#0E9355]'
+                  }`}
+                >
                   <Camera className="w-6 h-6" />
                   Ambil Foto
                 </button>
