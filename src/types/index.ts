@@ -43,6 +43,7 @@ export interface Budget {
   categoryId: string;
   limitAmount: string | number;
   month: string;
+  recurring?: boolean;
   spent?: string | number;
   percentageUsed?: number;
   category?: Category;

@@ -30,6 +30,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
     budget?.categoryId || ''
   );
+  const [recurring, setRecurring] = useState(budget?.recurring !== false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
@@ -110,9 +111,9 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
       const month = formData.get('month') as string;
 
       if (isEditing && budget?.id) {
-        await budgetsApi.update(budget.id, { limitAmount });
+        await budgetsApi.update(budget.id, { limitAmount, recurring });
       } else {
-        await budgetsApi.create({ categoryId, limitAmount, month });
+        await budgetsApi.create({ categoryId, limitAmount, month, recurring });
       }
 
       onSuccess();
@@ -314,6 +315,21 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Recurring Toggle */}
+      <div className="flex items-center justify-between py-3 px-1">
+        <div>
+          <p className="text-[14px] font-bold text-[var(--text)]">Ulangi Setiap Bulan</p>
+          <p className="text-[12px] text-[var(--text-dim-2)]">Otomatis berlaku di bulan berikutnya</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setRecurring(!recurring)}
+          className={`w-12 h-7 rounded-full transition-colors relative ${recurring ? 'bg-[#15803D]' : 'bg-gray-300'}`}
+        >
+          <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${recurring ? 'translate-x-5' : 'translate-x-0.5'}`} />
+        </button>
       </div>
 
       {/* Action Buttons */}
