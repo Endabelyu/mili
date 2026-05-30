@@ -16,14 +16,28 @@ interface HeuristicResult {
   description: string;
   items: HeuristicItem[];
   merchant: string;
+  date: string;
 }
 
 export function analyzeReceipt(text: string): HeuristicResult {
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3);
-  
-  // 1. Merchant Detection
-  const blacklist = ['JL.', 'KM', 'NPWP', 'BARAT', 'ANCOL', 'SLEMAN', 'RT ', 'RW '];
-  const merchant = lines.find(l => !blacklist.some(b => l.toUpperCase().includes(b))) || 'Struk Baru';
+  // Clean OCR artifacts before processing
+  const cleanedText = text
+    .replace(/[{}[\]|\\]/g, '') // Remove brackets/pipes from OCR noise
+    .replace(/—/g, '-')        // Normalize dashes
+    .replace(/\s{3,}/g, '  ') // Collapse excessive spaces
+    .replace(/[^\S\n]+$/gm, ''); // Trim trailing whitespace per line
+
+  const lines = cleanedText.split('\n').map(l => l.trim()).filter(l => l.length > 3);
+
+  // 1. Merchant Detection — first non-address, non-metadata line
+  const blacklist = ['JL.', 'KM', 'NPWP', 'BARAT', 'ANCOL', 'SLEMAN', 'RT ', 'RW ',
+    'ORDER NO', 'ORDER TYPE', 'RECEIPT', 'CASHIER', 'CUSTOMER', 'CLOSED BILL',
+    'QUEUE', 'PAID', 'SUBTOTAL', 'TOTAL', 'QRIS', 'TUNAI', 'CASH'];
+  const merchant = lines.find(l =>
+    !blacklist.some(b => l.toUpperCase().includes(b)) &&
+    l.length > 2 && l.length < 50 &&
+    !/^\d/.test(l) // Skip lines starting with numbers (dates, order numbers)
+  ) || 'Struk Baru';
 
   const moneyPattern = /(?:rp|[$]|)\s*([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|[\d]{4,9})/gi;
   const qtyPattern = /\s([1-9])\s/;
@@ -96,6 +110,13 @@ export function analyzeReceipt(text: string): HeuristicResult {
         }
       }
 
+      // Clean item name from OCR artifacts
+      name = name
+        .replace(/^[\d\s.*-]+/, '')  // Remove leading numbers, dots, dashes
+        .replace(/[^a-zA-Z0-9\s&/()]/g, '') // Remove special chars except common ones
+        .replace(/\s+/g, ' ')
+        .trim();
+
       if (name.length > 2) {
         items.push({ name, price });
       }
@@ -103,6 +124,21 @@ export function analyzeReceipt(text: string): HeuristicResult {
   });
 
   const topItems = items.slice(0, 12);
+  // 4. Extract date from receipt (DD/MM/YYYY or DD-MM-YYYY)
+  const datePattern = /(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})/;
+  let receiptDate = '';
+  for (const line of lines) {
+    const match = line.match(datePattern);
+    if (match) {
+      const [, day, month, year] = match;
+      const d = parseInt(day), m = parseInt(month);
+      if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
+        receiptDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        break;
+      }
+    }
+  }
+
   const description = `${merchant}${topItems.length > 0 ? '\n' + topItems.map(i => `- ${i.name}`).join('\n') : ''}`;
 
   return {
@@ -110,13 +146,14 @@ export function analyzeReceipt(text: string): HeuristicResult {
     description,
     items: topItems,
     merchant,
+    date: receiptDate,
   };
 }
 
 export function toReceiptData(result: HeuristicResult): ReceiptData {
   return {
     store_name: result.merchant,
-    date: new Date().toISOString().slice(0, 10),
+    date: result.date || new Date().toISOString().slice(0, 10),
     items: result.items.map(item => ({
       name: item.name,
       qty: 1,
