@@ -28,9 +28,6 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     if (search.toString()) url += `?${search}`;
   }
 
-  // Debug log for each request
-  console.debug(`[API] Fetching: ${url}`);
-
   // Abort the request automatically after `timeoutMs` milliseconds
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
