@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Button, Input } from '@app/components/ui';
 import { budgetsApi } from '@app/api/client';
 import { usePreferences } from '@app/hooks/usePreferences';
-import { Tag, Calendar, Target, Loader2 } from 'lucide-react';
+import { Tag, Calendar, Target, Loader2, Search } from 'lucide-react';
 import type { Budget, Category } from '@app/types';
 import { CategoryIcon } from '../ui/CategoryIcon';
 
@@ -31,7 +31,9 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
     budget?.categoryId || ''
   );
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const categorySearchRef = useRef<HTMLInputElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -58,6 +60,20 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
     if (isEditing && c.id === budget?.categoryId) return true;
     return true; // Allow any category selection
   });
+
+  const filteredDropdownCategories = useMemo(() => {
+    if (!categorySearch.trim()) return availableCategories;
+    const q = categorySearch.toLowerCase();
+    return availableCategories.filter(c => c.label.toLowerCase().includes(q));
+  }, [availableCategories, categorySearch]);
+
+  // Auto-focus search when dropdown opens
+  useEffect(() => {
+    if (isCategoryDropdownOpen) {
+      setCategorySearch('');
+      setTimeout(() => categorySearchRef.current?.focus(), 100);
+    }
+  }, [isCategoryDropdownOpen]);
 
   const validateForm = (formData: FormData): boolean => {
     const newErrors: Record<string, string> = {};
@@ -154,8 +170,19 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
           {/* Custom Dropdown Grid */}
           {isCategoryDropdownOpen && !isEditing && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--card)] border border-[var(--border)] rounded-[24px] shadow-xl z-[100] overflow-hidden animate-fade-in p-4">
-              <div className="max-h-[300px] overflow-y-auto grid grid-cols-3 gap-2 p-1">
-                {availableCategories.map((category) => (
+              <div className="relative mb-3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-dim-2)]" />
+                <input
+                  ref={categorySearchRef}
+                  type="text"
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                  placeholder="Cari kategori..."
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[var(--muted)] text-[14px] font-medium text-[var(--text)] placeholder:text-[var(--text-dim-2)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </div>
+              <div className="max-h-[250px] overflow-y-auto grid grid-cols-3 gap-2 p-1">
+                {filteredDropdownCategories.map((category) => (
                   <button
                     key={category.id}
                     type="button"

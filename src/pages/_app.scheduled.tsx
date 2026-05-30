@@ -211,7 +211,10 @@ export default function ScheduledPage() {
     });
   };
 
-  const totalMonthly = scheduled.reduce((acc, curr) => acc + parseFloat(String(curr.amount)), 0);
+  const totalMonthly = scheduled.reduce((acc, curr) => {
+    const amt = parseFloat(String(curr.amount));
+    return acc + (curr.type === 'income' ? amt : -amt);
+  }, 0);
 
   const filteredCategories = categories.filter(c => c.type === type || c.type === 'both');
 

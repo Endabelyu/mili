@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Check, Home, Trash2, Plus, AlertCircle, Calendar } from 'lucide-react';
+import { X, Check, Home, Trash2, Plus, AlertCircle, Calendar, Search } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesApi, transactionsApi, accountsApi, type Transaction } from '../../api/client';
@@ -55,6 +55,7 @@ export function NewTransactionModal() {
       setToAccountId(null);
       setShowDeleteConfirm(false);
       setDeleting(false);
+      setCategorySearch('');
     }, 300);
   };
 
@@ -127,6 +128,12 @@ export function NewTransactionModal() {
     return categories.filter(c => c.type === type || c.type === 'both');
   }, [categories, type]);
 
+  const searchedCategories = useMemo(() => {
+    if (!categorySearch.trim()) return filteredCategories;
+    const q = categorySearch.toLowerCase();
+    return filteredCategories.filter(c => c.label.toLowerCase().includes(q));
+  }, [filteredCategories, categorySearch]);
+
   // Auto-select category if transfer and only one available
   useEffect(() => {
     if (type === 'transfer' && !selectedCategory && categories) {
@@ -167,6 +174,7 @@ export function NewTransactionModal() {
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCatLabel, setNewCatLabel] = useState('');
   const [newCatEmoji, setNewCatEmoji] = useState('📦');
+  const [categorySearch, setCategorySearch] = useState('');
 
   const addCategoryMutation = useMutation({
     mutationFn: (data: { label: string; color: string; icon: string; type: string }) => categoriesApi.create(data),
@@ -505,10 +513,20 @@ export function NewTransactionModal() {
 
             {/* ─── Category Grid (from real BE data) ─── */}
             <div className="px-6 pt-6 pb-20">
-              <p className="text-[14px] font-bold text-[var(--text)] mb-5">{t('txn.category')}</p>
-              {filteredCategories.length > 0 ? (
+              <p className="text-[14px] font-bold text-[var(--text)] mb-3">{t('txn.category')}</p>
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-dim-2)]" />
+                <input
+                  type="text"
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                  placeholder="Cari kategori..."
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[var(--muted)] text-[14px] font-medium text-[var(--text)] placeholder:text-[var(--text-dim-2)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                />
+              </div>
+              {searchedCategories.length > 0 ? (
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-y-6 gap-x-2 sm:gap-x-4">
-                  {filteredCategories.map((cat) => (
+                  {searchedCategories.map((cat) => (
                     <button
                       key={cat.id}
                       type="button"
