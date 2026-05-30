@@ -558,7 +558,7 @@ export default function AccountsPage() {
         type={alertConfig.type}
         isConfirm={alertConfig.isConfirm}
         onConfirm={alertConfig.onConfirm}
-        confirmLabel={t('common.delete')}
+        confirmLabel={alertConfig.isConfirm ? t('common.delete') : 'OK'}
       />
     </div>
   );
