@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { Check, RotateCcw, Store, Receipt, CreditCard, Calendar } from 'lucide-react';
 import type { ReceiptData } from './types';
+import { usePreferences } from '../../hooks/usePreferences';
 
 interface ReceiptPreviewProps {
   data: ReceiptData;
@@ -17,6 +18,7 @@ interface ReceiptPreviewProps {
 }
 
 export function ReceiptPreview({ data, scanMode, onConfirm, onRescan }: ReceiptPreviewProps) {
+  const { t } = usePreferences();
   const [editData, setEditData] = useState<ReceiptData>(data);
 
   const updateField = <K extends keyof ReceiptData>(key: K, value: ReceiptData[K]) => {
@@ -124,14 +126,14 @@ export function ReceiptPreview({ data, scanMode, onConfirm, onRescan }: ReceiptP
           className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 text-[13px] font-bold text-white/60 transition-all active:scale-[0.96] hover:bg-white/10"
         >
           <RotateCcw className="w-4 h-4" />
-          Scan Ulang
+          {t('scan.rescan')}
         </button>
         <button
           onClick={() => onConfirm(editData)}
           className="flex-[2] h-11 rounded-xl bg-[#15803D] flex items-center justify-center gap-2 text-[13px] font-bold text-white transition-all active:scale-[0.96] shadow-lg shadow-[#15803D30] hover:bg-[#0f9d5b]"
         >
           <Check className="w-4 h-4" />
-          Simpan Transaksi
+          {t('scan.saveTransaction')}
         </button>
       </div>
     </div>

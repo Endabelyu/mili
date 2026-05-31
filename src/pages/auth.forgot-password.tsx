@@ -51,23 +51,23 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: 'var(--bg)' }}>
       <div className="w-full max-w-[420px] space-y-8 flow-card p-8 sm:p-10 animate-fade-in">
         <div className="text-center">
-          <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--text)]">Lupa Kata Sandi</h1>
+          <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[var(--text)]">{t('auth.forgotTitle')}</h1>
           <p className="mt-2 text-[13px] text-[var(--text-dim)]">
-            Masukkan alamat email Anda untuk menerima tautan reset kata sandi.
+            {t('auth.forgotDesc')}
           </p>
         </div>
 
         {success ? (
           <div className="rounded-xl p-6 text-center" style={{ background: 'rgba(18,183,106,0.08)', border: '1px solid rgba(18,183,106,0.2)' }}>
             <CheckCircle2 className="mx-auto h-10 w-10 text-[var(--income)] mb-4" />
-            <h3 className="text-[16px] font-bold text-[var(--income)]">Email Terkirim!</h3>
+            <h3 className="text-[16px] font-bold text-[var(--income)]">{t('auth.emailSent')}</h3>
             <p className="mt-2 text-[13px] text-[var(--income)] opacity-80">
-              Periksa kotak masuk Anda untuk instruksi menyetel ulang kata sandi.
+              {t('auth.emailSentDesc')}
             </p>
             <div className="mt-5">
               <Link to="/auth/login">
                 <Button variant="outline" className="w-full">
-                  Kembali ke Masuk
+                  {t('auth.backToLogin')}
                 </Button>
               </Link>
             </div>
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
                 
                 <Link to="/auth/login" className="flex items-center justify-center text-[13px] font-medium text-[var(--text-dim)] hover:text-[var(--text)] transition-colors py-2">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Kembali ke Masuk
+                  {t('auth.backToLogin')}
                 </Link>
               </div>
             </form>

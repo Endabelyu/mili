@@ -184,7 +184,7 @@ export default function ScanReceiptPage() {
                   />
                   <div className="w-full h-16 rounded-[24px] bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center gap-3 text-[16px] font-bold text-[var(--text)] transition-all group-hover:bg-[var(--border)]">
                     <ImageIcon className="w-6 h-6 text-[var(--text-dim-2)]" />
-                    Galeri
+                    {t('scan.uploadPhoto')}
                   </div>
                 </div>
                 <button
@@ -195,7 +195,7 @@ export default function ScanReceiptPage() {
                   }`}
                 >
                   <Camera className="w-6 h-6" />
-                  Ambil Foto
+                  {t('scan.takePhoto')}
                 </button>
               </div>
             )}

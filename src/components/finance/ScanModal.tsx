@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Image as ImageIcon, Camera, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { usePreferences } from '../../hooks/usePreferences';
 import { useReceiptOcr } from '../../features/receipt-scanner/useReceiptOcr';
 import { ReceiptPreview } from '../../features/receipt-scanner/ReceiptPreview';
 import type { ReceiptData } from '../../features/receipt-scanner/types';
@@ -12,6 +13,7 @@ interface ScanModalProps {
 
 export function ScanModal({ isOpen, onClose }: ScanModalProps) {
   const navigate = useNavigate();
+  const { t } = usePreferences();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -57,7 +59,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setCameraError(null);
     } catch {
-      setCameraError('Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.');
+      setCameraError(t('scan.cameraError'));
     }
   };
 
@@ -145,7 +147,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
                   <div className="flex flex-col items-center gap-4">
                     <div className="w-10 h-10 border-4 border-white/20 border-t-[#15803D] rounded-full animate-spin" />
                     <p className="text-white font-bold tracking-wider text-[12px] uppercase">
-                      {scanMode === 'ai' ? 'AI sedang menganalisa...' : 'Menganalisa Struk...'}
+                      {scanMode === 'ai' ? t('scan.pleaseWait') : t('scan.pleaseWait')}
                     </p>
                   </div>
                 </div>
@@ -154,10 +156,10 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
 
             <p className="mt-4 text-white/40 text-[12px] font-bold tracking-widest uppercase">
               {isScanning
-                ? 'Mohon Tunggu'
+                ? t('scan.pleaseWait')
                 : selectedImage
-                  ? 'Pilih metode scan di bawah'
-                  : 'Posisikan struk di dalam bingkai'}
+                  ? t('scan.selectMethod')
+                  : t('scan.positionReceipt')}
             </p>
 
             {/* Error message */}
@@ -193,7 +195,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
                   />
                   <div className="w-full h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 text-[14px] font-bold text-white/80 transition-all group-hover:bg-white/10">
                     <ImageIcon className="w-4 h-4 text-white/40" />
-                    Galeri
+                    {t('scan.uploadPhoto')}
                   </div>
                 </div>
                 <button
@@ -201,7 +203,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
                   disabled={isScanning}
                 >
                   <Camera className="w-4 h-4" />
-                  Ambil Foto
+                  {t('scan.takePhoto')}
                 </button>
               </div>
             )}
