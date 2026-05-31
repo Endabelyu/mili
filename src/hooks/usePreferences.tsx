@@ -367,11 +367,6 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.registerFailed': 'Gagal mendaftar. Email mungkin sudah digunakan.',
     'auth.forgotPasswordFailed': 'Gagal mengirim email reset kata sandi',
 
-    // Scan
-    'scan.positionReceipt': 'Posisikan struk di dalam bingkai',
-    'scan.uploadPhoto': 'Unggah Foto',
-    'scan.takePhoto': 'Ambil Foto',
-
     // Notifications
     'notif.title': 'Notifikasi',
     'notif.unread': 'belum dibaca',
@@ -723,11 +718,6 @@ const translations: Record<Language, Record<string, string>> = {
     'scan.aiLimitReached': 'Daily AI Scan limit reached. Use Free Scan.',
     'auth.registerFailed': 'Registration failed. Email may already be in use.',
     'auth.forgotPasswordFailed': 'Failed to send password reset email',
-
-    // Scan
-    'scan.positionReceipt': 'Position the receipt in the frame',
-    'scan.uploadPhoto': 'Upload Photo',
-    'scan.takePhoto': 'Take Photo',
 
     // Notifications
     'notif.title': 'Notifications',
