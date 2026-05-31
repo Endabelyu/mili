@@ -320,7 +320,7 @@ export function NewTransactionModal() {
           <div className="flex p-1 bg-[var(--muted)] rounded-[14px]">
             {editId ? (
               <span className="px-6 py-1.5 text-[14px] font-bold text-[var(--text)]">
-                {t('txn.editTransaction') || 'Ubah Transaksi'}
+                {t('txn.editTransaction')}
               </span>
             ) : (
               (['expense', 'income', 'transfer'] as const).map((tp) => (
@@ -487,7 +487,7 @@ export function NewTransactionModal() {
                   className="flow-card p-4 relative cursor-pointer z-0"
                   onClick={open}
                 >
-                  <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">Tanggal</p>
+                  <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-1">{t('txn.date')}</p>
                   <div className="relative flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-[var(--text-dim-2)] shrink-0" />
                     <span className="text-[15px] font-medium text-[var(--text)]">
