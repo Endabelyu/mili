@@ -1,11 +1,13 @@
 import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { Home, List, Wallet, MoreHorizontal, Plus, BarChart3, MessageSquare, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { usePreferences } from '../../hooks/usePreferences';
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = usePreferences();
   const path = location.pathname;
 
   const fabRoute = '?add_options=true';
@@ -54,20 +56,20 @@ export function BottomNav() {
                   </div>
                 )}
               </div>
-              <span className="text-[10px] font-medium text-[var(--text-dim)]">Lainnya</span>
+              <span className="text-[10px] font-medium text-[var(--text-dim)]">{t('nav.more')}</span>
             </Link>
           </>
         ) : (
           <>
-            <NavTab to="/" icon={Home} label="Dasbor" active={path === '/'} />
-            <NavTab to="/transactions" icon={List} label="Transaksi" active={path.startsWith('/transactions')} />
+            <NavTab to="/" icon={Home} label={t('nav.dashboard')} active={path === '/'} />
+            <NavTab to="/transactions" icon={List} label={t('nav.transactions')} active={path.startsWith('/transactions')} />
             <div className="flex items-center justify-center"></div>
-            <NavTab to="/accounts" icon={Wallet} label="Akun" active={path.startsWith('/accounts')} />
+            <NavTab to="/accounts" icon={Wallet} label={t('nav.accounts')} active={path.startsWith('/accounts')} />
             <Link to="?menu=true" className="flex flex-col items-center justify-center gap-1 py-1.5">
               <div className="flex items-center justify-center text-[var(--text-dim)]">
                 <MoreHorizontal className="w-6 h-6" strokeWidth={1.8} />
               </div>
-              <span className="text-[10px] font-medium text-[var(--text-dim)]">Lainnya</span>
+              <span className="text-[10px] font-medium text-[var(--text-dim)]">{t('nav.more')}</span>
             </Link>
           </>
         )}

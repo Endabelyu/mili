@@ -16,11 +16,13 @@ import {
   ClipboardList
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { usePreferences } from '../../hooks/usePreferences';
 import { formatName } from '../../lib/utils';
 
 export function Sidebar() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { t } = usePreferences();
   const path = location.pathname;
 
   return (
@@ -43,20 +45,20 @@ export function Sidebar() {
             
             <div className="pt-4 mt-6 border-t border-[var(--border)]/50">
               <p className="px-4 text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2 opacity-60">Akses Pengguna</p>
-              <SidebarLink to="/" icon={LayoutGrid} label="Dasbor User" active={path === '/'} />
+              <SidebarLink to="/" icon={LayoutGrid} label={t('nav.dashboard')} active={path === '/'} />
             </div>
           </>
         ) : (
           <>
-            <SidebarLink to="/" icon={LayoutGrid} label="Dasbor" active={path === '/'} />
-            <SidebarLink to="/transactions" icon={Activity} label="Transaksi" active={path.startsWith('/transactions')} />
-            <SidebarLink to="/calendar" icon={Calendar} label="Kalender" active={path.startsWith('/calendar')} />
-            <SidebarLink to="/accounts" icon={Wallet} label="Akun" active={path.startsWith('/accounts')} />
+            <SidebarLink to="/" icon={LayoutGrid} label={t('nav.dashboard')} active={path === '/'} />
+            <SidebarLink to="/transactions" icon={Activity} label={t('nav.transactions')} active={path.startsWith('/transactions')} />
+            <SidebarLink to="/calendar" icon={Calendar} label={t('nav.calendar')} active={path.startsWith('/calendar')} />
+            <SidebarLink to="/accounts" icon={Wallet} label={t('nav.accounts')} active={path.startsWith('/accounts')} />
             <SidebarLink to="/targets" icon={Target} label="Target" active={path.startsWith('/targets')} />
-            <SidebarLink to="/analytics" icon={BarChart3} label="Analitik" active={path.startsWith('/analytics')} />
-            <SidebarLink to="/budget" icon={Receipt} label="Anggaran" active={path.startsWith('/budget')} />
-            <SidebarLink to="/scheduled" icon={Clock} label="Terjadwal" active={path.startsWith('/scheduled')} />
-            <SidebarLink to="/scan" icon={Scan} label="Scan Struk" active={path.startsWith('/scan')} />
+            <SidebarLink to="/analytics" icon={BarChart3} label={t('nav.analytics')} active={path.startsWith('/analytics')} />
+            <SidebarLink to="/budget" icon={Receipt} label={t('nav.budget')} active={path.startsWith('/budget')} />
+            <SidebarLink to="/scheduled" icon={Clock} label={t('nav.scheduled')} active={path.startsWith('/scheduled')} />
+            <SidebarLink to="/scan" icon={Scan} label={t('nav.scan')} active={path.startsWith('/scan')} />
             <SidebarLink to="/notifications" icon={Bell} label="Notifikasi" active={path.startsWith('/notifications')} />
             <SidebarLink to="/profile" icon={User} label="Profil" active={path.startsWith('/profile')} />
           </>
@@ -65,7 +67,7 @@ export function Sidebar() {
 
       {/* Bottom Actions */}
       <div className="p-4 border-t border-[var(--border)]">
-        <SidebarLink to="/settings" icon={Settings} label="Pengaturan" active={path.startsWith('/settings')} />
+        <SidebarLink to="/settings" icon={Settings} label={t('nav.settings')} active={path.startsWith('/settings')} />
         
         <div className="flex items-center gap-3 px-4 py-3 mt-2 mb-2">
           <div className="w-9 h-9 rounded-full bg-[var(--muted)] overflow-hidden flex items-center justify-center border border-[var(--border)]">
@@ -85,7 +87,7 @@ export function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
              <p className="text-[13px] font-bold text-[var(--text)] truncate">{formatName(user?.name)}</p>
-             <button onClick={logout} className="text-[11px] font-bold text-[var(--expense)] hover:underline">Keluar</button>
+             <button onClick={logout} className="text-[11px] font-bold text-[var(--expense)] hover:underline">{t('common.logout')}</button>
           </div>
         </div>
 

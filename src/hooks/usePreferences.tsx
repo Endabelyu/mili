@@ -36,6 +36,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.notifications': 'Notifikasi',
     'nav.profile': 'Profil',
     'nav.settings': 'Pengaturan',
+    'nav.more': 'Lainnya',
 
     // Common
     'common.save': 'Simpan',
@@ -392,6 +393,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.notifications': 'Notifications',
     'nav.profile': 'Profile',
     'nav.settings': 'Settings',
+    'nav.more': 'More',
 
     // Common
     'common.save': 'Save',
