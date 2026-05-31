@@ -63,7 +63,7 @@ export function TransactionItem({ transaction, category, onEdit, onDelete, style
 
         <div className="min-w-0">
           <p className="font-bold text-[var(--text)] text-[14px] tracking-[-0.01em] truncate mb-0.5" title={transaction.description || category?.label}>
-            {transaction.description || category?.label || 'Tanpa keterangan'}
+            {transaction.description || category?.label || t('common.noDescription')}
           </p>
           <div className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--text-dim)] truncate">
             {timeString && <span className="tabular-nums">{timeString}</span>}

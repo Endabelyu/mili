@@ -311,7 +311,7 @@ export function NewTransactionModal() {
           <button 
             type="button"
             onClick={handleClose} 
-            aria-label="Tutup modal"
+            aria-label={t('common.closeModal')}
             className="relative z-[110] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)] active:scale-95"
           >
             <X className="w-5 h-5" />
@@ -395,14 +395,14 @@ export function NewTransactionModal() {
                   className="w-full flow-card p-4 flex flex-col gap-1 text-left relative z-10"
                 >
                   <p className="text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider">
-                    {type === 'transfer' ? 'Dari Akun' : t('txn.account')}
+                    {type === 'transfer' ? t('common.fromAccount') : t('txn.account')}
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: accounts?.find(a => a.id === selectedAccount)?.color || '#15803D' }}>
                       <Home className="w-4 h-4 text-white" />
                     </div>
                     <p className="text-[14px] font-bold text-[var(--text)] truncate">
-                      {accounts?.find(a => a.id === selectedAccount)?.name || 'Pilih Akun...'}
+                      {accounts?.find(a => a.id === selectedAccount)?.name || t('common.select')}
                     </p>
                   </div>
                 </button>
@@ -443,7 +443,7 @@ export function NewTransactionModal() {
                         <Home className="w-4 h-4 text-white" />
                       </div>
                       <p className="text-[14px] font-bold text-[var(--text)] truncate">
-                        {accounts?.find(a => a.id === toAccountId)?.name || 'Pilih Akun...'}
+                        {accounts?.find(a => a.id === toAccountId)?.name || t('common.select')}
                       </p>
                     </div>
                   </button>
@@ -491,7 +491,7 @@ export function NewTransactionModal() {
                   <div className="relative flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-[var(--text-dim-2)] shrink-0" />
                     <span className="text-[15px] font-medium text-[var(--text)]">
-                      {date ? new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Pilih Tanggal'}
+                      {date ? new Date(date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : t('common.select')}
                     </span>
                   </div>
                 </div>
@@ -520,7 +520,7 @@ export function NewTransactionModal() {
                   type="text"
                   value={categorySearch}
                   onChange={(e) => setCategorySearch(e.target.value)}
-                  placeholder="Cari kategori..."
+                  placeholder={t('common.searchCategory')}
                   className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[var(--muted)] text-[14px] font-medium text-[var(--text)] placeholder:text-[var(--text-dim-2)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                 />
               </div>
@@ -662,12 +662,12 @@ export function NewTransactionModal() {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setIsAddingCategory(false)}
                     className="flex-1 py-3 rounded-xl bg-[var(--muted)] text-[var(--text)] font-bold text-[14px]"
                   >
-                    Batal
+                    {t('common.cancel')}
                   </button>
                   <button 
                     type="button"
@@ -692,25 +692,25 @@ export function NewTransactionModal() {
                 <div className="w-16 h-16 rounded-3xl bg-red-50 flex items-center justify-center mb-4">
                   <AlertCircle className="w-8 h-8 text-red-500" />
                 </div>
-                <h3 className="text-[20px] font-bold text-[var(--text)] mb-2">Hapus Transaksi?</h3>
-                <p className="text-[14px] text-[var(--text-dim)] font-medium mb-8">Tindakan ini tidak dapat dibatalkan. Saldo akun Anda akan disesuaikan kembali secara otomatis.</p>
-                
+                <h3 className="text-[20px] font-bold text-[var(--text)] mb-2">{t('txn.deleteTransaction')}</h3>
+                <p className="text-[14px] text-[var(--text-dim)] font-medium mb-8">{t('txn.deleteConfirm')}</p>
+
                 <div className="grid grid-cols-2 gap-3 w-full">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowDeleteConfirm(false)}
                     className="py-3.5 rounded-2xl bg-[var(--muted)] text-[var(--text)] font-bold text-[15px] transition-all active:scale-95"
                   >
-                    Batal
+                    {t('common.cancel')}
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={confirmDelete}
                     disabled={deleting}
                     className="py-3.5 rounded-2xl bg-red-500 text-white font-bold text-[15px] shadow-lg shadow-red-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
                   >
                     {deleting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    Hapus
+                    {t('common.delete')}
                   </button>
                 </div>
               </div>

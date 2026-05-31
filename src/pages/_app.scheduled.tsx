@@ -415,7 +415,7 @@ export default function ScheduledPage() {
                     onChange={(e) => setCategoryId(e.target.value)}
                     className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                   >
-                    <option value="">Pilih Kategori...</option>
+                    <option value="">{t('common.selectCategory')}</option>
                     {filteredCategories.map((c: Category) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
@@ -427,14 +427,14 @@ export default function ScheduledPage() {
               <div className={`grid ${type === 'transfer' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                 <div className="space-y-3">
                   <label className="text-[13px] font-bold text-[var(--text-dim-2)] uppercase">
-                    {type === 'transfer' ? 'Dari Akun' : t('txn.account')}
+                    {type === 'transfer' ? t('common.fromAccount') : t('txn.account')}
                   </label>
                   <select
                     value={accountId}
                     onChange={(e) => setAccountId(e.target.value)}
                     className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                   >
-                    <option value="">Pilih...</option>
+                    <option value="">{t('common.select')}</option>
                     {accounts.map(a => (
                       <option key={a.id} value={a.id}>{a.name}</option>
                     ))}
@@ -449,7 +449,7 @@ export default function ScheduledPage() {
                       onChange={(e) => setToAccountId(e.target.value)}
                       className="w-full bg-[var(--muted)] border border-transparent focus:border-[#15803D] rounded-[16px] px-4 py-3.5 text-[15px] font-semibold text-[var(--text)] outline-none appearance-none"
                     >
-                      <option value="">Pilih...</option>
+                      <option value="">{t('common.select')}</option>
                       {accounts.filter(a => a.id !== accountId).map(a => (
                         <option key={a.id} value={a.id}>{a.name}</option>
                       ))}

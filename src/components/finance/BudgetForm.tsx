@@ -22,7 +22,7 @@ interface BudgetFormProps {
 }
 
 export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCancel }: BudgetFormProps) {
-  const { currency } = usePreferences();
+  const { currency, t } = usePreferences();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!budget?.id;
 
@@ -81,17 +81,17 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
 
     const categoryId = formData.get('categoryId') as string;
     if (!categoryId) {
-      newErrors.categoryId = 'Please select a category';
+      newErrors.categoryId = t('budget.validationCategory');
     }
 
     const limitAmount = formData.get('limitAmount') as string;
     if (!limitAmount || isNaN(parseFloat(limitAmount)) || parseFloat(limitAmount) <= 0) {
-      newErrors.limitAmount = 'Please enter a valid amount greater than 0';
+      newErrors.limitAmount = t('budget.validationAmount');
     }
 
     const month = formData.get('month') as string;
     if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-      newErrors.month = 'Please select a valid month';
+      newErrors.month = t('budget.validationMonth');
     }
 
     setErrors(newErrors);
@@ -119,7 +119,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
       onSuccess();
     } catch (err) {
       console.error('Failed to save budget', err);
-      setErrors({ form: 'Failed to save budget. Please try again.' });
+      setErrors({ form: t('budget.saveFailed') });
     } finally {
       setIsSubmitting(false);
     }
@@ -159,7 +159,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
                 )}
               </div>
               <span className={selectedCategory ? 'text-[var(--text)]' : 'text-[var(--text-dim-2)]'}>
-                {selectedCategory ? selectedCategory.label : 'Select a category'}
+                {selectedCategory ? selectedCategory.label : t('budget.selectCategory')}
               </span>
             </div>
             <svg className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
                   type="text"
                   value={categorySearch}
                   onChange={(e) => setCategorySearch(e.target.value)}
-                  placeholder="Cari kategori..."
+                  placeholder={t('common.searchCategory')}
                   className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[var(--muted)] text-[14px] font-medium text-[var(--text)] placeholder:text-[var(--text-dim-2)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                 />
               </div>
@@ -320,8 +320,8 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
       {/* Recurring Toggle */}
       <div className="flex items-center justify-between py-3 px-1">
         <div>
-          <p className="text-[14px] font-bold text-[var(--text)]">Ulangi Setiap Bulan</p>
-          <p className="text-[12px] text-[var(--text-dim-2)]">Otomatis berlaku di bulan berikutnya</p>
+          <p className="text-[14px] font-bold text-[var(--text)]">{t('budget.repeatMonthly')}</p>
+          <p className="text-[12px] text-[var(--text-dim-2)]">{t('budget.repeatMonthlyDesc')}</p>
         </div>
         <button
           type="button"
