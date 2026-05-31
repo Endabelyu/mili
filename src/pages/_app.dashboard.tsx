@@ -24,14 +24,8 @@ export default function DashboardPage() {
     enabled: !!user,
   });
 
-  const { data: summaryData, isLoading: summaryLoading } = useQuery({
-    queryKey: queryKeys.reports.summary(),
-    queryFn: () => reportsApi.summary(),
-    enabled: !!user,
-  });
-
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const { data: currentMonthData } = useQuery({
+  const { data: currentMonthData, isLoading: monthLoading } = useQuery({
     queryKey: queryKeys.reports.summary(currentMonth),
     queryFn: () => reportsApi.summary({ month: currentMonth }),
     enabled: !!user,
@@ -76,9 +70,9 @@ export default function DashboardPage() {
   const topCategories = catData?.slice(0, 3) || [];
   const accounts = accountsData || [];
   
-  const income = summaryData?.income ?? 0;
-  const expenses = summaryData?.expenses ?? 0;
-  const balance = summaryData?.balance ?? 0;
+  const income = currentMonthData?.income ?? 0;
+  const expenses = currentMonthData?.expenses ?? 0;
+  const balance = currentMonthData?.balance ?? 0;
 
   const totalAssets = accounts.reduce((acc: number, curr: Account) => {
     const val = parseFloat(String(curr.balance));
@@ -158,7 +152,7 @@ export default function DashboardPage() {
           <h2 className="text-[13px] font-bold text-[#0E7490] tracking-[-0.01em] uppercase tracking-wider">{t('dashboard.cashFlow')}</h2>
           <span className="text-[11px] font-bold text-[#0E7490] opacity-50 uppercase tracking-widest">{currentMonthName}</span>
         </div>
-        {summaryLoading ? (
+        {monthLoading ? (
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
               <div className="h-12 rounded-xl bg-[#CFFAFE] animate-pulse"></div>
