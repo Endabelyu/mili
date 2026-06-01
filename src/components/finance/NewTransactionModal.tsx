@@ -35,6 +35,7 @@ export function NewTransactionModal() {
   const [showAccountSelect, setShowAccountSelect] = useState(false);
   const [showToAccountSelect, setShowToAccountSelect] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
+  const [showNumpad, setShowNumpad] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isOpen = searchParams.get('new_transaction') === 'true' || searchParams.get('edit_transaction_id') !== null;
@@ -57,6 +58,7 @@ export function NewTransactionModal() {
       setShowDeleteConfirm(false);
       setDeleting(false);
       setCategorySearch('');
+      setShowNumpad(false);
     }, 300);
   };
 
@@ -373,7 +375,10 @@ export function NewTransactionModal() {
           </div>
 
           {/* Mobile/Tablet: display only */}
-          <div className="flex lg:hidden items-baseline gap-1.5">
+          <div 
+            className="flex lg:hidden items-baseline gap-1.5 cursor-pointer rounded-2xl p-2 transition-colors active:bg-[var(--muted)]"
+            onClick={() => setShowNumpad(true)}
+          >
             <span className={`text-[20px] font-bold ${amountColor}`}>Rp</span>
             <span className={`text-[40px] font-bold tracking-[-0.04em] tabular-nums ${amountColor}`}>
               {displayAmount}
@@ -382,7 +387,10 @@ export function NewTransactionModal() {
         </div>
 
         {/* ─── Scrollable Content Area ─── */}
-        <div className="flex-1 overflow-y-auto pb-10">
+        <div 
+          className="flex-1 overflow-y-auto pb-10"
+          onClick={() => setShowNumpad(false)}
+        >
           {/* Details Section */}
           <div className="px-6 space-y-3 relative">
             {/* Account Selector(s) */}
@@ -579,27 +587,29 @@ export function NewTransactionModal() {
 
         {/* ─── Sticky Bottom Section (Keypad + Footer) ─── */}
         <div className="shrink-0 bg-[var(--bg)] border-t border-[var(--border)] z-[110] shadow-[0_-15px_40px_rgba(0,0,0,0.08)]">
-          <div className="lg:hidden grid grid-cols-3 gap-1.5 p-3 bg-[var(--muted)]/30">
-              {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'backspace'].map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => handleKeypad(key)}
-                aria-label={key === 'backspace' ? 'Hapus' : key}
-                className="h-14 flex items-center justify-center text-[24px] font-bold text-[var(--text)] bg-[var(--card)] active:bg-[var(--border)] rounded-2xl shadow-sm border border-[var(--border)]/50 transition-all active:scale-[0.97]"
-              >
-                {key === 'backspace' ? <Trash2 className="w-6 h-6 text-[#F04438]" /> : key}
-              </button>
-            ))}
-          </div>
+          {showNumpad && (
+            <div className="lg:hidden grid grid-cols-3 gap-1.5 p-2 bg-[var(--muted)]/30">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'backspace'].map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handleKeypad(key)}
+                  aria-label={key === 'backspace' ? 'Hapus' : key}
+                  className="h-12 flex items-center justify-center text-[22px] font-bold text-[var(--text)] bg-[var(--card)] active:bg-[var(--border)] rounded-xl shadow-sm border border-[var(--border)]/50 transition-all active:scale-[0.97]"
+                >
+                  {key === 'backspace' ? <Trash2 className="w-5 h-5 text-[#F04438]" /> : key}
+                </button>
+              ))}
+            </div>
+          )}
           
           {/* Footer Section */}
-          <div className="p-5 bg-[var(--bg)] pb-safe">
+          <div className="p-4 bg-[var(--bg)] pb-safe">
             <button
               type="button"
               onClick={handleSave}
               disabled={!amount || amount === '0' || !selectedCategory || saving}
-              className="w-full h-15 rounded-[20px] bg-[#15803D] text-white font-bold text-[16px] shadow-2xl shadow-[#15803D40] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-[16px] bg-[#15803D] text-white font-bold text-[16px] shadow-2xl shadow-[#15803D40] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
