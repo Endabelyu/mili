@@ -120,18 +120,18 @@ export default function BudgetPage() {
           </div>
         </div>
 
-        <div className="flex-1 grid grid-cols-2 gap-x-8 gap-y-4 border-l border-[var(--border)] pl-8">
-          <div className="space-y-1">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Total Anggaran</p>
-            <p className="text-[18px] font-bold text-[var(--text)] tabular-nums">{formatMoney(totals.totalLimit)}</p>
+        <div className="flex-1 flex flex-col gap-3 border-l border-[var(--border)] pl-5 md:pl-8">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] md:text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest shrink-0">Total Anggaran</p>
+            <p className="text-[15px] md:text-[18px] font-bold text-[var(--text)] tabular-nums truncate">{formatMoney(totals.totalLimit)}</p>
           </div>
-          <div className="space-y-1">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Terpakai</p>
-            <p className="text-[18px] font-bold text-[var(--expense)] tabular-nums">{formatMoney(totals.totalSpent)}</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] md:text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest shrink-0">Terpakai</p>
+            <p className="text-[15px] md:text-[18px] font-bold text-[var(--expense)] tabular-nums truncate">{formatMoney(totals.totalSpent)}</p>
           </div>
-          <div className="space-y-1 col-span-2 pt-2 border-t border-[var(--border)]">
-            <p className="text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest">Sisa Saldo</p>
-            <p className={`text-[18px] font-bold ${totals.remaining >= 0 ? 'text-[var(--income)]' : 'text-[var(--expense)]'} tabular-nums`}>{formatMoney(totals.remaining)}</p>
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border)]">
+            <p className="text-[10px] md:text-[11px] font-bold text-[var(--text-dim-2)] uppercase tracking-widest shrink-0">Sisa Saldo</p>
+            <p className={`text-[15px] md:text-[18px] font-bold ${totals.remaining >= 0 ? 'text-[var(--income)]' : 'text-[var(--expense)]'} tabular-nums truncate`}>{formatMoney(totals.remaining)}</p>
           </div>
         </div>
       </div>

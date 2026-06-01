@@ -303,14 +303,14 @@ export default function AccountsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 pt-6 border-t border-[var(--border)] border-dashed">
-          <div>
-            <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">{t('acc.assets')}</p>
-            <p className="text-[22px] font-bold text-[#15803D]">{formatMoney(assets)}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-[var(--border)] border-dashed">
+          <div className="flex items-center justify-between sm:block">
+            <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider sm:mb-2">{t('acc.assets')}</p>
+            <p className="text-[18px] sm:text-[22px] font-bold text-[#15803D] truncate pl-2">{formatMoney(assets)}</p>
           </div>
-          <div>
-            <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2">{t('acc.liabilities')}</p>
-            <p className="text-[22px] font-bold text-[#F04438]">{formatMoney(liabilities)}</p>
+          <div className="flex items-center justify-between sm:block border-t border-[var(--border)] sm:border-0 pt-3 sm:pt-0">
+            <p className="text-[12px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider sm:mb-2">{t('acc.liabilities')}</p>
+            <p className="text-[18px] sm:text-[22px] font-bold text-[#F04438] truncate pl-2">{formatMoney(liabilities)}</p>
           </div>
         </div>
       </div>

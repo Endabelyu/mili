@@ -294,7 +294,7 @@ export default function TargetsPage() {
                   <div className="flex items-center gap-5">
                     <CircularProgress percentage={progress} color={target.color} icon={target.icon} />
                     
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 pr-20">
                       <h4 className="text-[15px] sm:text-[18px] font-bold text-[var(--text)] leading-tight">{target.name}</h4>
                       <div className="mt-1.5 flex items-center gap-2">
                         <Clock className="w-3.5 h-3.5 text-[var(--text-dim-2)] opacity-60 flex-shrink-0" />

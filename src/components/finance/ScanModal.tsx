@@ -33,6 +33,28 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
     }
   };
 
+  // ─── Take Photo (Camera) ──────────────────────────────────────────────────
+  const handleTakePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0);
+        const imageUrl = canvas.toDataURL('image/jpeg');
+        setSelectedImage(imageUrl);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], 'receipt.jpg', { type: 'image/jpeg' });
+            setSelectedFile(file);
+          }
+        }, 'image/jpeg');
+        stopCamera();
+      }
+    }
+  };
+
   // ─── Confirm scanned result → navigate to transaction form ────────────────
   const handleConfirm = (data: ReceiptData) => {
     const amount = data.total?.toString() || '0';
@@ -199,6 +221,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
                   </div>
                 </div>
                 <button
+                  onClick={handleTakePhoto}
                   className="flex-[2] h-12 rounded-xl bg-[#15803D] flex items-center justify-center gap-2 text-[14px] font-bold text-white transition-all active:scale-[0.98] shadow-lg shadow-[#15803D30] hover:bg-[#0f9d5b] disabled:opacity-50"
                   disabled={isScanning}
                 >
