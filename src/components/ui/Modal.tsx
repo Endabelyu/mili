@@ -51,18 +51,13 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           aria-labelledby="modal-title"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--muted)]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--card)]">
             <h3 id="modal-title" className="text-[18px] font-bold text-[var(--text)] tracking-[-0.01em]">
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="
-                text-[var(--text-dim)] hover:text-[var(--text)] hover:bg-[var(--border)]
-                rounded-[10px] p-2 -mr-2
-                transition-all duration-150
-                focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1
-              "
+              className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)] active:scale-95"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />

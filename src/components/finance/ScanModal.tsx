@@ -102,7 +102,7 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
         <div className="absolute top-4 right-4 z-[210]">
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white transition-all hover:bg-black/60 border border-white/10 active:scale-95"
+            className="w-10 h-10 rounded-xl bg-black/40 backdrop-blur-md flex items-center justify-center text-white transition-all hover:bg-black/60 border border-white/10 active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>

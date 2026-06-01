@@ -310,14 +310,17 @@ export function NewTransactionModal() {
       >
         {/* ─── Header ─── */}
         <div className="flex items-center justify-between p-4 shrink-0">
-          <button 
-            type="button"
-            onClick={handleClose} 
-            aria-label={t('common.closeModal')}
-            className="relative z-[110] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)] active:scale-95"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {editId ? (
+            <button 
+              type="button"
+              onClick={handleDelete}
+              className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center transition-all hover:bg-red-100 active:scale-95"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          ) : (
+            <div className="w-10" />
+          )}
 
           <div className="flex p-1 bg-[var(--muted)] rounded-[14px]">
             {editId ? (
@@ -340,18 +343,14 @@ export function NewTransactionModal() {
             )}
           </div>
 
-          {editId ? (
-            <button 
-              type="button"
-              onClick={handleDelete}
-              className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center transition-all active:scale-95"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
-          ) : (
-            <div className="w-10" />
-          )}
-
+          <button 
+            type="button"
+            onClick={handleClose} 
+            aria-label={t('common.closeModal')}
+            className="relative z-[110] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)] active:scale-95"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* ─── Amount Display ─── */}

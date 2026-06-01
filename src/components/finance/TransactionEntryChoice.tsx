@@ -41,7 +41,7 @@ export function TransactionEntryChoice() {
           <button
             onClick={handleClose}
             aria-label={t('common.closeModal')}
-            className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)]"
+            className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] transition-colors hover:bg-[var(--border)] active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>
