@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../lib/query-keys';
 import { budgetsApi, categoriesApi, type Budget } from '../api/client';
-import { Plus, X, ArrowLeft, Target } from 'lucide-react';
+import { Plus, X, ArrowLeft, Target, Trash2, Loader2 } from 'lucide-react';
 import { usePreferences } from '../hooks/usePreferences';
 import { BudgetForm } from '../components/finance/BudgetForm';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
+import { ConfirmDialog } from '../components/ui';
+import { SwipeToEditDelete } from '../components/ui/SwipeableItem';
 
 
 
@@ -33,6 +35,16 @@ export default function BudgetPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Budget | null>(null);
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => budgetsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      setDeleteTarget(null);
+    },
+  });
 
   const budgets = budgetsData || [];
   const categories = categoriesData || [];
@@ -159,24 +171,24 @@ export default function BudgetPage() {
               const spent = parseFloat(String(budget.spent || 0));
               const limit = parseFloat(String(budget.limitAmount || 0));
               const isOverBudget = spent > limit;
-              const pct = isOverBudget 
-                ? Math.round(((limit - spent) / limit) * 100) 
+              const pct = isOverBudget
+                ? Math.round(((limit - spent) / limit) * 100)
                 : (budget.percentageUsed || 0);
               const cat = budget.category;
               const color = cat?.color || '#15803D';
               const label = cat?.label || budget.categoryId;
+              const isDeletingThis = deleteMutation.isPending && deleteTarget?.id === budget.id;
 
-              return (
-                <div 
-                  key={budget.id} 
-                  className="flow-card p-6 cursor-pointer hover:shadow-xl transition-all active:scale-[0.98]"
+              const budgetContent = (
+                <div
+                  className="flow-card p-6 cursor-pointer hover:shadow-xl transition-all active:scale-[0.98] group relative"
                   onClick={() => { setSelectedBudget(budget); setIsModalOpen(true); }}
                 >
                   <div className="flex items-center gap-5">
-                    <CategoryIcon 
-                      category={label} 
-                      icon={cat?.icon} 
-                      size="lg" 
+                    <CategoryIcon
+                      category={label}
+                      icon={cat?.icon}
+                      size="lg"
                     />
                     <div className="flex-1 min-w-0 pr-4">
                       <div className="flex justify-between items-center mb-1">
@@ -189,12 +201,41 @@ export default function BudgetPage() {
                         {formatMoney(spent)} <span className="opacity-40 font-medium">dari</span> {formatMoney(limit)}
                       </p>
                       <div className="h-3 w-full bg-[var(--muted)] rounded-full overflow-hidden">
-                        <div 
-                          className="h-full rounded-full transition-all duration-700 ease-out" 
-                          style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }} 
+                        <div
+                          className="h-full rounded-full transition-all duration-700 ease-out"
+                          style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }}
                         />
                       </div>
                     </div>
+                  </div>
+
+                  {/* Desktop: hover delete button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(budget); }}
+                    disabled={isDeletingThis}
+                    className="hidden lg:flex absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity w-9 h-9 rounded-xl bg-[var(--card)] shadow-md border border-[var(--border)] items-center justify-center text-[var(--text-dim-2)] hover:text-[#F04438] hover:bg-red-50 dark:hover:bg-red-500/10"
+                    aria-label={t('common.delete')}
+                  >
+                    {isDeletingThis ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  </button>
+                </div>
+              );
+
+              return (
+                <div key={budget.id}>
+                  {/* Mobile: swipe to edit/delete */}
+                  <div className="lg:hidden">
+                    <SwipeToEditDelete
+                      onEdit={() => { setSelectedBudget(budget); setIsModalOpen(true); }}
+                      onDelete={() => setDeleteTarget(budget)}
+                      className="rounded-[16px]"
+                    >
+                      {budgetContent}
+                    </SwipeToEditDelete>
+                  </div>
+                  {/* Desktop: hover button */}
+                  <div className="hidden lg:block">
+                    {budgetContent}
                   </div>
                 </div>
               );
@@ -202,6 +243,20 @@ export default function BudgetPage() {
           </div>
         )}
       </div>
+
+      {/* ─── Delete Confirm Dialog ─── */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        title={t('budget.deleteBudget')}
+        message={t('budget.deleteConfirm')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={() => {
+          if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
       {/* ─── Add/Edit Budget Modal ─── */}
       {isModalOpen && (
