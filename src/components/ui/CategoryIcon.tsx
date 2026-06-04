@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { colors } from '../../styles/design-tokens';
 
 interface CategoryIconProps {
@@ -126,7 +126,7 @@ export const getCategory3DIcon = (categoryName: string) => {
   return 'category_general'; // generic 3D icon fallback (the star icon)
 };
 
-export function CategoryIcon({ category, icon, size = 'md', className = '', label }: CategoryIconProps) {
+export const CategoryIcon = memo(function CategoryIcon({ category, icon, size = 'md', className = '', label }: CategoryIconProps) {
   const [imgError, setImgError] = useState(false);
   const styles = getCategoryStyles(category);
   const isRawEmoji = icon && !icon.startsWith('category_') && icon.length <= 4;
@@ -149,10 +149,11 @@ export function CategoryIcon({ category, icon, size = 'md', className = '', labe
       {isRawEmoji ? (
         <span className="text-[1.2em]">{icon}</span>
       ) : !imgError ? (
-        <img 
-          src={`/categories/${threeDIcon}.png`} 
-          alt={category} 
+        <img
+          src={`/categories/${threeDIcon}.png`}
+          alt={category}
           className="w-full h-full object-cover"
+          loading="lazy"
           onError={() => setImgError(true)}
         />
       ) : (
@@ -173,4 +174,4 @@ export function CategoryIcon({ category, icon, size = 'md', className = '', labe
   }
 
   return content;
-}
+});
