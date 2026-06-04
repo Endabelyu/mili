@@ -263,28 +263,39 @@ export default function BudgetPage() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[90] backdrop-blur-sm animate-fade-in" onClick={() => setIsModalOpen(false)} />
           <div 
-            className="fixed inset-x-0 bottom-0 lg:top-1/2 lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] overflow-hidden"
+            className="fixed inset-x-0 bottom-0 lg:top-1/2 lg:bottom-auto lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:w-[500px] lg:rounded-[32px] bg-[var(--bg)] z-[100] flex flex-col animate-slide-up rounded-t-[32px] max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
               <h2 className="text-[18px] font-bold text-[var(--text)]">
                 {selectedBudget ? t('budget.editBudget') : t('budget.addBudget')}
               </h2>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="relative z-[210] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] hover:bg-[var(--border)] transition-all active:scale-95"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {selectedBudget && (
+                  <button
+                    onClick={() => { setIsModalOpen(false); setDeleteTarget(selectedBudget); }}
+                    className="relative z-[210] w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-[#F04438] hover:bg-red-100 dark:hover:bg-red-500/20 transition-all active:scale-95"
+                    aria-label={t('common.delete')}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="relative z-[210] w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center text-[var(--text)] hover:bg-[var(--border)] transition-all active:scale-95"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-            <div className="p-8">
+            <div className="p-8 overflow-y-auto flex-1">
               <BudgetForm
                 budget={selectedBudget}
                 categories={categories}
                 currentMonth={currentMonth}
                 onSuccess={() => {
                   setIsModalOpen(false);
-                  // Refresh is handled by tanstack-query auto-invalidations or we can do it manually if needed
+                  queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
                 }}
                 onCancel={() => setIsModalOpen(false)}
               />
