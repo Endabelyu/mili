@@ -15,7 +15,7 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
       {/* Floating Action Button */}
-      {user?.role !== 'developer' && user?.email !== 'endabelyuproject@gmail.com' && (
+      {user?.role !== 'developer' && (
         <div className="absolute flex justify-center w-full bottom-[42px] pointer-events-none" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <button
             onClick={() => navigate(fabRoute)}
@@ -38,7 +38,7 @@ export function BottomNav() {
           padding: '8px 8px calc(8px + env(safe-area-inset-bottom, 0px))',
         }}
       >
-        {user?.role === 'developer' || user?.email === 'endabelyuproject@gmail.com' ? (
+        {user?.role === 'developer' ? (
           <>
             <NavTab to="/developer/analytics" icon={BarChart3} label="Statistik" active={path === '/developer/analytics'} />
             <NavTab to="/developer/feedbacks" icon={MessageSquare} label="Umpan Balik" active={path === '/developer/feedbacks'} />

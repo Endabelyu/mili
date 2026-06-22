@@ -33,7 +33,7 @@ export function MoreMenuModal() {
 
   const { user } = useAuth();
 
-  const menuItems = user?.role === 'developer' || user?.email === 'endabelyuproject@gmail.com'
+  const menuItems = user?.role === 'developer'
     ? [
         { path: '/developer/analytics', icon: Shield, title: 'Statistik', subtitle: 'Statistik Sistem' },
         { path: '/developer/feedbacks', icon: MessageSquare, title: 'Umpan Balik', subtitle: 'User Feedback' },

@@ -9,12 +9,14 @@ import { BudgetForm } from '../components/finance/BudgetForm';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 import { ConfirmDialog } from '../components/ui';
 import { SwipeToEditDelete } from '../components/ui/SwipeableItem';
+import { useToastContext } from '../components/ui/ToastProvider';
 
 
 
 
 export default function BudgetPage() {
   const { formatMoney, t } = usePreferences();
+  const { showError } = useToastContext();
   const navigate = useNavigate();
 
   // Get current YYYY-MM
@@ -42,6 +44,10 @@ export default function BudgetPage() {
     mutationFn: (id: string) => budgetsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      setDeleteTarget(null);
+    },
+    onError: () => {
+      showError(t('budget.deleteFailed'));
       setDeleteTarget(null);
     },
   });

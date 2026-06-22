@@ -36,7 +36,7 @@ export function Sidebar() {
 
       {/* Nav Links */}
       <nav className="flex-1 px-4 pb-6 space-y-1 overflow-y-auto custom-scrollbar">
-        {user?.role === 'developer' || user?.email === 'endabelyuproject@gmail.com' ? (
+        {user?.role === 'developer' ? (
           <>
             <p className="px-4 mt-4 text-[10px] font-bold text-[var(--text-dim-2)] uppercase tracking-wider mb-2 opacity-60">Portal Developer</p>
             <SidebarLink to="/developer/analytics" icon={BarChart3} label="Statistik Pengguna" active={path === '/developer/analytics'} />

@@ -36,7 +36,7 @@ export function Topbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
-  const isDeveloper = user?.email === 'endabelyuproject@gmail.com';
+  const isDeveloper = user?.role === 'developer';
 
   const debouncedSearch = useDebounce(searchQuery, 400);
   const dropdownRef = useRef<HTMLDivElement>(null);

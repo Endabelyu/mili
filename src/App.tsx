@@ -50,7 +50,7 @@ function DeveloperRoute({ children }: { children: React.ReactNode }) {
     </div>
   );
   if (!isAuthenticated) return <Navigate to="/auth/login" replace />;
-  if (user?.role !== 'developer' && user?.email !== 'endabelyuproject@gmail.com') return <Navigate to="/" replace />;
+  if (user?.role !== 'developer') return <Navigate to="/" replace />;
   return <AppLayout>{children}</AppLayout>;
 }
 

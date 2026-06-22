@@ -10,7 +10,7 @@ export default function DeveloperFeedbacksPage() {
   const { data: session, isPending: sessionLoading } = authClient.useSession();
   const navigate = useNavigate();
 
-  const isDeveloper = session?.user?.email === 'endabelyuproject@gmail.com';
+  const isDeveloper = (session?.user as { role?: string })?.role === 'developer';
 
   useEffect(() => {
     if (!sessionLoading && !isDeveloper) {

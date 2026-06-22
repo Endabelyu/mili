@@ -27,6 +27,9 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
   const isEditing = !!budget?.id;
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [limitRaw, setLimitRaw] = useState<string>(
+    budget?.limitAmount ? Math.round(parseFloat(budget.limitAmount.toString())).toString() : ''
+  );
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
     budget?.categoryId || ''
   );
@@ -84,7 +87,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
       newErrors.categoryId = t('budget.validationCategory');
     }
 
-    const limitAmount = formData.get('limitAmount') as string;
+    const limitAmount = limitRaw.replace(/\./g, '').replace(/,/g, '');
     if (!limitAmount || isNaN(parseFloat(limitAmount)) || parseFloat(limitAmount) <= 0) {
       newErrors.limitAmount = t('budget.validationAmount');
     }
@@ -107,7 +110,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
     setIsSubmitting(true);
     try {
       const categoryId = formData.get('categoryId') as string;
-      const limitAmount = formData.get('limitAmount') as string;
+      const limitAmount = limitRaw.replace(/\./g, '').replace(/,/g, '');
       const month = formData.get('month') as string;
 
       if (isEditing && budget?.id) {
@@ -267,11 +270,14 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
           <Input
             id="limitAmount"
             name="limitAmount"
-            type="number"
-            step={currency === 'IDR' ? '1000' : '0.01'}
-            min={currency === 'IDR' ? '1000' : '0.01'}
+            type="text"
+            inputMode="numeric"
             placeholder={currency === 'IDR' ? '0' : '0.00'}
-            defaultValue={budget?.limitAmount ? (currency === 'IDR' ? Math.round(parseFloat(budget.limitAmount.toString())).toString() : parseFloat(budget.limitAmount.toString()).toFixed(2)) : ''}
+            value={limitRaw ? new Intl.NumberFormat(currency === 'IDR' ? 'id-ID' : 'en-US').format(Number(limitRaw)) : ''}
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, '');
+              setLimitRaw(digits);
+            }}
             className={`
               pl-11 pr-4 py-2.5 text-lg font-semibold
               ${errors.limitAmount ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''}
@@ -303,12 +309,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
             <button
               key={amount}
               type="button"
-              onClick={() => {
-                const input = document.getElementById('limitAmount') as HTMLInputElement;
-                if (input) {
-                  input.value = amount.toString();
-                }
-              }}
+              onClick={() => setLimitRaw(amount.toString())}
               className="px-3 py-1.5 text-[13px] font-bold text-[var(--text-secondary)] bg-[var(--muted)] hover:bg-[var(--border)] rounded-lg transition-colors border border-[var(--border)]"
             >
               {currency === 'IDR' ? (amount / 1000) + 'rb' : '$' + amount}
