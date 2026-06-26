@@ -146,7 +146,7 @@ export default function TransactionsPage() {
   });
 
   // ─── Computed summary values ───────────────────────────────────────────────
-  const { income, expenses, balance, topCategories } = useMemo(() => {
+  const { income, expenses, balance, transfers, filteredCount, topCategories } = useMemo(() => {
     if (hasActiveFilter && summaryTxnsData?.items) {
       const items = summaryTxnsData.items;
       const inc = items
@@ -155,21 +155,25 @@ export default function TransactionsPage() {
       const exp = items
         .filter(tx => tx.type === 'expense')
         .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
+      const tra = items
+        .filter(tx => tx.type === 'transfer')
+        .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
       const cats = computeCategoryBreakdown(items).slice(0, 5);
-      return { income: inc, expenses: exp, balance: inc - exp, topCategories: cats };
+      return { income: inc, expenses: exp, balance: inc - exp, transfers: tra, filteredCount: items.length, topCategories: cats };
     }
 
     if (!hasActiveFilter && summaryData) {
-      // For byCategory: also use reportsApi but we need a separate fetch
       return {
         income: summaryData.income,
         expenses: summaryData.expenses,
         balance: summaryData.balance,
+        transfers: 0,
+        filteredCount: summaryData.transactionCount,
         topCategories: [] as ReturnType<typeof computeCategoryBreakdown>,
       };
     }
 
-    return { income: 0, expenses: 0, balance: 0, topCategories: [] as ReturnType<typeof computeCategoryBreakdown> };
+    return { income: 0, expenses: 0, balance: 0, transfers: 0, filteredCount: 0, topCategories: [] as ReturnType<typeof computeCategoryBreakdown> };
   }, [hasActiveFilter, summaryTxnsData, summaryData]);
 
   // ─── Category breakdown when no filter (use BE data) ──────────────────────
@@ -257,37 +261,61 @@ export default function TransactionsPage() {
       </div>
 
       {/* Hero Card - Summary */}
-      <div className="rounded-[32px] p-6 sm:p-8 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm animate-fade-in overflow-hidden w-full max-w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-4 lg:gap-8">
-          <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full">
-            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
-              <ArrowUpCircle className="w-3.5 h-3.5 text-[#059669]" />
-              MASUK
-            </p>
-            <p className="text-[20px] sm:text-[22px] font-bold text-[#059669] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
-              {formatMoney(income, { short: false })}
-            </p>
-          </div>
-          <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 sm:border-x border-[#0891B2]/10 pt-3 sm:pt-0 sm:px-8">
-            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
-              <ArrowDownCircle className="w-3.5 h-3.5 text-[#E11D48]" />
-              KELUAR
-            </p>
-            <p className="text-[20px] sm:text-[22px] font-bold text-[#E11D48] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
-              {formatMoney(expenses, { short: false })}
-            </p>
-          </div>
-          <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 pt-3 sm:pt-0 sm:pl-8">
-            <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
-              <Wallet className="w-3.5 h-3.5 text-[#0891B2]" />
-              SALDO
-            </p>
-            <p className="text-[20px] sm:text-[22px] font-bold text-[#0891B2] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
-              {formatMoney(balance, { short: false })}
-            </p>
+      {filter !== 'all' ? (
+        <div className="rounded-[32px] p-6 sm:p-8 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm animate-fade-in overflow-hidden w-full max-w-full">
+          <div className="flex items-center justify-between gap-6">
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2">
+                {filter === 'income' && <ArrowUpCircle className="w-3.5 h-3.5 text-[#059669]" />}
+                {filter === 'expense' && <ArrowDownCircle className="w-3.5 h-3.5 text-[#E11D48]" />}
+                {filter === 'transfer' && <Wallet className="w-3.5 h-3.5 text-[#0891B2]" />}
+                {filter === 'income' ? 'PEMASUKAN' : filter === 'expense' ? 'PENGELUARAN' : 'TRANSFER'}
+              </p>
+              <p className={`text-[28px] sm:text-[32px] font-bold tabular-nums ${
+                filter === 'income' ? 'text-[#059669]' : filter === 'expense' ? 'text-[#E11D48]' : 'text-[#0891B2]'
+              }`}>
+                {formatMoney(filter === 'income' ? income : filter === 'expense' ? expenses : transfers, { short: false })}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest">TRANSAKSI</p>
+              <p className="text-[28px] sm:text-[32px] font-bold text-[#0891B2] tabular-nums">{filteredCount}</p>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-[32px] p-6 sm:p-8 border-[2.5px] border-[#0891B2]/30 bg-[#ECFEFF] shadow-sm animate-fade-in overflow-hidden w-full max-w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-4 lg:gap-8">
+            <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full">
+              <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
+                <ArrowUpCircle className="w-3.5 h-3.5 text-[#059669]" />
+                MASUK
+              </p>
+              <p className="text-[20px] sm:text-[22px] font-bold text-[#059669] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
+                {formatMoney(income, { short: false })}
+              </p>
+            </div>
+            <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 sm:border-x border-[#0891B2]/10 pt-3 sm:pt-0 sm:px-8">
+              <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
+                <ArrowDownCircle className="w-3.5 h-3.5 text-[#E11D48]" />
+                KELUAR
+              </p>
+              <p className="text-[20px] sm:text-[22px] font-bold text-[#E11D48] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
+                {formatMoney(expenses, { short: false })}
+              </p>
+            </div>
+            <div className="space-y-1 sm:space-y-1.5 flex sm:flex-col items-center justify-between sm:items-start w-full border-t sm:border-t-0 pt-3 sm:pt-0 sm:pl-8">
+              <p className="text-[11px] font-bold text-[#0E7490]/70 uppercase tracking-widest flex items-center gap-2 shrink-0">
+                <Wallet className="w-3.5 h-3.5 text-[#0891B2]" />
+                SALDO
+              </p>
+              <p className="text-[20px] sm:text-[22px] font-bold text-[#0891B2] tabular-nums truncate max-w-[60%] sm:max-w-none text-right sm:text-left">
+                {formatMoney(balance, { short: false })}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter Pills */}
       <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar px-1 w-full">
