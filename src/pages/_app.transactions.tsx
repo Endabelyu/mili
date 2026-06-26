@@ -8,7 +8,6 @@ import { ArrowLeft, MoreHorizontal, Filter, ArrowUpCircle, ArrowDownCircle, Wall
 
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 
-
 // ─── Group transactions by date ──────────────────────────────────────────────
 function groupByDate(items: Transaction[]) {
   const groups: Record<string, Transaction[]> = {};
@@ -31,6 +30,52 @@ function groupByDate(items: Transaction[]) {
     });
 }
 
+// ─── Group transactions by week-of-month ─────────────────────────────────────
+function groupByWeek(items: Transaction[]) {
+  const groups: Record<number, { week: number; monthLabel: string; transactions: Transaction[] }> = {};
+  for (const item of items) {
+    const d = new Date(item.date);
+    const weekOfMonth = Math.ceil(d.getDate() / 7);
+    const monthLabel = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    if (!groups[weekOfMonth]) {
+      groups[weekOfMonth] = { week: weekOfMonth, monthLabel, transactions: [] };
+    }
+    groups[weekOfMonth].transactions.push(item);
+  }
+  return Object.values(groups).sort((a, b) => b.week - a.week);
+}
+
+// ─── Compute category breakdown from transaction list ─────────────────────────
+function computeCategoryBreakdown(items: Transaction[]) {
+  const expenses = items.filter(tx => tx.type === 'expense');
+  const totalExpenses = expenses.reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
+
+  const catMap = new Map<string, { categoryId: string; label: string; color: string; amount: number }>();
+  const defaultColors = ['#F79009', '#7F56D9', '#15803D', '#0BA5EC', '#F04438', '#EE46BC', '#334155', '#15B79E'];
+  let colorIndex = 0;
+
+  for (const tx of expenses) {
+    const amount = parseFloat(String(tx.amount));
+    const catId = tx.categoryId;
+    const label = tx.category?.label || catId;
+    const color = tx.category?.color || defaultColors[colorIndex % defaultColors.length];
+
+    if (catMap.has(catId)) {
+      catMap.get(catId)!.amount += amount;
+    } else {
+      catMap.set(catId, { categoryId: catId, label, color, amount });
+      if (!tx.category?.color) colorIndex++;
+    }
+  }
+
+  return Array.from(catMap.values())
+    .sort((a, b) => b.amount - a.amount)
+    .map(cat => ({
+      ...cat,
+      percentage: totalExpenses > 0 ? parseFloat(((cat.amount / totalExpenses) * 100).toFixed(2)) : 0,
+    }));
+}
+
 export default function TransactionsPage() {
   const [view, setView] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('daily');
   const [filter, setFilter] = useState<'all' | 'income' | 'expense' | 'transfer'>('all');
@@ -40,10 +85,36 @@ export default function TransactionsPage() {
   const search = searchParams.get('search') || undefined;
   const { formatMoney, t } = usePreferences();
 
-  // Fetch real transactions
+  // Current month in YYYY-MM format
+  const currentMonth = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }, []);
+
+  // Whether any filter is active (account or type filter, excluding view-based)
+  const hasActiveFilter = filter !== 'all' || accountFilter !== 'all';
+
+  // ─── Determine fetch params based on view ──────────────────────────────────
+  const txnParams = useMemo(() => {
+    const base = {
+      type: filter === 'all' ? undefined : filter,
+      account: accountFilter === 'all' ? undefined : accountFilter,
+      search,
+    };
+    if (view === 'daily') {
+      return { ...base, limit: 50 };
+    }
+    if (view === 'weekly' || view === 'monthly') {
+      return { ...base, month: currentMonth, limit: 200 };
+    }
+    // total
+    return { ...base, limit: 200 };
+  }, [view, filter, accountFilter, search, currentMonth]);
+
+  // Fetch transactions (display list)
   const { data: txnsData, isLoading: txnsLoading } = useQuery({
-    queryKey: queryKeys.transactions.list({ limit: 50, search, type: filter === 'all' ? undefined : filter, account: accountFilter === 'all' ? undefined : accountFilter }),
-    queryFn: () => transactionsApi.list({ limit: 50, search, type: filter === 'all' ? undefined : filter, account: accountFilter === 'all' ? undefined : accountFilter }),
+    queryKey: queryKeys.transactions.list(txnParams),
+    queryFn: () => transactionsApi.list(txnParams),
   });
 
   // Fetch accounts for filter
@@ -52,30 +123,80 @@ export default function TransactionsPage() {
     queryFn: () => accountsApi.list(),
   });
 
-  // Fetch real summary
-  const { data: summaryData, isLoading: summaryLoading } = useQuery({
-    queryKey: queryKeys.reports.summary(),
-    queryFn: () => reportsApi.summary(),
+  // ─── Summary data strategy ─────────────────────────────────────────────────
+  // When no active filter: use reportsApi.summary(currentMonth) — optimized BE query
+  // When filter active: compute client-side from a full month fetch (limit 500)
+  const summaryTxnParams = useMemo(() => ({
+    month: currentMonth,
+    limit: 500,
+    type: filter === 'all' ? undefined : filter,
+    account: accountFilter === 'all' ? undefined : accountFilter,
+  }), [currentMonth, filter, accountFilter]);
+
+  const { data: summaryTxnsData, isLoading: summaryTxnsLoading } = useQuery({
+    queryKey: queryKeys.transactions.list(summaryTxnParams),
+    queryFn: () => transactionsApi.list(summaryTxnParams),
+    enabled: hasActiveFilter,
   });
 
-  // Fetch category breakdown
+  const { data: summaryData, isLoading: summaryReportLoading } = useQuery({
+    queryKey: queryKeys.reports.summary(currentMonth),
+    queryFn: () => reportsApi.summary({ month: currentMonth }),
+    enabled: !hasActiveFilter,
+  });
+
+  // ─── Computed summary values ───────────────────────────────────────────────
+  const { income, expenses, balance, topCategories } = useMemo(() => {
+    if (hasActiveFilter && summaryTxnsData?.items) {
+      const items = summaryTxnsData.items;
+      const inc = items
+        .filter(tx => tx.type === 'income')
+        .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
+      const exp = items
+        .filter(tx => tx.type === 'expense')
+        .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
+      const cats = computeCategoryBreakdown(items).slice(0, 5);
+      return { income: inc, expenses: exp, balance: inc - exp, topCategories: cats };
+    }
+
+    if (!hasActiveFilter && summaryData) {
+      // For byCategory: also use reportsApi but we need a separate fetch
+      return {
+        income: summaryData.income,
+        expenses: summaryData.expenses,
+        balance: summaryData.balance,
+        topCategories: [] as ReturnType<typeof computeCategoryBreakdown>,
+      };
+    }
+
+    return { income: 0, expenses: 0, balance: 0, topCategories: [] as ReturnType<typeof computeCategoryBreakdown> };
+  }, [hasActiveFilter, summaryTxnsData, summaryData]);
+
+  // ─── Category breakdown when no filter (use BE data) ──────────────────────
   const { data: catData, isLoading: catLoading } = useQuery({
-    queryKey: queryKeys.reports.byCategory(),
-    queryFn: () => reportsApi.byCategory(),
+    queryKey: queryKeys.reports.byCategory(currentMonth),
+    queryFn: () => reportsApi.byCategory({ month: currentMonth }),
+    enabled: !hasActiveFilter,
   });
 
-  const isLoading = txnsLoading || summaryLoading || catLoading;
+  const displayCategories = hasActiveFilter ? topCategories : (catData?.slice(0, 5) ?? []);
 
-  // Group transactions by date for daily view
+  // ─── Loading state ─────────────────────────────────────────────────────────
+  const summaryLoading = hasActiveFilter ? summaryTxnsLoading : (summaryReportLoading || catLoading);
+  const isLoading = txnsLoading || summaryLoading;
+
+  // ─── Group transactions for views ─────────────────────────────────────────
   const dateGroups = useMemo(() => {
     if (!txnsData?.items) return [];
     return groupByDate(txnsData.items);
   }, [txnsData]);
 
-  const income = summaryData?.income ?? 0;
-  const expenses = summaryData?.expenses ?? 0;
-  const balance = summaryData?.balance ?? 0;
-  const topCategories = catData?.slice(0, 5) ?? [];
+  const weekGroups = useMemo(() => {
+    if (!txnsData?.items) return [];
+    return groupByWeek(txnsData.items);
+  }, [txnsData]);
+
+  const allTransactions = txnsData?.items ?? [];
 
   if (isLoading) {
     return (
@@ -100,7 +221,7 @@ export default function TransactionsPage() {
 
       <div className="flex items-center justify-between pt-4">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
           >
@@ -108,7 +229,7 @@ export default function TransactionsPage() {
           </button>
           <h1 className="text-[28px] font-bold text-[var(--text)] tracking-[-0.03em]">Riwayat Transaksi</h1>
         </div>
-        <button 
+        <button
           className="w-11 h-11 rounded-2xl bg-[var(--muted)] text-[var(--text)] flex items-center justify-center hover:bg-[var(--border)] transition-colors active:scale-95"
         >
           <Filter className="w-5 h-5" />
@@ -122,8 +243,8 @@ export default function TransactionsPage() {
             key={v}
             onClick={() => setView(v)}
             className={`py-4 text-[15px] font-bold transition-all relative ${
-              view === v 
-                ? 'text-[var(--text)]' 
+              view === v
+                ? 'text-[var(--text)]'
                 : 'text-[var(--text-dim-2)] opacity-50'
             }`}
           >
@@ -194,8 +315,8 @@ export default function TransactionsPage() {
           <button
             onClick={() => setAccountFilter('all')}
             className={`px-4 py-1.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all active:scale-95 border ${
-              accountFilter === 'all' 
-                ? 'bg-[var(--accent)] text-white border-[var(--accent)]' 
+              accountFilter === 'all'
+                ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
                 : 'bg-transparent text-[var(--text-dim-2)] border-[var(--border)] hover:bg-[var(--muted)]'
             }`}
           >
@@ -206,8 +327,8 @@ export default function TransactionsPage() {
               key={acc.id}
               onClick={() => setAccountFilter(acc.id)}
               className={`px-4 py-1.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all active:scale-95 border ${
-                accountFilter === acc.id 
-                  ? 'bg-[var(--accent)] text-white border-[var(--accent)]' 
+                accountFilter === acc.id
+                  ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
                   : 'bg-transparent text-[var(--text-dim-2)] border-[var(--border)] hover:bg-[var(--muted)]'
               }`}
             >
@@ -220,20 +341,20 @@ export default function TransactionsPage() {
         </div>
       )}
 
+      {/* ─── Monthly View: Category Breakdown ──────────────────────────────── */}
       {view === 'monthly' && (
         <div className="animate-fade-in">
-          {/* Category Breakdown — real data */}
-          {topCategories.length > 0 && (
+          {displayCategories.length > 0 && (
             <div className="mt-6">
               <div className="flex items-center justify-between mb-3 px-1">
                 <h3 className="text-[14px] font-bold text-[var(--text)] tracking-[-0.01em]">{t('txn.categoryBreakdown')}</h3>
               </div>
               <div className="flow-card p-4 space-y-4">
-                {topCategories.map((cat) => (
+                {displayCategories.map((cat) => (
                   <div key={cat.categoryId} className="flex items-center gap-3">
-                    <CategoryIcon 
-                      category={cat.label} 
-                      size="md" 
+                    <CategoryIcon
+                      category={cat.label}
+                      size="md"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between mb-1.5">
@@ -249,9 +370,47 @@ export default function TransactionsPage() {
               </div>
             </div>
           )}
+
+          {displayCategories.length === 0 && (
+            <div className="flow-card p-12 text-center">
+              <p className="text-[48px] mb-4">📊</p>
+              <p className="text-[16px] font-bold text-[var(--text)] mb-1">Tidak ada data pengeluaran</p>
+              <p className="text-[13px] font-medium text-[var(--text-dim)]">Belum ada transaksi pengeluaran bulan ini.</p>
+            </div>
+          )}
+
+          {/* Also show monthly transaction list */}
+          <div className="mt-6 space-y-6">
+            {dateGroups.map((group) => (
+              <div key={`${group.day}-${group.month}-${group.year}`}>
+                <div className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="text-[18px] font-bold text-[var(--text)] tracking-[-0.01em]">{group.day}</div>
+                  <div>
+                    <div className="text-[11px] text-[var(--text-dim)] font-bold tracking-[0.02em] uppercase">{group.month}</div>
+                    <div className="text-[10px] text-[var(--text-dim-2)]">{group.year}</div>
+                  </div>
+                </div>
+                <div className="flow-card">
+                  {group.transactions.map((tx: Transaction) => (
+                    <TransactionRow
+                      key={tx.id}
+                      categoryLabel={tx.category?.label || tx.categoryId}
+                      categoryIcon={tx.category?.icon}
+                      label={tx.description || tx.category?.label || tx.categoryId}
+                      amount={parseFloat(String(tx.amount))}
+                      isIncome={tx.type === 'income'}
+                      formatMoney={formatMoney}
+                      onClick={() => navigate(`?edit_transaction_id=${tx.id}`)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
+      {/* ─── Daily View ─────────────────────────────────────────────────────── */}
       {view === 'daily' && (
         <div className="animate-fade-in space-y-6 content-auto">
           {dateGroups.length === 0 ? (
@@ -289,6 +448,72 @@ export default function TransactionsPage() {
           )}
         </div>
       )}
+
+      {/* ─── Weekly View ─────────────────────────────────────────────────────── */}
+      {view === 'weekly' && (
+        <div className="animate-fade-in space-y-6">
+          {weekGroups.length === 0 ? (
+            <div className="flow-card p-12 text-center">
+              <p className="text-[48px] mb-4">📭</p>
+              <p className="text-[16px] font-bold text-[var(--text)] mb-1">{t('dashboard.noTransactions')}</p>
+              <p className="text-[13px] font-medium text-[var(--text-dim)]">{t('transactions.noTransactionsDesc')}</p>
+            </div>
+          ) : (
+            weekGroups.map((group) => (
+              <div key={group.week}>
+                <div className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="text-[14px] font-bold text-[var(--text-dim)] tracking-[-0.01em] uppercase">
+                    Minggu ke-{group.week}
+                  </div>
+                  <div className="text-[12px] text-[var(--text-dim-2)] font-medium">{group.monthLabel}</div>
+                </div>
+                <div className="flow-card">
+                  {group.transactions.map((tx: Transaction) => (
+                    <TransactionRow
+                      key={tx.id}
+                      categoryLabel={tx.category?.label || tx.categoryId}
+                      categoryIcon={tx.category?.icon}
+                      label={tx.description || tx.category?.label || tx.categoryId}
+                      amount={parseFloat(String(tx.amount))}
+                      isIncome={tx.type === 'income'}
+                      formatMoney={formatMoney}
+                      onClick={() => navigate(`?edit_transaction_id=${tx.id}`)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* ─── Total View: flat list, no date grouping ─────────────────────────── */}
+      {view === 'total' && (
+        <div className="animate-fade-in">
+          {allTransactions.length === 0 ? (
+            <div className="flow-card p-12 text-center">
+              <p className="text-[48px] mb-4">📭</p>
+              <p className="text-[16px] font-bold text-[var(--text)] mb-1">{t('dashboard.noTransactions')}</p>
+              <p className="text-[13px] font-medium text-[var(--text-dim)]">{t('transactions.noTransactionsDesc')}</p>
+            </div>
+          ) : (
+            <div className="flow-card">
+              {allTransactions.map((tx: Transaction) => (
+                <TransactionRow
+                  key={tx.id}
+                  categoryLabel={tx.category?.label || tx.categoryId}
+                  categoryIcon={tx.category?.icon}
+                  label={tx.description || tx.category?.label || tx.categoryId}
+                  amount={parseFloat(String(tx.amount))}
+                  isIncome={tx.type === 'income'}
+                  formatMoney={formatMoney}
+                  onClick={() => navigate(`?edit_transaction_id=${tx.id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -300,14 +525,14 @@ function TransactionRow({ categoryLabel, categoryIcon, label, amount, isIncome, 
   onClick: () => void;
 }) {
   return (
-    <div 
+    <div
       onClick={onClick}
       className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--muted)] transition-all cursor-pointer group active:bg-[var(--border)]"
     >
-      <CategoryIcon 
-        category={categoryLabel} 
-        icon={categoryIcon} 
-        size="lg" 
+      <CategoryIcon
+        category={categoryLabel}
+        icon={categoryIcon}
+        size="lg"
       />
       <div className="flex-1 min-w-0 pr-2 sm:pr-4">
         <p className="text-[14px] sm:text-[15px] font-bold text-[var(--text)] truncate">{label}</p>

@@ -212,8 +212,10 @@ export const reportsApi = {
 // ─── Categories ───────────────────────────────────────────────────────────────
 export const categoriesApi = {
   list: () => request<{ items: Category[] }>('/api/categories').then(res => res.items),
-  create: (data: { label: string; color: string; icon: string; type: string }) => 
+  create: (data: { label: string; color: string; icon: string; type: string }) =>
     request<Category>('/api/categories', { method: 'POST', body: JSON.stringify(data) }),
+  delete: (id: string) =>
+    request<{ success: boolean }>(`/api/categories/${id}`, { method: 'DELETE' }),
 };
 
 // ─── Consent ──────────────────────────────────────────────────────────────────

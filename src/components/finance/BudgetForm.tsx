@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Button, Input } from '@app/components/ui';
-import { budgetsApi } from '@app/api/client';
+import { budgetsApi, categoriesApi } from '@app/api/client';
 import { usePreferences } from '@app/hooks/usePreferences';
-import { Tag, Calendar, Target, Loader2, Search } from 'lucide-react';
+import { Tag, Calendar, Target, Loader2, Search, Trash2 } from 'lucide-react';
 import type { Budget, Category } from '@app/types';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CategoryIcon } from '../ui/CategoryIcon';
 
 interface BudgetWithSpending extends Budget {
@@ -23,8 +24,16 @@ interface BudgetFormProps {
 
 export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCancel }: BudgetFormProps) {
   const { currency, t } = usePreferences();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!budget?.id;
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id: string) => categoriesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+  });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [limitRaw, setLimitRaw] = useState<string>(
@@ -38,6 +47,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
   const [categorySearch, setCategorySearch] = useState('');
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const categorySearchRef = useRef<HTMLInputElement>(null);
+  const monthInputRef = useRef<HTMLInputElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -187,27 +197,43 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
               </div>
               <div className="max-h-[250px] overflow-y-auto grid grid-cols-3 gap-2 p-1">
                 {filteredDropdownCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategoryId(category.id);
-                      setIsCategoryDropdownOpen(false);
-                    }}
-                    className={`
-                      flex flex-col items-center justify-center p-3 rounded-2xl transition-all
-                      ${selectedCategoryId === category.id 
-                        ? 'bg-[var(--accent-tint)] ring-1 ring-[var(--accent)]' 
-                        : 'hover:bg-[var(--muted)] border border-transparent'}
-                    `}
-                  >
-                    <CategoryIcon 
-                      category={category.label} 
-                      icon={category.icon} 
-                      size="md" 
-                      label={category.label}
-                    />
-                  </button>
+                  <div key={category.id} className="relative group/cat">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategoryId(category.id);
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                      className={`
+                        w-full flex flex-col items-center justify-center p-3 rounded-2xl transition-all
+                        ${selectedCategoryId === category.id
+                          ? 'bg-[var(--accent-tint)] ring-1 ring-[var(--accent)]'
+                          : 'hover:bg-[var(--muted)] border border-transparent'}
+                      `}
+                    >
+                      <CategoryIcon
+                        category={category.label}
+                        icon={category.icon}
+                        size="md"
+                        label={category.label}
+                      />
+                    </button>
+                    {category.isOwn && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteCategoryMutation.mutate(category.id);
+                          if (selectedCategoryId === category.id) setSelectedCategoryId('');
+                        }}
+                        disabled={deleteCategoryMutation.isPending}
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 text-white opacity-0 group-hover/cat:opacity-100 transition-opacity flex items-center justify-center"
+                        title="Hapus kategori"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -231,18 +257,22 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
         <label htmlFor="month" className="block text-sm font-semibold text-[var(--text-primary)] mb-2">
           Month
         </label>
-        <div className="relative group">
+        <div
+          className="relative group"
+          onClick={() => { if (!isEditing) monthInputRef.current?.showPicker?.(); }}
+        >
           <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
             <Calendar className="w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
           </div>
           <Input
+            ref={monthInputRef}
             id="month"
             name="month"
             type="month"
             defaultValue={budget?.month || currentMonth}
             disabled={isEditing}
             className={`
-              pl-10
+              pl-10 cursor-pointer
               ${errors.month ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''}
               ${isEditing ? 'bg-white/10 dark:bg-black/20 cursor-not-allowed' : ''}
             `}

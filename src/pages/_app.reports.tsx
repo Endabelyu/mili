@@ -33,9 +33,10 @@ export default function AnalyticsPage() {
   }, []);
 
   // We fetch all transactions for the current month to derive both Category data AND Daily data
+  // limit: 500 to avoid silently truncating months with many transactions
   const { data: txnsData, isLoading: txnsLoading } = useQuery({
-    queryKey: queryKeys.transactions.list({ month: currentMonth, limit: 100 }),
-    queryFn: () => transactionsApi.list({ month: currentMonth, limit: 100 }),
+    queryKey: queryKeys.transactions.list({ month: currentMonth, limit: 500 }),
+    queryFn: () => transactionsApi.list({ month: currentMonth, limit: 500 }),
   });
 
   const isLoading = txnsLoading;
@@ -71,6 +72,18 @@ export default function AnalyticsPage() {
   }, [filteredTransactions]);
 
   const totalAmount = categories.reduce((sum, c) => sum + c.amount, 0);
+
+  // Compute savings rate from all transactions this month
+  const savingsRate = useMemo(() => {
+    const totalIncome = transactions
+      .filter(tx => tx.type === 'income')
+      .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
+    const totalExpenses = transactions
+      .filter(tx => tx.type === 'expense')
+      .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
+    if (totalIncome <= 0) return 0;
+    return Math.max(0, ((totalIncome - totalExpenses) / totalIncome) * 100);
+  }, [transactions]);
 
   // Aggregate by day for bar chart
   const dailyData = useMemo(() => {
@@ -130,9 +143,15 @@ export default function AnalyticsPage() {
           </div>
           <div className="text-right shrink-0">
              <p className="text-[11px] font-bold text-[#0E7490]/50 uppercase tracking-widest mb-1">Rasio Menabung</p>
-             <p className="text-[32px] font-bold text-[#0891B2] tracking-[-0.03em] tabular-nums">24.5%</p>
-             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-[10px] font-bold mt-1">
-               Lancar
+             <p className="text-[32px] font-bold text-[#0891B2] tracking-[-0.03em] tabular-nums">{savingsRate.toFixed(1)}%</p>
+             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold mt-1 ${
+               savingsRate >= 20
+                 ? 'bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981]'
+                 : savingsRate > 0
+                 ? 'bg-[#F79009]/10 border border-[#F79009]/20 text-[#F79009]'
+                 : 'bg-[#F04438]/10 border border-[#F04438]/20 text-[#F04438]'
+             }`}>
+               {savingsRate >= 20 ? 'Lancar' : savingsRate > 0 ? 'Perhatian' : 'Defisit'}
              </div>
           </div>
         </div>
