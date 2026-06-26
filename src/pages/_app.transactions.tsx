@@ -125,10 +125,10 @@ export default function TransactionsPage() {
 
   // ─── Summary data strategy ─────────────────────────────────────────────────
   // When no active filter: use reportsApi.summary(currentMonth) — optimized BE query
-  // When filter active: compute client-side from a full month fetch (limit 500)
+  // When filter active: compute client-side from a full month fetch (BE max 200)
   const summaryTxnParams = useMemo(() => ({
     month: currentMonth,
-    limit: 500,
+    limit: 200,
     type: filter === 'all' ? undefined : filter,
     account: accountFilter === 'all' ? undefined : accountFilter,
   }), [currentMonth, filter, accountFilter]);
