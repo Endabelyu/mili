@@ -5,6 +5,7 @@ import { queryKeys } from '../lib/query-keys';
 import { transactionsApi, reportsApi, accountsApi, type Transaction } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
 import { ArrowLeft, MoreHorizontal, Filter, ArrowUpCircle, ArrowDownCircle, Wallet } from 'lucide-react';
+import { computeSummary } from '../lib/summary';
 
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 
@@ -149,17 +150,9 @@ export default function TransactionsPage() {
   const { income, expenses, balance, transfers, filteredCount, topCategories } = useMemo(() => {
     if (hasActiveFilter && summaryTxnsData?.items) {
       const items = summaryTxnsData.items;
-      const inc = items
-        .filter(tx => tx.type === 'income')
-        .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
-      const exp = items
-        .filter(tx => tx.type === 'expense')
-        .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
-      const tra = items
-        .filter(tx => tx.type === 'transfer')
-        .reduce((sum, tx) => sum + parseFloat(String(tx.amount)), 0);
+      const s = computeSummary(items);
       const cats = computeCategoryBreakdown(items).slice(0, 5);
-      return { income: inc, expenses: exp, balance: inc - exp, transfers: tra, filteredCount: items.length, topCategories: cats };
+      return { ...s, topCategories: cats };
     }
 
     if (!hasActiveFilter && summaryData) {
