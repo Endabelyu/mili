@@ -15,6 +15,7 @@ export default function DeveloperAnalyticsPage() {
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [users, setUsers] = useState<AnalyticsUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
@@ -24,18 +25,32 @@ export default function DeveloperAnalyticsPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    try {
-      const [sumData, usersData] = await Promise.all([
-        analyticsApi.summary(),
-        analyticsApi.users()
-      ]);
-      setSummary(sumData);
-      setUsers(usersData);
-    } catch (err) {
-      console.error('Failed to fetch analytics', err);
-    } finally {
-      setIsLoading(false);
+    setFetchError(null);
+    const errors: string[] = [];
+
+    const [sumResult, usersResult] = await Promise.allSettled([
+      analyticsApi.summary(),
+      analyticsApi.users(),
+    ]);
+
+    if (sumResult.status === 'fulfilled') {
+      setSummary(sumResult.value);
+    } else {
+      const msg = sumResult.reason?.message || String(sumResult.reason);
+      errors.push(`Summary: ${msg}`);
+      console.error('Failed to fetch summary', sumResult.reason);
     }
+
+    if (usersResult.status === 'fulfilled') {
+      setUsers(usersResult.value);
+    } else {
+      const msg = usersResult.reason?.message || String(usersResult.reason);
+      errors.push(`Users: ${msg}`);
+      console.error('Failed to fetch users', usersResult.reason);
+    }
+
+    if (errors.length) setFetchError(errors.join(' · '));
+    setIsLoading(false);
   };
 
   const filteredUsers = users.filter(user => {
@@ -103,6 +118,12 @@ export default function DeveloperAnalyticsPage() {
           Refresh Data
         </button>
       </div>
+
+      {fetchError && (
+        <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm font-semibold text-red-500">
+          ⚠ Fetch error — {fetchError}
+        </div>
+      )}
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
