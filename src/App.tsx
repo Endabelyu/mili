@@ -89,11 +89,13 @@ export default function App() {
             <p className="text-[var(--text-dim)] mb-6 text-center max-w-md">
               We've encountered an unexpected error. Our team has been notified.
             </p>
-            <div className="bg-white p-4 rounded-lg border border-[var(--border)] w-full max-w-lg mb-6 overflow-auto">
-              <code className="text-sm font-mono text-[#F04438]">
-                {error instanceof Error ? error.message : String(error)}
-              </code>
-            </div>
+            {import.meta.env.DEV && (
+              <div className="bg-white p-4 rounded-lg border border-[var(--border)] w-full max-w-lg mb-6 overflow-auto">
+                <code className="text-sm font-mono text-[#F04438]">
+                  {error instanceof Error ? error.message : String(error)}
+                </code>
+              </div>
+            )}
             <button
               onClick={() => resetError()}
               className="px-6 py-2 bg-[#15803D] text-white rounded-xl font-bold transition-colors"
