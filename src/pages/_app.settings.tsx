@@ -1057,7 +1057,7 @@ function CategoryManagerSection() {
                   Tambah Kategori
                 </button>
               ) : (
-                <div className="space-y-3 pt-1 pb-2">
+                <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }} className="space-y-3 pt-1 pb-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[13px] font-bold text-[var(--text)]">Kategori Baru</p>
                     <button onClick={() => { setShowAddForm(false); setAddError(''); }} className="text-[var(--text-dim)]">
@@ -1086,6 +1086,7 @@ function CategoryManagerSection() {
                   <div className="flex gap-2 flex-wrap">
                     {PRESET_COLORS.map((c) => (
                       <button
+                        type="button"
                         key={c}
                         onClick={() => setNewColor(c)}
                         className="w-7 h-7 rounded-full transition-transform hover:scale-110"
@@ -1098,6 +1099,7 @@ function CategoryManagerSection() {
                   <div className="flex gap-2">
                     {(['expense', 'income', 'both'] as const).map((type) => (
                       <button
+                        type="button"
                         key={type}
                         onClick={() => setNewType(type)}
                         className={`flex-1 py-2 rounded-lg text-[12px] font-bold capitalize transition-colors ${
@@ -1116,7 +1118,7 @@ function CategoryManagerSection() {
                   )}
 
                   <button
-                    onClick={handleCreate}
+                    type="submit"
                     disabled={createMutation.isPending}
                     className="w-full py-3 rounded-xl bg-[var(--accent)] text-white font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:active:scale-100"
                   >
@@ -1127,7 +1129,7 @@ function CategoryManagerSection() {
                     )}
                     Simpan Kategori
                   </button>
-                </div>
+                </form>
               )}
             </div>
           </div>

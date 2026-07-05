@@ -356,7 +356,8 @@ export default function ScheduledPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in z-[190]" onClick={resetForm} />
-          <div 
+          <form
+            onSubmit={(e) => { e.preventDefault(); handleSave(); }}
             className="relative z-[200] w-full max-w-[500px] bg-[var(--bg)] rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-[var(--border)]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -508,14 +509,14 @@ export default function ScheduledPage() {
 
             <div className="p-4 border-t border-[var(--border)] shrink-0">
               <button
-                onClick={handleSave}
+                type="submit"
                 disabled={!amount || (type !== 'transfer' && !categoryId) || !nextRunDate || saving}
                 className="w-full py-4 rounded-[16px] bg-[#15803D] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
               >
                 {saving ? t('common.loading') : selectedScheduled ? t('scheduled.editSchedule') : t('scheduled.saveSchedule')}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
       {/* ─── Global Alert ─── */}
