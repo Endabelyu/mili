@@ -5,6 +5,7 @@ import { queryKeys } from '../lib/query-keys';
 import { budgetsApi, categoriesApi, type Budget } from '../api/client';
 import { Plus, X, ArrowLeft, Target, Trash2, Loader2 } from 'lucide-react';
 import { usePreferences } from '../hooks/usePreferences';
+import { useEscapeKey } from '../hooks';
 import { BudgetForm } from '../components/finance/BudgetForm';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 import { ConfirmDialog } from '../components/ui';
@@ -37,6 +38,8 @@ export default function BudgetPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+
+  useEscapeKey(() => setIsModalOpen(false), isModalOpen);
 
   // For edit mode — fetch all categories including hidden so current category always shows
   const { data: allCategoriesData } = useQuery({

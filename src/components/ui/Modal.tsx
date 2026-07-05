@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useEscapeKey } from '../../hooks';
 
 interface ModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+  useEscapeKey(onClose, isOpen);
+
   // Lock body scroll when open
   useEffect(() => {
     if (isOpen) {

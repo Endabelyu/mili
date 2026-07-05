@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useEscapeKey } from '../hooks';
 import { usePreferences, LANGUAGE_OPTIONS, CURRENCY_OPTIONS } from '../hooks/usePreferences';
 import type { Language, Currency } from '../hooks/usePreferences';
 import {
@@ -875,6 +876,8 @@ const PRESET_COLORS = ['#F04438', '#F79009', '#12B76A', '#2E90FA', '#7A5AF8', '#
 
 function CategoryManagerSection() {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEscapeKey(() => setIsOpen(false), isOpen);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLabel, setNewLabel] = useState('');
   const [newColor, setNewColor] = useState(PRESET_COLORS[0]);

@@ -1,6 +1,7 @@
 import { X, Target, Calendar, TrendingUp, DollarSign, Bell, Scan, User, Settings, LogOut, Shield, MessageSquare, ClipboardList } from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useEscapeKey } from '../../hooks';
 
 const MENU_ITEMS = [
   { path: '/targets', icon: Target, title: 'Target', subtitle: 'Target finansial' },
@@ -32,6 +33,8 @@ export function MoreMenuModal() {
   };
 
   const { user } = useAuth();
+
+  useEscapeKey(handleClose, isOpen);
 
   const menuItems = user?.role === 'developer'
     ? [

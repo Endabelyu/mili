@@ -1,4 +1,5 @@
 import { X, AlertCircle, CheckCircle2, Info } from 'lucide-react';
+import { useEscapeKey } from '../../hooks';
 
 interface AlertProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ export function Alert({
   onConfirm,
   isConfirm = false
 }: AlertProps) {
+  useEscapeKey(onClose, isOpen);
+
   if (!isOpen) return null;
 
   const icons = {

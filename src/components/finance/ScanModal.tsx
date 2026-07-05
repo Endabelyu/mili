@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X, Image as ImageIcon, Camera, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePreferences } from '../../hooks/usePreferences';
+import { useEscapeKey } from '../../hooks';
 import { useReceiptOcr } from '../../features/receipt-scanner/useReceiptOcr';
 import { ReceiptPreview } from '../../features/receipt-scanner/ReceiptPreview';
 import type { ReceiptData } from '../../features/receipt-scanner/types';
@@ -21,6 +22,8 @@ export function ScanModal({ isOpen, onClose }: ScanModalProps) {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const { scanFree, scanAI, status, result, error, scanMode, aiEnabled, reset } = useReceiptOcr();
+
+  useEscapeKey(onClose, isOpen);
 
   // ─── File selection (Gallery) ─────────────────────────────────────────────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesApi, transactionsApi, accountsApi, type Transaction } from '../../api/client';
 import { queryKeys } from '../../lib/query-keys';
 import { usePreferences } from '../../hooks/usePreferences';
+import { useEscapeKey } from '../../hooks';
 import { CategoryIcon } from '../ui/CategoryIcon';
 import { MobileDatePicker } from '../ui/MobileDatePicker';
 
@@ -62,6 +63,8 @@ export function NewTransactionModal() {
       setShowNumpad(false);
     }, 300);
   };
+
+  useEscapeKey(handleClose, isOpen);
 
   // Fetch transaction if editing
   const { data: txnData, isError: isTxnError } = useQuery({

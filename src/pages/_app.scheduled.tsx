@@ -4,6 +4,7 @@ import { Plus, RefreshCw, X, ArrowLeft, Trash2 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
 import { scheduledApi, categoriesApi, accountsApi, type ScheduledTransaction, type Category } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
+import { useEscapeKey } from '../hooks';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
 import { queryKeys } from '../lib/query-keys';
 
@@ -156,6 +157,8 @@ export default function ScheduledPage() {
     setSaving(false);
     setSelectedScheduled(null);
   };
+
+  useEscapeKey(resetForm, isModalOpen);
 
   const handleSave = () => {
     let finalCatId = categoryId;
