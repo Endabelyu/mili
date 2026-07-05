@@ -6,22 +6,16 @@ on:
   pull_request:
     branches: [main, develop]
 
-env:
-  NODE_VERSION: '20'
-
 jobs:
   lint:
     name: Lint & Type Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npx tsc -b
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run lint
+      - run: bunx tsc -b
 
   build:
     name: Build Frontend
@@ -29,12 +23,9 @@ jobs:
     needs: [lint]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run build
 
   deploy-production:
     name: Deploy to VPS
@@ -45,16 +36,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install & Build
         run: |
-          npm ci
-          npm run build
+          bun install
+          bun run build
 
       - name: Copy build to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -63,7 +51,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME_CONTABO }}
           key: ${{ secrets.VPS_SSHKEY_CONTABO }}
           port: ${{ secrets.VPS_PORT_CONTABO || '22' }}
-          source: "package.json,package-lock.json,src/,public/,index.html,vite.config.ts,tsconfig.json,tsconfig.app.json,tsconfig.node.json,eslint.config.js,docker-compose.yml,Dockerfile,nginx.conf"
+          source: "package.json,bun.lock,src/,public/,index.html,vite.config.ts,tsconfig.json,tsconfig.app.json,tsconfig.node.json,eslint.config.js,docker-compose.yml,Dockerfile,nginx.conf"
           target: ${{ secrets.VPS_TARGET_DIR }}/web/
           overwrite: true
 
