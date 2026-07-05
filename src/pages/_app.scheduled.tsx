@@ -506,7 +506,7 @@ export default function ScheduledPage() {
             <div className="p-4 border-t border-[var(--border)] shrink-0">
               <button
                 onClick={handleSave}
-                disabled={!amount || (type !== 'transfer' && !categoryId) || !accountId || !nextRunDate || saving}
+                disabled={!amount || (type !== 'transfer' && !categoryId) || !nextRunDate || saving}
                 className="w-full py-4 rounded-[16px] bg-[#15803D] text-white font-bold text-[15px] flex items-center justify-center disabled:opacity-50"
               >
                 {saving ? t('common.loading') : selectedScheduled ? t('scheduled.editSchedule') : t('scheduled.saveSchedule')}
