@@ -37,6 +37,7 @@ export function NewTransactionModal() {
   const [categorySearch, setCategorySearch] = useState('');
   const [showNumpad, setShowNumpad] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const populatedForEditId = useRef<string | null>(null);
 
   const isOpen = searchParams.get('new_transaction') === 'true' || searchParams.get('edit_transaction_id') !== null;
   const editId = searchParams.get('edit_transaction_id');
@@ -78,9 +79,10 @@ export function NewTransactionModal() {
     }
   }, [isTxnError, editId]);
 
-  // Populate state when editing
+  // Populate state when editing — only once per editId to avoid resetting user changes on refetch
   useEffect(() => {
-    if (txnData && editId) {
+    if (txnData && editId && populatedForEditId.current !== editId) {
+      populatedForEditId.current = editId;
       setType(txnData.type as 'expense' | 'income' | 'transfer');
       setAmount(String(Math.abs(parseFloat(String(txnData.amount))).toFixed(0)));
       setSelectedCategory(txnData.categoryId ?? null);
@@ -90,6 +92,9 @@ export function NewTransactionModal() {
       if (txnData.date) {
         setDate(new Date(txnData.date).toISOString().slice(0, 10));
       }
+    }
+    if (!editId) {
+      populatedForEditId.current = null;
     }
   }, [txnData, editId]);
 
