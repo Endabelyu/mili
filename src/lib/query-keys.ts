@@ -12,7 +12,10 @@ export const queryKeys = {
     byCategory: (month?: string) => ['reports', 'by-category', month] as const,
     monthly: (months?: number) => ['reports', 'monthly', months] as const,
   },
-  categories: { all: ['categories'] as const },
+  categories: {
+    all: ['categories'] as const,
+    list: (params?: { includeHidden?: boolean }) => ['categories', 'list', params ?? {}] as const,
+  },
   accounts: { all: ['accounts'] as const },
   calendar: {
     monthly: (month: string) => ['calendar', month] as const,

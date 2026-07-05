@@ -211,11 +211,19 @@ export const reportsApi = {
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 export const categoriesApi = {
-  list: () => request<{ items: Category[] }>('/api/categories').then(res => res.items),
+  list: (params?: { includeHidden?: boolean }) => {
+    const url = params?.includeHidden ? '/api/categories?includeHidden=true' : '/api/categories';
+    return request<{ items: Category[] }>(url).then(res => res.items);
+  },
   create: (data: { label: string; color: string; icon: string; type: string }) =>
     request<Category>('/api/categories', { method: 'POST', body: JSON.stringify(data) }),
   delete: (id: string) =>
     request<{ success: boolean }>(`/api/categories/${id}`, { method: 'DELETE' }),
+  setVisibility: (id: string, hidden: boolean) =>
+    request<{ success: boolean; hidden: boolean }>(`/api/categories/${id}/visibility`, {
+      method: 'PATCH',
+      body: JSON.stringify({ hidden }),
+    }),
 };
 
 // ─── Consent ──────────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import { Tag, Calendar, Target, Loader2, Search, Trash2 } from 'lucide-react';
 import type { Budget, Category } from '@app/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CategoryIcon } from '../ui/CategoryIcon';
+import { queryKeys } from '@app/lib/query-keys';
 
 interface BudgetWithSpending extends Budget {
   category?: Category;
@@ -31,7 +32,7 @@ export function BudgetForm({ budget, categories, currentMonth, onSuccess, onCanc
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: string) => categoriesApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
     },
   });
 

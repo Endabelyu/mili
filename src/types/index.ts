@@ -6,6 +6,7 @@ export interface Category {
   color: string | null;
   type: string;
   isOwn?: boolean;
+  hidden?: boolean;
 }
 
 export interface Account {

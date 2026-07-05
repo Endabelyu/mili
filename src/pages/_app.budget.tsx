@@ -31,12 +31,19 @@ export default function BudgetPage() {
   });
 
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
-    queryKey: ['categories'],
+    queryKey: queryKeys.categories.list(),
     queryFn: () => categoriesApi.list(),
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+
+  // For edit mode — fetch all categories including hidden so current category always shows
+  const { data: allCategoriesData } = useQuery({
+    queryKey: queryKeys.categories.list({ includeHidden: true }),
+    queryFn: () => categoriesApi.list({ includeHidden: true }),
+    enabled: isModalOpen && !!selectedBudget,
+  });
   const [deleteTarget, setDeleteTarget] = useState<Budget | null>(null);
   const queryClient = useQueryClient();
 
@@ -53,7 +60,7 @@ export default function BudgetPage() {
   });
 
   const budgets = budgetsData || [];
-  const categories = categoriesData || [];
+  const categories = (isModalOpen && selectedBudget ? (allCategoriesData ?? categoriesData) : categoriesData) ?? [];
   const isLoading = budgetsLoading || categoriesLoading;
 
   // Calculate totals

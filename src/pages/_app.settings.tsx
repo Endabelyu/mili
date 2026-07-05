@@ -15,21 +15,26 @@ import {
   Trash2,
   Star,
   Info,
-
   Check,
   X,
   MessageSquare,
   Send,
+  Eye,
+  EyeOff,
+  Tag,
+  Plus,
 } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
 import type * as ExcelJSTypes from 'exceljs';
 // ExcelJS imported dynamically to avoid Vite fetch issues
 // import * as ExcelJS from 'exceljs';
 
-import { useQuery } from '@tanstack/react-query';
-import { transactionsApi, accountsApi, budgetsApi, feedbacksApi } from '../api/client';
-import type { Transaction } from '../types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { transactionsApi, accountsApi, budgetsApi, feedbacksApi, categoriesApi, ApiError } from '../api/client';
+import type { Transaction, Category } from '../types';
 import { authClient } from '../lib/auth-client';
+import { queryKeys } from '../lib/query-keys';
+import { CategoryIcon } from '../components/ui/CategoryIcon';
 
 export default function SettingsPage() {
   const { language, setLanguage, currency, setCurrency, isDark, toggleDark, t } = usePreferences();
@@ -618,6 +623,9 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* ─── Kelola Kategori ─── */}
+      <CategoryManagerSection />
+
       <div className="space-y-3">
         <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">{t('settings.notifications')}</h3>
         <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
@@ -858,6 +866,271 @@ export default function SettingsPage() {
         onConfirm={alertConfig.onConfirm}
       />
     </div>
+  );
+}
+
+// ─── Category Manager ────────────────────────────────────────────────────────
+
+const PRESET_COLORS = ['#F04438', '#F79009', '#12B76A', '#2E90FA', '#7A5AF8', '#EE46BC', '#67E3F9', '#98A2B3'];
+
+function CategoryManagerSection() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newLabel, setNewLabel] = useState('');
+  const [newColor, setNewColor] = useState(PRESET_COLORS[0]);
+  const [newIcon, setNewIcon] = useState('📦');
+  const [newType, setNewType] = useState<'income' | 'expense' | 'both'>('expense');
+  const [addError, setAddError] = useState('');
+  const [pendingVisibilityIds, setPendingVisibilityIds] = useState<Set<string>>(new Set());
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
+  const queryClient = useQueryClient();
+
+  const { data: allCategories = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.categories.list({ includeHidden: true }),
+    queryFn: () => categoriesApi.list({ includeHidden: true }),
+    enabled: isOpen,
+  });
+
+  const visibilityMutation = useMutation({
+    mutationFn: ({ id, hidden }: { id: string; hidden: boolean }) =>
+      categoriesApi.setVisibility(id, hidden),
+    onMutate: ({ id }) => setPendingVisibilityIds(prev => new Set(prev).add(id)),
+    onSettled: (_d, _e, { id }) => setPendingVisibilityIds(prev => { const s = new Set(prev); s.delete(id); return s; }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
+    },
+  });
+
+  const [deleteError, setDeleteError] = useState('');
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => categoriesApi.delete(id),
+    onMutate: (id) => setPendingDeleteIds(prev => new Set(prev).add(id)),
+    onSettled: (_d, _e, id) => setPendingDeleteIds(prev => { const s = new Set(prev); s.delete(id); return s; }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
+    },
+    onError: (err: unknown) => {
+      if (err instanceof ApiError && err.status === 409) {
+        setDeleteError('Kategori punya transaksi. Sembunyikan saja?');
+      } else {
+        setDeleteError('Gagal menghapus kategori. Coba lagi.');
+      }
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: { label: string; color: string; icon: string; type: string }) =>
+      categoriesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
+      setNewLabel('');
+      setNewColor(PRESET_COLORS[0]);
+      setNewIcon('📦');
+      setNewType('expense');
+      setShowAddForm(false);
+      setAddError('');
+    },
+    onError: () => {
+      setAddError('Gagal menambah kategori. Coba lagi.');
+    },
+  });
+
+  const handleCreate = () => {
+    if (!newLabel.trim()) {
+      setAddError('Nama kategori tidak boleh kosong.');
+      return;
+    }
+    setAddError('');
+    createMutation.mutate({ label: newLabel.trim(), color: newColor, icon: newIcon, type: newType });
+  };
+
+  return (
+    <>
+      <div className="space-y-3">
+        <h3 className="text-[14px] font-bold text-[var(--text)] ml-1">Kategori</h3>
+        <div className="flow-card divide-y divide-[var(--border)] overflow-hidden">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="w-full flex items-center gap-4 px-5 py-4 hover:bg-[var(--muted)] transition-colors cursor-pointer group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+              <Tag className="w-5 h-5 text-violet-500" />
+            </div>
+            <div className="flex-1 min-w-0 pr-2 text-left">
+              <p className="text-[14px] font-bold text-[var(--text)]">Kelola Kategori</p>
+              <p className="text-[11px] font-medium text-[var(--text-dim-2)] opacity-60">Sembunyikan atau hapus kategori</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[var(--text-dim-2)] opacity-50 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="fixed inset-0 z-[200] flex items-end lg:items-center justify-center" onClick={() => setIsOpen(false)}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div
+            className="relative bg-[var(--card)] rounded-t-[28px] lg:rounded-[32px] w-full max-w-[480px] flex flex-col animate-slide-up lg:animate-fade-in"
+            style={{ maxHeight: '85dvh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
+              <h3 className="text-[20px] font-bold text-[var(--text)]">Kelola Kategori</h3>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-9 h-9 rounded-full bg-[var(--muted)] flex items-center justify-center text-[var(--text-dim)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Delete error banner */}
+            {deleteError && (
+              <div className="mx-6 mb-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-[13px] font-medium text-rose-600 flex items-center justify-between shrink-0">
+                <span>{deleteError}</span>
+                <button onClick={() => setDeleteError('')} className="ml-2 shrink-0">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Category list */}
+            <div className="overflow-y-auto flex-1 px-6 pb-2">
+              {isLoading && (
+                <div className="flex items-center justify-center py-10">
+                  <div className="w-6 h-6 border-2 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
+                </div>
+              )}
+              {error && (
+                <p className="text-center text-[13px] text-rose-500 py-8">Gagal memuat kategori.</p>
+              )}
+              {!isLoading && !error && allCategories.length === 0 && (
+                <p className="text-center text-[13px] text-[var(--text-dim-2)] py-8">Belum ada kategori.</p>
+              )}
+              {!isLoading && !error && allCategories.map((cat: Category) => (
+                <div
+                  key={cat.id}
+                  className={`flex items-center gap-3 py-3 border-b border-[var(--border)] last:border-0 ${cat.hidden ? 'opacity-50' : ''}`}
+                >
+                  <CategoryIcon category={cat.label} icon={cat.icon} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-[var(--text)] truncate">{cat.label}</p>
+                    <p className="text-[11px] text-[var(--text-dim-2)] capitalize">{cat.type}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => visibilityMutation.mutate({ id: cat.id, hidden: !cat.hidden })}
+                      disabled={pendingVisibilityIds.has(cat.id)}
+                      title={cat.hidden ? 'Tampilkan' : 'Sembunyikan'}
+                      className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--muted)] transition-colors text-[var(--text-dim)] hover:text-[var(--text)]"
+                    >
+                      {pendingVisibilityIds.has(cat.id)
+                        ? <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                        : cat.hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+                    {cat.isOwn && (
+                      <button
+                        onClick={() => deleteMutation.mutate(cat.id)}
+                        disabled={pendingDeleteIds.has(cat.id)}
+                        title="Hapus kategori"
+                        className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-50 transition-colors text-[var(--text-dim)] hover:text-rose-500"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add category form */}
+            <div className="px-6 pt-3 pb-safe shrink-0 border-t border-[var(--border)]">
+              {!showAddForm ? (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-[var(--border)] text-[13px] font-bold text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Tambah Kategori
+                </button>
+              ) : (
+                <div className="space-y-3 pt-1 pb-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[13px] font-bold text-[var(--text)]">Kategori Baru</p>
+                    <button onClick={() => { setShowAddForm(false); setAddError(''); }} className="text-[var(--text-dim)]">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newIcon}
+                      onChange={(e) => setNewIcon(e.target.value.slice(0, 10))}
+                      placeholder="📦"
+                      className="w-14 px-2 py-2.5 border border-[var(--border)] rounded-lg text-center text-[18px] bg-[var(--bg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                    />
+                    <input
+                      type="text"
+                      value={newLabel}
+                      onChange={(e) => setNewLabel(e.target.value)}
+                      placeholder="Nama kategori"
+                      className="flex-1 px-4 py-2.5 border border-[var(--border)] rounded-lg text-[14px] font-medium bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                    />
+                  </div>
+
+                  {/* Color picker */}
+                  <div className="flex gap-2 flex-wrap">
+                    {PRESET_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setNewColor(c)}
+                        className="w-7 h-7 rounded-full transition-transform hover:scale-110"
+                        style={{ backgroundColor: c, outline: newColor === c ? `3px solid ${c}` : 'none', outlineOffset: '2px' }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Type picker */}
+                  <div className="flex gap-2">
+                    {(['expense', 'income', 'both'] as const).map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => setNewType(type)}
+                        className={`flex-1 py-2 rounded-lg text-[12px] font-bold capitalize transition-colors ${
+                          newType === type
+                            ? 'bg-[var(--accent)] text-white'
+                            : 'bg-[var(--muted)] text-[var(--text-dim)] hover:bg-[var(--border)]'
+                        }`}
+                      >
+                        {type === 'expense' ? 'Pengeluaran' : type === 'income' ? 'Pemasukan' : 'Keduanya'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {addError && (
+                    <p className="text-[12px] text-rose-500 font-medium">{addError}</p>
+                  )}
+
+                  <button
+                    onClick={handleCreate}
+                    disabled={createMutation.isPending}
+                    className="w-full py-3 rounded-xl bg-[var(--accent)] text-white font-bold text-[14px] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:active:scale-100"
+                  >
+                    {createMutation.isPending ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                    Simpan Kategori
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

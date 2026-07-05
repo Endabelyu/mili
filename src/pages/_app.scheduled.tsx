@@ -5,6 +5,7 @@ import { Alert } from '../components/ui/Alert';
 import { scheduledApi, categoriesApi, accountsApi, type ScheduledTransaction, type Category } from '../api/client';
 import { usePreferences } from '../hooks/usePreferences';
 import { CategoryIcon } from '../components/ui/CategoryIcon';
+import { queryKeys } from '../lib/query-keys';
 
 // ─── Status Toggle Component ──────────────────────────────────────────────────
 function StatusToggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
@@ -67,7 +68,7 @@ export default function ScheduledPage() {
   });
 
   const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
+    queryKey: queryKeys.categories.list(),
     queryFn: () => categoriesApi.list(),
   });
 
@@ -357,7 +358,14 @@ export default function ScheduledPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
-              <h2 className="text-[18px] font-bold text-[var(--text)]">{selectedScheduled ? t('scheduled.editSchedule') : t('scheduled.addSchedule')}</h2>
+              <div>
+                <h2 className="text-[18px] font-bold text-[var(--text)]">{selectedScheduled ? t('scheduled.editSchedule') : t('scheduled.addSchedule')}</h2>
+                {selectedScheduled && (
+                  <p className="text-[13px] font-medium text-[var(--text-dim-2)] mt-0.5 truncate max-w-[200px]">
+                    {selectedScheduled.description || selectedScheduled.category?.label}
+                  </p>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 {selectedScheduled && (
                   <button 

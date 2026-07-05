@@ -95,7 +95,7 @@ export function NewTransactionModal() {
 
   // Fetch real categories from BE
   const { data: categories } = useQuery({
-    queryKey: queryKeys.categories.all,
+    queryKey: queryKeys.categories.list(),
     queryFn: () => categoriesApi.list(),
     enabled: isOpen, // Only fetch when modal is open
   });
@@ -181,7 +181,7 @@ export function NewTransactionModal() {
   const addCategoryMutation = useMutation({
     mutationFn: (data: { label: string; color: string; icon: string; type: string }) => categoriesApi.create(data),
     onSuccess: (newCat) => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
       setSelectedCategory(newCat.id);
       setIsAddingCategory(false);
       setNewCatLabel('');
@@ -323,12 +323,7 @@ export function NewTransactionModal() {
           )}
 
           <div className="flex p-1 bg-[var(--muted)] rounded-[14px]">
-            {editId ? (
-              <span className="px-6 py-1.5 text-[14px] font-bold text-[var(--text)]">
-                {t('txn.editTransaction')}
-              </span>
-            ) : (
-              (['expense', 'income', 'transfer'] as const).map((tp) => (
+            {(['expense', 'income', 'transfer'] as const).map((tp) => (
                 <button
                   key={tp}
                   type="button"
