@@ -19,10 +19,6 @@ export default function DeveloperAnalyticsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     setIsLoading(true);
     setFetchError(null);
@@ -52,6 +48,10 @@ export default function DeveloperAnalyticsPage() {
     if (errors.length) setFetchError(errors.join(' · '));
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const filteredUsers = users.filter(user => {
     const name = user.name || '';

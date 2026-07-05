@@ -335,7 +335,7 @@ export function NewTransactionModal() {
                   {tp === 'expense' ? t('txn.newExpense') : tp === 'income' ? t('txn.newIncome') : t('txn.transfer')}
                 </button>
               ))
-            )}
+            }
           </div>
 
           <button 
