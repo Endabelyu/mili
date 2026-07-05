@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { X, AlertCircle, CheckCircle2, Info } from 'lucide-react';
 import { useEscapeKey } from '../../hooks';
 
@@ -25,6 +26,19 @@ export function Alert({
   isConfirm = false
 }: AlertProps) {
   useEscapeKey(onClose, isOpen);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEnter = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (onConfirm) onConfirm();
+        else onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEnter);
+    return () => document.removeEventListener('keydown', handleEnter);
+  }, [isOpen, onConfirm, onClose]);
 
   if (!isOpen) return null;
 
